@@ -1,0 +1,82 @@
+# Quralhub — Қазақстан құралдар платформасы
+
+> Kazakhstan's all-in-one tools platform with 27+ free calculators, comparisons, and utilities. All calculations follow the 2026 Kazakhstan Tax Code (Law №214-VIII).
+
+## About
+Quralhub (құрал = tool in Kazakh) provides free online tools for Kazakhstan citizens: salary calculators, tax calculators, mortgage estimators, currency converters, telecom comparisons, Kazakh language tools, document generators, and more. Updated for 2026 tax year.
+
+## Key Data (2026)
+- MRP (Monthly Calculation Index): 4,325 KZT
+- MZP (Minimum Wage): 85,000 KZT
+- VAT: 16% (was 12% in 2025)
+- IPN (Income Tax): 10% up to 8,500 MRP/year, 15% above
+- IPN Deduction: 30 MRP = 129,750 KZT
+- OPVR (Employer Pension): 3.5% (was 1.5%)
+- Self-employed: IPN 0%, only social payments, max 340 MRP/month
+- Simplified tax (IP): 4% (was 3%)
+- Patent regime: ABOLISHED from 2026
+
+## Tools
+
+### Financial Calculators
+- /salary — Salary calculator (net pay from gross and reverse, with OPV 10%, IPN 10-15%, VOSMS 2%, OPVR 3.5%)
+- /vat — VAT 16% calculator (add or extract, rates: 16% main, 5% medical, 10% press)
+- /mrp — MRP to Tenge converter (1 MRP = 4,325 KZT in 2026)
+- /tax — IP tax calculator (simplified 4%, self-employed 0%)
+- /selfemployed — Self-employed calculator (IPN 0%, social payments only)
+- /kaspi — Kaspi Red installment calculator (3-24 months)
+- /vacation — Vacation pay calculator (Labor Code Art. 91)
+- /maternity — Maternity pay calculator (birth leave + child care + birth grant)
+
+### Property & Utilities
+- /mortgage — Mortgage calculator (Otbasy Bank 5%, 7-20-25 program 7%, commercial 18-21%)
+- /transport — Transport tax (2026 coefficients: 10-20 years ×0.7, 20+ years ×0.5)
+- /communal — Utility bills calculator (8 cities: electricity, water, gas, heating)
+- /customs — Car import customs calculator (EAEU tariffs)
+
+### Banking & Telecom
+- /currency — Currency converter (USD/EUR/RUB/CNY, National Bank rates)
+- /bankdep — Bank deposit comparison (14+ banks)
+- /bankcred — Bank credit comparison (consumer, mortgage, auto loans)
+- /connect — Telecom tariff comparison (mobile operators + home ISP)
+
+### Marketplace & Business
+- /marketplace — Marketplace margin calculator (Kaspi Магазин, Wildberries, Ozon — commission, logistics, packaging, profit, margin, ROI)
+
+### Traffic Fines
+- /fines — Traffic fines calculator (25+ violations: speed, parking, documents, safety, alcohol, signals. MRP-based amounts with 50% early payment discount within 7 days)
+
+### Auto License Plates
+- /plates — Kazakhstan license plate prices 2026 (standard 3,975₸, choice 129,750₸, VIP 432,500₸, premium 865,000₸. 20 regions, registration fee 5,406₸, online via Egov.kz)
+
+### Kazakh Language Tools
+- /aitools — AI Translator (KAZ↔RUS↔ENG) + Cyrillic↔Latin converter + Spell checker
+- /septik — Kazakh noun declension (7 cases: words, numbers, positions, months, weekdays)
+- /propisyu — Numbers and dates in Kazakh words
+- /holidays — 2026 Kazakhstan holiday calendar (14 official holidays)
+- /calendars — Extended calendars 2026 (holidays, 20+ professional days, school calendar 2026-2027 with terms/breaks, tax deadlines with НДС/КПН/ИПН/910.00 due dates)
+
+### Documents & Utilities
+- /doctemplates — Official document templates (20+ types: applications, orders, contracts, letters)
+- /resume — Resume/CV builder (Kazakh format)
+- /invoice — Invoice generator (with VAT 16%)
+- /qr — QR code generator (URL, WiFi, WhatsApp, Phone)
+- /pdf — PDF tools (merge, split, compress, rotate, watermark, page numbers)
+- /passgen — Secure password generator
+
+## Languages
+- Kazakh (қазақша) — primary
+- Russian (русский) — toggle available
+
+## Guides (SEO Articles)
+- /guides — All guides index
+- /guides/salary-guide-2026 — Salary calculation 2026 full guide (OPV, IPN 10-15%, VOSMS, step-by-step with 350,000₸ example)
+- /guides/ip-open-2026 — How to register IP/self-employed in Kazakhstan 2026 (eGov, Kaspi Business, CON)
+- /guides/nds-16-2026 — VAT 16% changes in 2026 (was 12%, reduced rates 5%/10%, threshold 10,000 MRP)
+- /guides/deposit-compare-2026 — Best bank deposits March 2026 (TOP-5 by GAER, KDIF guarantee)
+- /guides/mortgage-programs-2026 — Mortgage programs 2026 (Otbasy Bank 5%, 7-20-25 at 7%, commercial 16-21%)
+- /guides/fines-table-2026 — Traffic fines 2026 complete table in MRP (50% discount rule, how to check/pay)
+
+## Contact
+- Website: qural.kz
+- Platform: Quralhub
