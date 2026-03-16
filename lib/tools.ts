@@ -10,6 +10,8 @@ export interface Tool {
   search: string
   badge?: { text: string; type: 'hot' | 'new' | 'ai' }
   glowClass: string
+  /** Grid size: 'lg' = spans 2 cols, 'sm' = compact mini-card, default = normal */
+  size?: 'lg' | 'sm'
 }
 
 export const TOOLS: Tool[] = [
@@ -38,16 +40,16 @@ export const TOOLS: Tool[] = [
   { id: 'connect', href: '/connect', name: 'Байланыс тарифтер', nameRu: 'Тарифы связи', description: 'Ұялы + Үй интернет', descriptionRu: 'Мобильный + Дом. интернет', icon: '📡', category: 'cmp', search: 'тариф байланыс beeline kcell tele2 интернет провайдер', badge: { text: 'ТОП', type: 'hot' }, glowClass: 'from-emerald-400 to-blue-500' },
   // Language
   { id: 'aitools', href: '/aitools', name: 'AI Аудармашы', nameRu: 'AI Переводчик', description: 'Аударма · Латын · Емле', descriptionRu: 'Перевод · Латын · Орфография', icon: '🧠', category: 'ai', search: 'аудармашы переводчик translate латын кирилл latyn орфография емле', badge: { text: 'AI', type: 'ai' }, glowClass: 'from-purple-400 to-purple-700' },
-  { id: 'septik', href: '/septik', name: 'Септік құрал', nameRu: 'Склонение', description: 'Сөз, сан, лауазым, ай, күн', descriptionRu: 'Слово, число, должность', icon: '📝', category: 'extra', search: 'септік склонение сөз сан лауазым', badge: { text: '5 in 1', type: 'new' }, glowClass: 'from-purple-400 to-violet-600' },
+  { id: 'septik', href: '/septik', name: 'Септік құрал', nameRu: 'Склонение', description: 'Сөз, сан, лауазым, ай, күн', descriptionRu: 'Слово, число, должность', icon: '📝', category: 'extra', search: 'септік склонение сөз сан лауазым', badge: { text: '5 in 1', type: 'new' }, glowClass: 'from-purple-400 to-violet-600', size: 'sm' },
   { id: 'propisyu', href: '/propisyu', name: 'Сөзбен жазу', nameRu: 'Прописью', description: 'Сан мен күнді сөзбен', descriptionRu: 'Число и дата словами', icon: '🔤', category: 'extra', search: 'сома дата прописью сан күн жазу сөзбен', glowClass: 'from-teal-300 to-teal-600' },
   { id: 'holidays', href: '/holidays', name: 'Мерекелер 2026', nameRu: 'Праздники 2026', description: 'Күнтізбе + демалыстар', descriptionRu: 'Календарь + выходные', icon: '📅', category: 'extra', search: 'мереке демалыс күнтізбе calendar', glowClass: 'from-red-400 to-red-600' },
   // Documents
-  { id: 'doctemplates', href: '/doctemplates', name: 'Құжат үлгілері', nameRu: 'Шаблоны документов', description: 'Өтініш, бұйрық, шарт, хат', descriptionRu: 'Заявление, приказ, договор', icon: '📑', category: 'doc', search: 'құжат шаблон документ бұйрық өтініш шарт', badge: { text: '20+', type: 'hot' }, glowClass: 'from-emerald-400 to-emerald-700' },
+  { id: 'doctemplates', href: '/doctemplates', name: 'Құжат үлгілері', nameRu: 'Шаблоны документов', description: 'Өтініш, бұйрық, шарт, хат', descriptionRu: 'Заявление, приказ, договор', icon: '📑', category: 'doc', search: 'құжат шаблон документ бұйрық өтініш шарт', badge: { text: '20+', type: 'hot' }, glowClass: 'from-emerald-400 to-emerald-700', size: 'lg' },
   { id: 'resume', href: '/resume', name: 'Түйіндеме', nameRu: 'Резюме', description: 'Қазақша CV', descriptionRu: 'Казахское CV', icon: '👤', category: 'doc', search: 'резюме cv түйіндеме', glowClass: 'from-purple-400 to-purple-700' },
   { id: 'invoice', href: '/invoice', name: 'Шот-фактура', nameRu: 'Счёт-фактура', description: 'НДС 16% есебімен', descriptionRu: 'С учётом НДС 16%', icon: '📄', category: 'doc', search: 'шот фактура invoice счет', glowClass: 'from-yellow-300 to-amber-600' },
   { id: 'qr', href: '/qr', name: 'QR-код', nameRu: 'QR-код', description: 'WiFi, WhatsApp, визитка', descriptionRu: 'WiFi, WhatsApp, визитка', icon: '▣', category: 'doc', search: 'qr код генератор', badge: { text: 'ТОП', type: 'hot' }, glowClass: 'from-blue-400 to-blue-700' },
-  { id: 'pdf', href: '/pdf', name: 'PDF құралдар', nameRu: 'PDF редактор', description: 'Сығу, біріктіру, бөлу', descriptionRu: 'Сжатие, объединение', icon: '📕', category: 'doc', search: 'pdf сығу compress біріктіру merge split', badge: { text: 'ТОП', type: 'hot' }, glowClass: 'from-red-400 to-red-700' },
-  { id: 'passgen', href: '/passgen', name: 'Құпия сөз', nameRu: 'Пароль', description: 'Қауіпсіз генератор', descriptionRu: 'Безопасный генератор', icon: '🔑', category: 'doc', search: 'пароль password құпия', glowClass: 'from-slate-400 to-slate-600' },
+  { id: 'pdf', href: '/pdf', name: 'PDF құралдар', nameRu: 'PDF редактор', description: 'Сығу, біріктіру, бөлу', descriptionRu: 'Сжатие, объединение', icon: '📕', category: 'doc', search: 'pdf сығу compress біріктіру merge split', badge: { text: 'ТОП', type: 'hot' }, glowClass: 'from-red-400 to-red-700', size: 'lg' },
+  { id: 'passgen', href: '/passgen', name: 'Құпия сөз', nameRu: 'Пароль', description: 'Қауіпсіз генератор', descriptionRu: 'Безопасный генератор', icon: '🔑', category: 'doc', search: 'пароль password құпия', glowClass: 'from-slate-400 to-slate-600', size: 'sm' },
   { id: 'abbrev', href: '/abbrev', name: 'Қысқартулар', nameRu: 'Сокращения', description: '47 қысқарту', descriptionRu: 'Справочник КЗ', icon: '📋', category: 'extra', search: 'қысқарту аббревиатура опв жсн бсн ндс мрп', glowClass: 'from-orange-400 to-orange-600' },
   { id: 'calendars', href: '/calendars', name: 'Күнтізбелер', nameRu: 'Календари', description: 'Мереке, мектеп, салық', descriptionRu: 'Праздники, школа, налоги', icon: '📆', category: 'extra', search: 'күнтізбе календарь мектеп каникул салық мереке кәсіби', badge: { text: 'ЖАҢА', type: 'new' }, glowClass: 'from-orange-400 to-orange-600' },
 ]

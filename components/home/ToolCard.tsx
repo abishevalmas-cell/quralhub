@@ -6,7 +6,57 @@ import { useApp } from '@/components/layout/Providers'
 
 export function ToolCard({ tool }: { tool: Tool }) {
   const { lang } = useApp()
+  const size = tool.size || 'default'
 
+  // Large card — spans 2 columns, horizontal layout
+  if (size === 'lg') {
+    return (
+      <Link
+        href={tool.href}
+        className="tool-card group relative overflow-hidden rounded-2xl p-5 sm:p-6 col-span-2 flex items-center gap-4 active:scale-[0.98] transition-transform duration-200 cursor-pointer border border-border/40 dark:border-white/[0.08] bg-card/90 dark:bg-card/80 shadow-sm hover:shadow-md"
+      >
+        {tool.badge && (
+          <span className={cn(
+            'absolute top-2 right-2 text-[9px] font-bold px-2 py-0.5 rounded-lg tracking-wide z-10',
+            tool.badge.type === 'hot' && 'bg-amber-100 text-amber-800 dark:bg-amber-900/50 dark:text-amber-300',
+            tool.badge.type === 'new' && 'bg-accent text-primary border border-primary/15',
+            tool.badge.type === 'ai' && 'bg-violet-100 text-violet-700 dark:bg-violet-900/50 dark:text-violet-300',
+          )}>
+            {tool.badge.text}
+          </span>
+        )}
+        <div className="w-[60px] h-[60px] sm:w-[72px] sm:h-[72px] rounded-[18px] flex items-center justify-center relative flex-shrink-0">
+          <div className={cn('absolute inset-0 rounded-[18px] opacity-20 bg-gradient-to-br', tool.glowClass)} />
+          <span className="relative z-1 text-3xl sm:text-4xl">{tool.icon}</span>
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-sm sm:text-base font-bold text-foreground tracking-tight mb-0.5">{lang === 'ru' ? tool.nameRu : tool.name}</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground leading-snug">{lang === 'ru' ? tool.descriptionRu : tool.description}</p>
+        </div>
+      </Link>
+    )
+  }
+
+  // Small card — compact, icon + name inline
+  if (size === 'sm') {
+    return (
+      <Link
+        href={tool.href}
+        className="tool-card group relative overflow-hidden rounded-xl p-3 flex items-center gap-2.5 active:scale-[0.97] transition-transform duration-200 cursor-pointer border border-border/40 dark:border-white/[0.08] bg-card/90 dark:bg-card/80 shadow-sm hover:shadow-md"
+      >
+        <div className="w-9 h-9 rounded-xl flex items-center justify-center relative flex-shrink-0">
+          <div className={cn('absolute inset-0 rounded-xl opacity-20 bg-gradient-to-br', tool.glowClass)} />
+          <span className="relative z-1 text-lg">{tool.icon}</span>
+        </div>
+        <div className="min-w-0">
+          <h3 className="text-xs font-bold text-foreground truncate">{lang === 'ru' ? tool.nameRu : tool.name}</h3>
+          <p className="text-[10px] text-muted-foreground truncate">{lang === 'ru' ? tool.descriptionRu : tool.description}</p>
+        </div>
+      </Link>
+    )
+  }
+
+  // Default card
   return (
     <Link
       href={tool.href}
@@ -22,13 +72,10 @@ export function ToolCard({ tool }: { tool: Tool }) {
           {tool.badge.text}
         </span>
       )}
-
-      {/* Icon — simple colored bg, no blur */}
       <div className="w-[60px] h-[60px] sm:w-[68px] sm:h-[68px] rounded-[18px] mx-auto mb-3 flex items-center justify-center relative">
         <div className={cn('absolute inset-0 rounded-[18px] opacity-20 bg-gradient-to-br', tool.glowClass)} />
         <span className="relative z-1 text-3xl sm:text-4xl">{tool.icon}</span>
       </div>
-
       <h3 className="text-[13px] sm:text-sm font-bold text-foreground tracking-tight mb-0.5">{lang === 'ru' ? tool.nameRu : tool.name}</h3>
       <p className="text-[11px] sm:text-xs text-muted-foreground leading-snug">{lang === 'ru' ? tool.descriptionRu : tool.description}</p>
     </Link>
