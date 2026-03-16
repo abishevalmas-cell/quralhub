@@ -42,15 +42,15 @@ export function ToolCard({ tool }: { tool: Tool }) {
     return (
       <Link
         href={tool.href}
-        className="tool-card group relative overflow-hidden rounded-xl p-3 flex items-center gap-2.5 active:scale-[0.97] transition-transform duration-200 cursor-pointer border border-border/40 dark:border-white/[0.08] bg-card/90 dark:bg-card/80 shadow-sm hover:shadow-md"
+        className="tool-card group relative overflow-hidden rounded-xl p-3.5 flex items-center gap-3 active:scale-[0.97] transition-transform duration-200 cursor-pointer border border-border/40 dark:border-white/[0.08] bg-card/90 dark:bg-card/80 shadow-sm hover:shadow-md"
       >
-        <div className="w-9 h-9 rounded-xl flex items-center justify-center relative flex-shrink-0">
-          <div className={cn('absolute inset-0 rounded-xl opacity-20 bg-gradient-to-br', tool.glowClass)} />
-          <span className="relative z-1 text-lg">{tool.icon}</span>
+        <div className="w-[46px] h-[46px] rounded-[14px] flex items-center justify-center relative flex-shrink-0">
+          <div className={cn('absolute inset-0 rounded-[14px] opacity-20 bg-gradient-to-br', tool.glowClass)} />
+          <span className="relative z-1 text-2xl">{tool.icon}</span>
         </div>
         <div className="min-w-0">
-          <h3 className="text-xs font-bold text-foreground truncate">{lang === 'ru' ? tool.nameRu : tool.name}</h3>
-          <p className="text-[10px] text-muted-foreground truncate">{lang === 'ru' ? tool.descriptionRu : tool.description}</p>
+          <h3 className="text-[13px] font-bold text-foreground truncate">{lang === 'ru' ? tool.nameRu : tool.name}</h3>
+          <p className="text-[11px] text-muted-foreground truncate">{lang === 'ru' ? tool.descriptionRu : tool.description}</p>
         </div>
       </Link>
     )

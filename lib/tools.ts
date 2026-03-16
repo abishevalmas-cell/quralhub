@@ -59,5 +59,5 @@ export const SECTIONS = [
   { key: 'calc-property', label: 'МҮЛІК ЖӘНЕ ТҰРМЫС', labelRu: 'ИМУЩЕСТВО И БЫТ', title: 'Үй, авто, коммуналдық', titleRu: 'Дом, авто, коммунальные', tools: ['mortgage', 'transport', 'communal', 'customs', 'plates'] },
   { key: 'cmp', label: 'БАНК, ВАЛЮТА, ТАРИФ', labelRu: 'БАНК, ВАЛЮТА, ТАРИФ', title: 'Салыстыру және курстар', titleRu: 'Сравнение и курсы', tools: ['currency', 'bankdep', 'bankcred', 'kaspi', 'connect'] },
   { key: 'ai', label: 'ТІЛ ҚҰРАЛДАРЫ', labelRu: 'ЯЗЫКОВЫЕ ИНСТРУМЕНТЫ', title: 'Аударма, прописью, қысқартулар', titleRu: 'Перевод, прописью, сокращения', tools: ['aitools', 'propisyu', 'calendars', 'abbrev'] },
-  { key: 'doc', label: 'ҚҰЖАТТАР МЕН ҚҰРАЛДАР', labelRu: 'ДОКУМЕНТЫ И УТИЛИТЫ', title: 'Генераторлар мен утилиталар', titleRu: 'Генераторы и утилиты', tools: ['doctemplates', 'resume', 'invoice', 'septik', 'qr', 'pdf', 'passgen'] },
+  { key: 'doc', label: 'ҚҰЖАТТАР МЕН ҚҰРАЛДАР', labelRu: 'ДОКУМЕНТЫ И УТИЛИТЫ', title: 'Генераторлар мен утилиталар', titleRu: 'Генераторы и утилиты', tools: ['pdf', 'doctemplates', 'resume', 'qr', 'invoice', 'septik', 'passgen'] },
 ]
