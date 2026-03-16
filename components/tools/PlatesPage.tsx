@@ -89,11 +89,6 @@ export function PlatesPage() {
       </div>
       <p className="text-sm text-muted-foreground mb-5">{L('Нөміріңізді енгізіңіз — бағасы автоматты анықталады', 'Введите номер — цена определится автоматически')}</p>
 
-      {/* Context block */}
-      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-5 text-sm leading-relaxed text-muted-foreground">
-        <p>{L('Нөмір бағасы комбинацияға байланысты. Ең қымбат — VIP нөмірлер (001-009, 777): 228 АЕК = 986 100₸. Стандартты нөмір — тегін (тіркеу кезінде автоматты беріледі). Таңдау нөмірін Egov.kz арқылы онлайн алуға болады.', 'Цена номера зависит от комбинации. Самые дорогие — VIP номера (001-009, 777): 228 МРП = 986 100₸. Стандартный номер — бесплатный (выдаётся автоматически). Номер по выбору можно оформить онлайн через Egov.kz.')}</p>
-      </div>
-
       {/* === REALISTIC KZ PLATE === */}
       <div className="flex justify-center mb-5">
         <div className="w-full max-w-[440px]">
@@ -236,6 +231,11 @@ export function PlatesPage() {
             </div>
           )
         })}
+      </div>
+
+      {/* Context block */}
+      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-4 text-sm leading-relaxed text-muted-foreground">
+        <p>{L('Нөмір бағасы комбинацияға байланысты. Ең қымбат — VIP нөмірлер (001-009, 777): 228 АЕК = 986 100₸. Стандартты нөмір — тегін (тіркеу кезінде автоматты беріледі). Таңдау нөмірін Egov.kz арқылы онлайн алуға болады.', 'Цена номера зависит от комбинации. Самые дорогие — VIP номера (001-009, 777): 228 МРП = 986 100₸. Стандартный номер — бесплатный (выдаётся автоматически). Номер по выбору можно оформить онлайн через Egov.kz.')}</p>
       </div>
 
       <TipBox>

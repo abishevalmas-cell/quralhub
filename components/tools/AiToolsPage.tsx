@@ -7,6 +7,7 @@ import { TipBox } from '@/components/shared/TipBox'
 import { useApp } from '@/components/layout/Providers'
 import { cyrillicToLatin, latinToCyrillic } from '@/lib/kazakh/c2l'
 import { SPELL_RULES } from '@/lib/kazakh/spellRules'
+import { getWordOfDay } from '@/lib/data/wordOfDay'
 import {
   TR_DICT,
   mergeDictEntries,
@@ -25,26 +26,27 @@ const LANGS = [
 
 type TranslateMode = '' | 'Сөздік' | 'Google' | 'API (кэш)' | 'Сөздік (офлайн)'
 
+type Tab = 'translate' | 'latin' | 'spell'
+
 export function AiToolsPage() {
   const { lang } = useApp()
   const L = (kz: string, ru: string) => lang === 'ru' ? ru : kz
 
+  const [tab, setTab] = useState<Tab>('translate')
+  const [copied, setCopied] = useState(false)
+
   // -- Dict loading --
   const [dictLoaded, setDictLoaded] = useState(false)
-
   useEffect(() => {
-    // Load extended dictionary from dict.json
     fetch('/dict.json')
       .then(r => r.json())
-      .then(data => {
-        mergeDictEntries(data)
-        setDictLoaded(true)
-      })
-      .catch(() => setDictLoaded(true)) // proceed even if load fails
-
-    // Load translation cache
+      .then(data => { mergeDictEntries(data); setDictLoaded(true) })
+      .catch(() => setDictLoaded(true))
     loadTrCache()
   }, [])
+
+  // -- Word of the Day --
+  const wordOfDay = getWordOfDay()
 
   // -- Translate --
   const [fromLang, setFromLang] = useState('kk')
@@ -61,15 +63,11 @@ export function AiToolsPage() {
       setTrMode('')
       return
     }
-
-    // 1. Show offline result immediately
     const offlineResult = translateOffline(text, sl, tl)
     if (offlineResult) {
       setTranslated(offlineResult)
       setTrMode('Сөздік')
     }
-
-    // 2. Check cache
     const cacheKey = `${sl}-${tl}:${text}`
     const cached = getTrCache(cacheKey)
     if (cached) {
@@ -77,24 +75,19 @@ export function AiToolsPage() {
       setTrMode('API (кэш)')
       return
     }
-
-    // 3. Debounced API call
     setLoading(true)
     try {
       const url = `https://translate.googleapis.com/translate_a/single?client=gtx&sl=${sl}&tl=${tl}&dt=t&q=${encodeURIComponent(text)}`
       const res = await fetch(url)
       const data = await res.json()
-      if (data && data[0] && data[0][0] && data[0][0][0]) {
+      if (data?.[0]?.[0]?.[0]) {
         const result = (data[0] as [string][]).map((s: string[]) => s[0]).join('')
         setTranslated(result)
         setTrMode('Google')
         saveTrCache(cacheKey, result)
       }
     } catch {
-      // API failed — keep offline result if we have it
-      if (!offlineResult) {
-        setTranslated(L('Аударуда қате болды', 'Ошибка перевода'))
-      }
+      if (!offlineResult) setTranslated(L('Аударуда қате болды', 'Ошибка перевода'))
       setTrMode(offlineResult ? 'Сөздік (офлайн)' : '')
     } finally {
       setLoading(false)
@@ -108,24 +101,18 @@ export function AiToolsPage() {
       setTrMode('')
       return
     }
-
-    // Show offline result immediately (no debounce)
     const offlineResult = translateOffline(srcText, fromLang, toLang)
     if (offlineResult) {
       setTranslated(offlineResult)
       setTrMode('Сөздік')
     }
-
-    // Check cache immediately too
     const cacheKey = `${fromLang}-${toLang}:${srcText}`
     const cached = getTrCache(cacheKey)
     if (cached) {
       setTranslated(cached)
       setTrMode('API (кэш)')
-      return // no need for API call
+      return
     }
-
-    // Debounce the API call
     timerRef.current = setTimeout(() => {
       doTranslate(srcText, fromLang, toLang)
     }, 500)
@@ -144,67 +131,62 @@ export function AiToolsPage() {
   const [latInput, setLatInput] = useState('')
   const latOutput = latDir === 'c2l' ? cyrillicToLatin(latInput) : latinToCyrillic(latInput)
 
-  // -- Spell --
+  // -- Spell -- auto-check on input
   const [spellInput, setSpellInput] = useState('')
   const [spellResults, setSpellResults] = useState<{ word: string; correct: string; hint: string }[]>([])
-  const [spellChecked, setSpellChecked] = useState(false)
+  const spellTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  const checkSpell = () => {
-    const input = spellInput.toLowerCase()
-    const found: { word: string; correct: string; hint: string }[] = []
-    for (const [wrong, correct, hint] of SPELL_RULES) {
-      const re = new RegExp(wrong, 'gi')
-      if (re.test(input) && wrong !== correct) {
-        found.push({ word: wrong, correct, hint })
+  useEffect(() => {
+    if (spellTimerRef.current) clearTimeout(spellTimerRef.current)
+    if (!spellInput.trim()) {
+      setSpellResults([])
+      return
+    }
+    spellTimerRef.current = setTimeout(() => {
+      const input = spellInput.toLowerCase()
+      const found: { word: string; correct: string; hint: string }[] = []
+      for (const [wrong, correct, hint] of SPELL_RULES) {
+        const re = new RegExp(wrong, 'gi')
+        if (re.test(input) && wrong !== correct) {
+          found.push({ word: wrong, correct, hint })
+        }
       }
-    }
-    setSpellResults(found)
-    setSpellChecked(true)
+      setSpellResults(found)
+    }, 300)
+    return () => { if (spellTimerRef.current) clearTimeout(spellTimerRef.current) }
+  }, [spellInput])
+
+  const copyText = (text: string) => {
+    navigator.clipboard?.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
   }
 
-  const highlightSpell = () => {
-    if (!spellChecked || spellResults.length === 0) return spellInput
-    let text = spellInput
-    for (const { word } of spellResults) {
-      text = text.replace(
-        new RegExp(`(${word})`, 'gi'),
-        '\u27E8$1\u27E9'
-      )
-    }
-    return text
-  }
-
-  // Mode badge styling
   const modeBadge = (mode: TranslateMode) => {
     if (!mode) return null
     const isApi = mode === 'Google' || mode === 'API (кэш)'
     return (
-      <span
-        className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold"
-        style={{
-          background: isApi ? '#DCFCE7' : '#DBEAFE',
-          color: isApi ? '#166534' : '#1E40AF',
-        }}
-      >
+      <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-semibold ${
+        isApi ? 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-700 dark:text-emerald-300'
+              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+      }`}>
         {mode}
       </span>
     )
   }
 
-  // sozdik.kz link for single words
   const sozdikLink = () => {
     const trimmed = srcText.trim()
     if (!isSingleWord(trimmed)) return null
-    const fromIsKk = fromLang === 'kk'
-    const slang = fromIsKk ? 'kk' : (fromLang === 'ru' ? 'ru' : 'en')
+    const slang = fromLang === 'kk' ? 'kk' : (fromLang === 'ru' ? 'ru' : 'en')
     return (
       <a
         href={`https://sozdik.kz/ru/dictionary/translate/${slang}/${toLang}/${encodeURIComponent(trimmed)}/`}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-xs text-blue-600 hover:underline"
+        className="text-[11px] text-blue-600 hover:underline"
       >
-        {L('sozdik.kz-де қарау', 'Смотреть на sozdik.kz')}
+        sozdik.kz →
       </a>
     )
   }
@@ -212,151 +194,251 @@ export function AiToolsPage() {
   return (
     <div className="max-w-[680px] mx-auto px-5 py-6">
       <BackButton />
-      <h2 className="text-2xl font-extrabold tracking-tight mb-4">{L('AI Til quraldarı', 'AI Языковые инструменты')}</h2>
+      <h2 className="text-2xl font-extrabold tracking-tight mb-1.5">🧠 {L('Тіл құралдары', 'Языковые инструменты')}</h2>
+      <p className="text-sm text-muted-foreground mb-4">{L('Аударма, латын жазу, емле тексеру — бәрі бір жерде', 'Перевод, латиница, проверка орфографии — всё в одном')}</p>
 
-      {/* Section 1: Translate */}
-      <div className="bg-card border border-border rounded-2xl p-5 shadow-sm border-l-4 border-l-blue-500 mb-5">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-lg font-bold">{L('Аудару', 'Перевод')}</h3>
+      {/* Word of the Day */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200/40 dark:border-amber-800/30 mb-5">
+        <div className="flex items-center gap-2 mb-2">
+          <span className="text-lg">📖</span>
+          <span className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">{L('Күннің сөзі', 'Слово дня')}</span>
+        </div>
+        <div className="flex items-baseline gap-3 mb-1.5">
+          <span className="text-xl font-extrabold text-foreground">{wordOfDay.kk}</span>
+          <span className="text-sm text-muted-foreground">— {lang === 'ru' ? wordOfDay.ru : wordOfDay.en}</span>
+        </div>
+        <p className="text-xs text-muted-foreground italic mb-1">«{wordOfDay.example}»</p>
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200/50 dark:bg-amber-800/30 text-amber-800 dark:text-amber-200 font-medium">{wordOfDay.type}</span>
+          {wordOfDay.origin && (
+            <span className="text-[10px] text-muted-foreground">{wordOfDay.origin}</span>
+          )}
+        </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="grid grid-cols-3 gap-1.5 mb-5">
+        {([
+          { id: 'translate' as Tab, icon: '🔄', label: L('Аударма', 'Перевод') },
+          { id: 'latin' as Tab, icon: '🔤', label: L('Латын', 'Латиница') },
+          { id: 'spell' as Tab, icon: '✏️', label: L('Емле', 'Орфография') },
+        ]).map(t => (
+          <button
+            key={t.id}
+            onClick={() => setTab(t.id)}
+            className={`py-2.5 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+              tab === t.id
+                ? 'bg-primary text-primary-foreground shadow-md'
+                : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+            }`}
+          >
+            <span>{t.icon}</span> {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* === TRANSLATE TAB === */}
+      {tab === 'translate' && (
+        <div className="space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <select
+              value={fromLang}
+              onChange={e => setFromLang(e.target.value)}
+              className="h-9 rounded-xl border border-border bg-card px-3 text-sm outline-none focus:border-primary"
+            >
+              {LANGS.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+            </select>
+            <button
+              onClick={swapLangs}
+              className="h-9 w-9 rounded-xl border border-border bg-card flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors text-lg"
+            >
+              ⇄
+            </button>
+            <select
+              value={toLang}
+              onChange={e => setToLang(e.target.value)}
+              className="h-9 rounded-xl border border-border bg-card px-3 text-sm outline-none focus:border-primary"
+            >
+              {LANGS.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
+            </select>
+            <div className="ml-auto flex items-center gap-2">
+              {modeBadge(trMode)}
+              {loading && <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />}
+            </div>
+          </div>
+
+          <div className="relative">
+            <textarea
+              value={srcText}
+              onChange={e => setSrcText(e.target.value)}
+              rows={4}
+              placeholder={L('Мәтін жазыңыз...', 'Введите текст...')}
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none resize-none focus:border-primary transition-colors"
+            />
+            <div className="absolute bottom-2 right-3 flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">{srcText.length}</span>
+              {srcText && (
+                <button onClick={() => { setSrcText(''); setTranslated('') }} className="text-[10px] text-muted-foreground hover:text-red-500">✕</button>
+              )}
+            </div>
+          </div>
+
+          <div className="relative">
+            <textarea
+              value={translated}
+              readOnly
+              rows={4}
+              className="w-full rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm outline-none resize-none"
+            />
+            <div className="absolute bottom-2 right-3 flex items-center gap-2">
+              <span className="text-[10px] text-muted-foreground">{translated.length}</span>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2 flex-wrap">
+            <button
+              onClick={() => copyText(translated)}
+              className="text-[11px] px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+            >
+              {copied ? '✓' : ''} {L('Көшіру', 'Скопировать')}
+            </button>
+            {sozdikLink()}
+          </div>
+        </div>
+      )}
+
+      {/* === LATIN TAB === */}
+      {tab === 'latin' && (
+        <div className="space-y-3">
           <div className="flex items-center gap-2">
-            {modeBadge(trMode)}
-            {loading && (
-              <div className="w-4 h-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+            <button
+              onClick={() => { setLatDir(d => d === 'c2l' ? 'l2c' : 'c2l'); setLatInput('') }}
+              className="flex-1 py-2.5 rounded-xl text-sm font-bold transition-all bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border border-purple-200/50 dark:border-purple-800/30"
+            >
+              {latDir === 'c2l' ? L('Кирилл → Латын', 'Кирилл → Латиница') : L('Латын → Кирилл', 'Латиница → Кирилл')}
+            </button>
+          </div>
+
+          <textarea
+            value={latInput}
+            onChange={e => setLatInput(e.target.value)}
+            rows={3}
+            placeholder={latDir === 'c2l' ? L('Кириллицамен жазыңыз...', 'Введите кириллицей...') : L('Латынша жазыңыз...', 'Введите латиницей...')}
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none resize-none focus:border-primary transition-colors"
+          />
+
+          <div className="relative">
+            <textarea
+              value={latOutput}
+              readOnly
+              rows={3}
+              className="w-full rounded-xl border border-border bg-muted/30 px-4 py-3 text-sm outline-none resize-none"
+            />
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => copyText(latOutput)}
+              className="text-[11px] px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-purple-500 hover:text-purple-500 transition-colors"
+            >
+              {copied ? '✓' : ''} {L('Көшіру', 'Скопировать')}
+            </button>
+            {latOutput && (
+              <span className="text-[10px] text-muted-foreground">{latOutput.length} {L('таңба', 'символов')}</span>
             )}
           </div>
-        </div>
-        <div className="flex items-center gap-2 mb-3 flex-wrap">
-          <select
-            value={fromLang}
-            onChange={e => setFromLang(e.target.value)}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none"
-          >
-            {LANGS.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
-          </select>
-          <button
-            onClick={swapLangs}
-            className="h-8 w-8 rounded-lg border border-input flex items-center justify-center text-muted-foreground hover:text-primary hover:border-primary transition-colors"
-            title="Swap"
-          >
-            &#8596;
-          </button>
-          <select
-            value={toLang}
-            onChange={e => setToLang(e.target.value)}
-            className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none"
-          >
-            {LANGS.map(l => <option key={l.code} value={l.code}>{l.label}</option>)}
-          </select>
-        </div>
-        <div className="relative">
-          <textarea
-            value={srcText}
-            onChange={e => setSrcText(e.target.value)}
-            rows={4}
-            placeholder={L('Мәтін жазыңыз...', 'Введите текст...')}
-            className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none resize-none focus:border-ring focus:ring-2 focus:ring-ring/50"
-          />
-          <div className="absolute bottom-2 right-3 text-[11px] text-muted-foreground">
-            {srcText.length} {L('таңба', 'символов')}
+
+          {/* Quick examples */}
+          <div className="p-3 rounded-xl bg-purple-50 dark:bg-purple-950/20 border border-purple-200/30 dark:border-purple-800/20">
+            <p className="text-[10px] font-bold text-purple-600 dark:text-purple-300 uppercase tracking-widest mb-2">{L('Мысалдар', 'Примеры')}</p>
+            <div className="space-y-1 text-xs">
+              {[
+                { kz: 'Сәлеметсіз бе', lat: 'Sälemetsizbе' },
+                { kz: 'Қазақстан', lat: 'Qazaqstan' },
+                { kz: 'Рақмет', lat: 'Raqmet' },
+              ].map((ex, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setLatDir('c2l'); setLatInput(ex.kz) }}
+                  className="block w-full text-left hover:bg-purple-100/50 dark:hover:bg-purple-800/20 rounded px-2 py-1 transition-colors"
+                >
+                  <span className="font-semibold">{ex.kz}</span>
+                  <span className="text-muted-foreground"> → {ex.lat}</span>
+                </button>
+              ))}
+            </div>
           </div>
         </div>
-        <div className="flex items-center gap-2 my-2 flex-wrap">
-          <button
-            onClick={() => { setSrcText(''); setTranslated(''); setTrMode('') }}
-            className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-          >
-            {L('Тазалау', 'Очистить')}
-          </button>
-          <button
-            onClick={() => navigator.clipboard?.writeText(translated)}
-            className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-          >
-            {L('Көшіру', 'Скопировать')}
-          </button>
-          {sozdikLink()}
-        </div>
-        <div className="relative">
+      )}
+
+      {/* === SPELL TAB === */}
+      {tab === 'spell' && (
+        <div className="space-y-3">
           <textarea
-            value={translated}
-            readOnly
+            value={spellInput}
+            onChange={e => setSpellInput(e.target.value)}
             rows={4}
-            className="w-full rounded-lg border border-input bg-muted/30 px-3 py-2 text-sm outline-none resize-none"
+            placeholder={L('Қазақша мәтін жазыңыз — автоматты тексеріледі...', 'Введите казахский текст — проверка автоматическая...')}
+            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none resize-none focus:border-primary transition-colors"
           />
-          <div className="absolute bottom-2 right-3 text-[11px] text-muted-foreground">
-            {translated.length} {L('таңба', 'символов')}
-          </div>
-        </div>
-      </div>
 
-      {/* Section 2: Cyrillic <-> Latin */}
-      <div className="bg-card border border-border rounded-2xl p-5 shadow-sm border-l-4 border-l-purple-500 mb-5">
-        <h3 className="text-lg font-bold mb-3">
-          {latDir === 'c2l' ? L('Кирилл \u2192 Латын', 'Кирилл \u2192 Латын') : L('Латын \u2192 Кирилл', 'Латын \u2192 Кирилл')}
-        </h3>
-        <button
-          onClick={() => { setLatDir(d => d === 'c2l' ? 'l2c' : 'c2l'); setLatInput('') }}
-          className="text-xs px-3 py-1.5 rounded-full border border-border text-muted-foreground hover:border-purple-500 hover:text-purple-500 transition-colors mb-3"
-        >
-          &#8596; {L('Бағытты ауыстыру', 'Поменять направление')}
-        </button>
-        <textarea
-          value={latInput}
-          onChange={e => setLatInput(e.target.value)}
-          rows={3}
-          placeholder={latDir === 'c2l' ? L('Кириллица мәтін...', 'Текст кириллицей...') : 'Latin text...'}
-          className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none resize-none focus:border-ring focus:ring-2 focus:ring-ring/50"
-        />
-        <textarea
-          value={latOutput}
-          readOnly
-          rows={3}
-          className="w-full rounded-lg border border-input bg-muted/30 px-3 py-2 text-sm outline-none resize-none mt-2"
-        />
-      </div>
+          {spellInput.trim() && spellResults.length === 0 && (
+            <div className="p-3 rounded-xl bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200/40 dark:border-emerald-800/30">
+              <p className="text-sm font-semibold text-emerald-700 dark:text-emerald-300">✓ {L('Қате табылмады!', 'Ошибок не найдено!')}</p>
+            </div>
+          )}
 
-      {/* Section 3: Spell check */}
-      <div className="bg-card border border-border rounded-2xl p-5 shadow-sm border-l-4 border-l-amber-500 mb-5">
-        <h3 className="text-lg font-bold mb-3">{L('Емле тексеру', 'Проверка орфографии')}</h3>
-        <textarea
-          value={spellInput}
-          onChange={e => { setSpellInput(e.target.value); setSpellChecked(false) }}
-          rows={3}
-          placeholder={L('Мәтінді жазыңыз...', 'Введите текст...')}
-          className="w-full rounded-lg border border-input bg-transparent px-3 py-2 text-sm outline-none resize-none focus:border-ring focus:ring-2 focus:ring-ring/50"
-        />
-        <button
-          onClick={checkSpell}
-          className="mt-2 px-4 py-2 rounded-full bg-primary text-primary-foreground text-sm font-semibold hover:opacity-90 transition-opacity"
-        >
-          {L('Тексеру', 'Проверить')}
-        </button>
-        {spellChecked && (
-          <div className="mt-3">
-            {spellResults.length === 0 ? (
-              <p className="text-sm text-green-600 dark:text-green-400 font-medium">{L('Қате табылмады!', 'Ошибок не найдено!')}</p>
-            ) : (
-              <>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {highlightSpell()}
-                </p>
-                <div className="space-y-1">
-                  {spellResults.map((r, i) => (
-                    <div key={i} className="flex items-center gap-2 text-sm">
-                      <span className="bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 px-2 py-0.5 rounded">{r.word}</span>
-                      <span className="text-muted-foreground">&rarr;</span>
-                      <span className="font-semibold text-green-700 dark:text-green-300">{r.correct}</span>
-                      {r.hint && <span className="text-xs text-muted-foreground">({r.hint})</span>}
-                    </div>
-                  ))}
+          {spellResults.length > 0 && (
+            <div className="p-3 rounded-xl bg-red-50 dark:bg-red-950/20 border border-red-200/40 dark:border-red-800/30 space-y-2">
+              <p className="text-xs font-bold text-red-600 dark:text-red-300">{spellResults.length} {L('қате табылды:', 'ошибок найдено:')}</p>
+              {spellResults.map((r, i) => (
+                <div key={i} className="flex items-center gap-2 text-sm flex-wrap">
+                  <span className="bg-red-200/50 dark:bg-red-800/30 text-red-700 dark:text-red-300 px-2 py-0.5 rounded line-through">{r.word}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="font-semibold text-emerald-700 dark:text-emerald-300">{r.correct}</span>
+                  {r.hint && <span className="text-[10px] text-muted-foreground">({r.hint})</span>}
                 </div>
-              </>
-            )}
-          </div>
-        )}
-      </div>
+              ))}
+              <button
+                onClick={() => {
+                  let fixed = spellInput
+                  for (const { word, correct } of spellResults) {
+                    fixed = fixed.replace(new RegExp(word, 'gi'), correct)
+                  }
+                  setSpellInput(fixed)
+                }}
+                className="text-[11px] px-3 py-1.5 rounded-full bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition-colors"
+              >
+                {L('Барлығын түзету', 'Исправить всё')}
+              </button>
+            </div>
+          )}
 
-      <TipBox>{L('Google Translate API қолданылады. Дәлдігі жоғары болмауы мүмкін.', 'Используется Google Translate API. Точность может быть невысокой.')}</TipBox>
-      <ShareBar tool={L('AI Тіл құралдары', 'AI Языковые инструменты')} />
+          {/* Common mistakes reference */}
+          <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/20 border border-amber-200/30 dark:border-amber-800/20">
+            <p className="text-[10px] font-bold text-amber-600 dark:text-amber-300 uppercase tracking-widest mb-2">{L('Жиі кездесетін қателер', 'Частые ошибки')}</p>
+            <div className="grid grid-cols-2 gap-1 text-[11px]">
+              {[
+                ['зарплата', 'жалақы'],
+                ['программа', 'бағдарлама'],
+                ['документ', 'құжат'],
+                ['информация', 'ақпарат'],
+                ['компютер', 'компьютер'],
+                ['справка', 'анықтама'],
+              ].map(([wrong, correct], i) => (
+                <div key={i} className="flex items-center gap-1">
+                  <span className="text-red-500 line-through">{wrong}</span>
+                  <span className="text-muted-foreground">→</span>
+                  <span className="text-emerald-600 dark:text-emerald-400 font-medium">{correct}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      <TipBox>{L('Google Translate API қолданылады. Жақында Яндекс Translate қосылады — дәлдігі жоғары.', 'Используется Google Translate API. Скоро подключим Яндекс Translate — точность выше.')}</TipBox>
+      <ShareBar tool={L('Тіл құралдары', 'Языковые инструменты')} />
     </div>
   )
 }

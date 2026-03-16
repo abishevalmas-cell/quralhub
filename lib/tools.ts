@@ -22,6 +22,7 @@ export const TOOLS: Tool[] = [
   { id: 'kaspi', href: '/kaspi', name: 'Kaspi Red', nameRu: 'Kaspi Red', description: 'Бөліп төлеу', descriptionRu: 'Рассрочка', icon: '💳', category: 'calc', search: 'kaspi red рассрочка бөліп', glowClass: 'from-red-400 to-red-600' },
   { id: 'marketplace', href: '/marketplace', name: 'Маркетплейс пайда', nameRu: 'Маржа маркетплейса', description: 'Kaspi, WB, Ozon', descriptionRu: 'Kaspi, WB, Ozon', icon: '📦', category: 'calc', search: 'маркетплейс маржа kaspi wb wildberries ozon сату пайда', badge: { text: 'ЖАҢА', type: 'new' }, glowClass: 'from-violet-400 to-violet-600' },
   { id: 'vacation', href: '/vacation', name: 'Демалыс ақы', nameRu: 'Отпускные', description: 'Демалыс есебі', descriptionRu: 'Расчёт отпускных', icon: '🏖️', category: 'calc', search: 'отпуск демалыс ақы vacation', glowClass: 'from-teal-400 to-teal-600' },
+  { id: 'biztrip', href: '/biztrip', name: 'Іссапар', nameRu: 'Командировочные', description: '6/8 МРП тәуліктік', descriptionRu: 'Суточные 6/8 МРП', icon: '✈️', category: 'calc', search: 'іссапар командировка суточные biztrip', badge: { text: 'ЖАҢА', type: 'new' }, glowClass: 'from-sky-400 to-sky-600' },
   { id: 'maternity', href: '/maternity', name: 'Декрет ақы', nameRu: 'Декретные', description: 'Ана мен бала', descriptionRu: 'Мать и ребёнок', icon: '👶', category: 'calc', search: 'декрет декретные ана бала', glowClass: 'from-pink-400 to-pink-600' },
   // Property
   { id: 'mortgage', href: '/mortgage', name: 'Тұрғын үй несиесі', nameRu: 'Ипотека', description: 'Отбасы, 7-20-25', descriptionRu: 'Отбасы, 7-20-25', icon: '🏠', category: 'calc', search: 'ипотека mortgage үй', glowClass: 'from-blue-400 to-blue-600' },
@@ -52,9 +53,9 @@ export const TOOLS: Tool[] = [
 ]
 
 export const SECTIONS = [
-  { key: 'calc-finance', label: 'ҚАРЖЫ ЖӘНЕ САЛЫҚ', labelRu: 'ФИНАНСЫ И НАЛОГИ', title: 'Калькуляторлар', titleRu: 'Калькуляторы', tools: ['salary', 'vat', 'mrp', 'tax', 'selfemployed', 'kaspi', 'marketplace', 'vacation', 'maternity', 'fines'] },
+  { key: 'calc-finance', label: 'ҚАРЖЫ ЖӘНЕ САЛЫҚ', labelRu: 'ФИНАНСЫ И НАЛОГИ', title: 'Калькуляторлар', titleRu: 'Калькуляторы', tools: ['salary', 'vat', 'mrp', 'tax', 'selfemployed', 'marketplace', 'vacation', 'biztrip', 'maternity', 'fines'] },
   { key: 'calc-property', label: 'МҮЛІК ЖӘНЕ ТҰРМЫС', labelRu: 'ИМУЩЕСТВО И БЫТ', title: 'Үй, авто, коммуналдық', titleRu: 'Дом, авто, коммунальные', tools: ['mortgage', 'transport', 'communal', 'customs', 'plates'] },
-  { key: 'cmp', label: 'БАНК, ВАЛЮТА, ТАРИФ', labelRu: 'БАНК, ВАЛЮТА, ТАРИФ', title: 'Салыстыру және курстар', titleRu: 'Сравнение и курсы', tools: ['currency', 'bankdep', 'bankcred', 'connect'] },
-  { key: 'ai', label: 'ТІЛ ҚҰРАЛДАРЫ', labelRu: 'ЯЗЫКОВЫЕ ИНСТРУМЕНТЫ', title: 'Аударма, септік, прописью', titleRu: 'Перевод, склонение, прописью', tools: ['aitools', 'septik', 'propisyu', 'calendars', 'abbrev'] },
-  { key: 'doc', label: 'ҚҰЖАТТАР МЕН ҚҰРАЛДАР', labelRu: 'ДОКУМЕНТЫ И УТИЛИТЫ', title: 'Генераторлар мен утилиталар', titleRu: 'Генераторы и утилиты', tools: ['doctemplates', 'resume', 'invoice', 'qr', 'pdf', 'passgen'] },
+  { key: 'cmp', label: 'БАНК, ВАЛЮТА, ТАРИФ', labelRu: 'БАНК, ВАЛЮТА, ТАРИФ', title: 'Салыстыру және курстар', titleRu: 'Сравнение и курсы', tools: ['currency', 'bankdep', 'bankcred', 'kaspi', 'connect'] },
+  { key: 'ai', label: 'ТІЛ ҚҰРАЛДАРЫ', labelRu: 'ЯЗЫКОВЫЕ ИНСТРУМЕНТЫ', title: 'Аударма, прописью, қысқартулар', titleRu: 'Перевод, прописью, сокращения', tools: ['aitools', 'propisyu', 'calendars', 'abbrev'] },
+  { key: 'doc', label: 'ҚҰЖАТТАР МЕН ҚҰРАЛДАР', labelRu: 'ДОКУМЕНТЫ И УТИЛИТЫ', title: 'Генераторлар мен утилиталар', titleRu: 'Генераторы и утилиты', tools: ['doctemplates', 'resume', 'invoice', 'septik', 'qr', 'pdf', 'passgen'] },
 ]

@@ -1,7 +1,7 @@
 // === BANK DATA (2026 March) ===
 
 export type DepositType = 'save' | 'flex'
-export type CreditType = 'consumer' | 'mortgage' | 'auto'
+export type CreditType = 'consumer' | 'mortgage' | 'auto' | 'business' | 'installment'
 
 export interface DepositProduct {
   /** Product name */
@@ -33,6 +33,8 @@ export interface CreditProduct {
   maxAmount: number
   /** Max term in months */
   maxTerm: number
+  /** Feature chips */
+  features?: string[]
 }
 
 export interface Bank {
@@ -55,7 +57,8 @@ export const BANKS: Bank[] = [
       { product: 'Turbo 12м', rate: 14.8, gaer: 15.9, terms: [12], type: 'flex', min: 1000, capitalization: 'ежедневная', topUp: true },
     ],
     credits: [
-      { product: 'Без залога', type: 'consumer', rate: 21.9, maxAmount: 7_000_000, maxTerm: 60 },
+      { product: 'Без залога', type: 'consumer', rate: 21.9, maxAmount: 7_000_000, maxTerm: 60, features: ['Кепілсіз'] },
+      { product: 'EB Бизнес', type: 'business', rate: 21, maxAmount: 30_000_000, maxTerm: 48 },
     ],
   },
   {
@@ -68,8 +71,9 @@ export const BANKS: Bank[] = [
       { product: 'Гибкий', rate: 13.0, gaer: 13.8, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'Наличными', type: 'consumer', rate: 22.5, maxAmount: 10_000_000, maxTerm: 60 },
+      { product: 'Наличными', type: 'consumer', rate: 22.5, maxAmount: 10_000_000, maxTerm: 60, features: ['Кепілсіз'] },
       { product: 'Ипотека', type: 'mortgage', rate: 18, maxAmount: 50_000_000, maxTerm: 240 },
+      { product: 'Forte Бизнес', type: 'business', rate: 20, maxAmount: 50_000_000, maxTerm: 60 },
     ],
   },
   {
@@ -82,8 +86,9 @@ export const BANKS: Bank[] = [
       { product: 'Гибкий', rate: 14.1, gaer: 15.0, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'Kaspi Несие', type: 'consumer', rate: 20.9, maxAmount: 7_000_000, maxTerm: 48 },
+      { product: 'Kaspi Несие', type: 'consumer', rate: 20.9, maxAmount: 7_000_000, maxTerm: 48, features: ['Онлайн мақұлдау', 'Кепілсіз'] },
       { product: 'Kaspi Авто', type: 'auto', rate: 15, maxAmount: 20_000_000, maxTerm: 84 },
+      { product: 'Kaspi Red', type: 'installment', rate: 0, maxAmount: 3_000_000, maxTerm: 24, features: ['0% рассрочка', 'Онлайн мақұлдау', 'Жарна жоқ'] },
     ],
   },
   {
@@ -96,8 +101,10 @@ export const BANKS: Bank[] = [
       { product: 'Универсальный', rate: 13.7, gaer: 14.8, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'Потреб онлайн', type: 'consumer', rate: 19.5, maxAmount: 15_000_000, maxTerm: 60 },
+      { product: 'Потреб онлайн', type: 'consumer', rate: 19.5, maxAmount: 15_000_000, maxTerm: 60, features: ['Онлайн мақұлдау', 'Кепілсіз'] },
       { product: 'Ипотека', type: 'mortgage', rate: 16, maxAmount: 80_000_000, maxTerm: 240 },
+      { product: 'Halyk Авто', type: 'auto', rate: 16.5, maxAmount: 30_000_000, maxTerm: 84 },
+      { product: 'Halyk Бизнес', type: 'business', rate: 19, maxAmount: 100_000_000, maxTerm: 60 },
     ],
   },
   {
@@ -111,8 +118,9 @@ export const BANKS: Bank[] = [
       { product: 'Гибкий', rate: 13.2, gaer: 14.0, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'БЦК Online', type: 'consumer', rate: 21, maxAmount: 10_000_000, maxTerm: 60 },
+      { product: 'БЦК Online', type: 'consumer', rate: 21, maxAmount: 10_000_000, maxTerm: 60, features: ['Кепілсіз'] },
       { product: 'Ипотека', type: 'mortgage', rate: 17, maxAmount: 60_000_000, maxTerm: 240 },
+      { product: 'БЦК Авто', type: 'auto', rate: 17, maxAmount: 25_000_000, maxTerm: 84 },
     ],
   },
   {
@@ -126,7 +134,8 @@ export const BANKS: Bank[] = [
       { product: 'Гибкий 12м', rate: 14.8, gaer: 15.9, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежедневная', topUp: true },
     ],
     credits: [
-      { product: 'Без залога', type: 'consumer', rate: 19, maxAmount: 8_000_000, maxTerm: 60 },
+      { product: 'Без залога', type: 'consumer', rate: 19, maxAmount: 8_000_000, maxTerm: 60, features: ['Кепілсіз'] },
+      { product: 'Bereke Авто', type: 'auto', rate: 16, maxAmount: 20_000_000, maxTerm: 60 },
     ],
   },
   {
@@ -139,7 +148,8 @@ export const BANKS: Bank[] = [
       { product: 'Гибкий', rate: 14.5, gaer: 15.9, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежедневная', topUp: true },
     ],
     credits: [
-      { product: 'Наличными', type: 'consumer', rate: 23.9, maxAmount: 5_000_000, maxTerm: 60 },
+      { product: 'Наличными', type: 'consumer', rate: 23.9, maxAmount: 5_000_000, maxTerm: 60, features: ['Кепілсіз'] },
+      { product: 'Рассрочка HC', type: 'installment', rate: 0, maxAmount: 1_500_000, maxTerm: 12, features: ['0% рассрочка', 'Жарна жоқ'] },
     ],
   },
   {
@@ -152,7 +162,7 @@ export const BANKS: Bank[] = [
       { product: 'Гибкий', rate: 13.5, gaer: 14.0, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'RBK Online', type: 'consumer', rate: 22, maxAmount: 7_000_000, maxTerm: 48 },
+      { product: 'RBK Online', type: 'consumer', rate: 22, maxAmount: 7_000_000, maxTerm: 48, features: ['Кепілсіз'] },
     ],
   },
   {
@@ -165,7 +175,8 @@ export const BANKS: Bank[] = [
       { product: 'Копилка', rate: 15.5, gaer: 16.7, terms: [12], type: 'flex', min: 500, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'Freedom Online', type: 'consumer', rate: 24, maxAmount: 5_000_000, maxTerm: 48 },
+      { product: 'Freedom Online', type: 'consumer', rate: 24, maxAmount: 5_000_000, maxTerm: 48, features: ['Кепілсіз'] },
+      { product: 'Freedom Несие', type: 'consumer', rate: 21.5, maxAmount: 8_000_000, maxTerm: 60 },
     ],
   },
   {
@@ -177,7 +188,7 @@ export const BANKS: Bank[] = [
       { product: 'Резерв', rate: 14.8, gaer: 16.0, terms: [12], type: 'save', min: 10_000, capitalization: 'ежемесячная', topUp: false },
     ],
     credits: [
-      { product: 'Потреб', type: 'consumer', rate: 20.5, maxAmount: 10_000_000, maxTerm: 60 },
+      { product: 'Потреб', type: 'consumer', rate: 20.5, maxAmount: 10_000_000, maxTerm: 60, features: ['Кепілсіз'] },
     ],
   },
   {
@@ -189,7 +200,7 @@ export const BANKS: Bank[] = [
       { product: 'KZI Депозит', rate: 15.5, gaer: 16.9, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'KZI Несие', type: 'consumer', rate: 23, maxAmount: 3_000_000, maxTerm: 36 },
+      { product: 'KZI Несие', type: 'consumer', rate: 23, maxAmount: 3_000_000, maxTerm: 36, features: ['Кепілсіз'] },
     ],
   },
   {
@@ -201,7 +212,7 @@ export const BANKS: Bank[] = [
       { product: 'Депозит', rate: 14.5, gaer: 15.9, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'Потреб', type: 'consumer', rate: 22, maxAmount: 5_000_000, maxTerm: 48 },
+      { product: 'Потреб', type: 'consumer', rate: 22, maxAmount: 5_000_000, maxTerm: 48, features: ['Кепілсіз'] },
     ],
   },
   {
@@ -225,7 +236,8 @@ export const BANKS: Bank[] = [
       { product: 'Jusan', rate: 13.0, gaer: 13.8, terms: [12], type: 'flex', min: 1_000, capitalization: 'ежемесячная', topUp: true },
     ],
     credits: [
-      { product: 'Jusan Онлайн', type: 'consumer', rate: 21.5, maxAmount: 7_000_000, maxTerm: 60 },
+      { product: 'Jusan Онлайн', type: 'consumer', rate: 21.5, maxAmount: 7_000_000, maxTerm: 60, features: ['Кепілсіз'] },
+      { product: 'Jusan Бизнес', type: 'business', rate: 20.5, maxAmount: 40_000_000, maxTerm: 48 },
     ],
   },
 ]
