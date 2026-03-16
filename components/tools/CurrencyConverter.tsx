@@ -40,20 +40,26 @@ export function CurrencyConverter() {
     fetch('/data.json')
       .then(r => r.json())
       .then(data => {
-        if (data.rates) {
+        // NB rates: data.NB_RATES or data.rates
+        const nbr = data.NB_RATES || data.rates
+        if (nbr) {
           setRates({
-            usd: data.rates.usd ?? NB_RATES.usd,
-            eur: data.rates.eur ?? NB_RATES.eur,
-            rub: data.rates.rub ?? NB_RATES.rub,
-            cny: data.rates.cny ?? NB_RATES.cny,
+            usd: nbr.usd ?? NB_RATES.usd,
+            eur: nbr.eur ?? NB_RATES.eur,
+            rub: nbr.rub ?? NB_RATES.rub,
+            cny: nbr.cny ?? NB_RATES.cny,
           })
+          if (nbr.updatedAt) {
+            setUpdated(new Date(nbr.updatedAt).toLocaleDateString('ru-RU'))
+          }
         }
-        if (data.exchangeOffices) {
-          setOffices(data.exchangeOffices)
+        // Exchange offices: data.EXCHANGE_OFFICES.data or data.exchangeOffices
+        const eo = data.EXCHANGE_OFFICES?.data || data.exchangeOffices
+        if (eo) {
+          setOffices(eo)
         }
-        if (data.updatedAt) {
-          const d = new Date(data.updatedAt)
-          setUpdated(d.toLocaleDateString('ru-RU'))
+        if (data.meta?.updatedAt) {
+          setUpdated(new Date(data.meta.updatedAt).toLocaleDateString('ru-RU'))
         }
       })
       .catch(() => {})
