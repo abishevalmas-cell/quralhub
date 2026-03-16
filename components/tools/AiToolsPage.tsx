@@ -197,22 +197,32 @@ export function AiToolsPage() {
       <h2 className="text-2xl font-extrabold tracking-tight mb-1.5">🧠 {L('Тіл құралдары', 'Языковые инструменты')}</h2>
       <p className="text-sm text-muted-foreground mb-4">{L('Аударма, латын жазу, емле тексеру — бәрі бір жерде', 'Перевод, латиница, проверка орфографии — всё в одном')}</p>
 
-      {/* Word of the Day */}
-      <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-50 to-orange-50 dark:from-amber-950/30 dark:to-orange-950/20 border border-amber-200/40 dark:border-amber-800/30 mb-5">
-        <div className="flex items-center gap-2 mb-2">
-          <span className="text-lg">📖</span>
-          <span className="text-xs font-bold uppercase tracking-widest text-amber-700 dark:text-amber-300">{L('Күннің сөзі', 'Слово дня')}</span>
-        </div>
-        <div className="flex items-baseline gap-3 mb-1.5">
-          <span className="text-xl font-extrabold text-foreground">{wordOfDay.kk}</span>
-          <span className="text-sm text-muted-foreground">— {lang === 'ru' ? wordOfDay.ru : wordOfDay.en}</span>
-        </div>
-        <p className="text-xs text-muted-foreground italic mb-1">«{wordOfDay.example}»</p>
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-[10px] px-2 py-0.5 rounded-full bg-amber-200/50 dark:bg-amber-800/30 text-amber-800 dark:text-amber-200 font-medium">{wordOfDay.type}</span>
-          {wordOfDay.origin && (
-            <span className="text-[10px] text-muted-foreground">{wordOfDay.origin}</span>
-          )}
+      {/* Word of the Day — frosted glass */}
+      <div className="relative overflow-hidden rounded-2xl border border-white/20 dark:border-white/10 bg-white/40 dark:bg-white/5 backdrop-blur-xl shadow-[0_4px_24px_rgba(0,0,0,0.06)] dark:shadow-[0_4px_24px_rgba(0,0,0,0.3)] mb-5">
+        <div className="absolute inset-0 bg-gradient-to-br from-amber-100/30 via-orange-50/20 to-transparent dark:from-amber-900/20 dark:via-orange-900/10 pointer-events-none" />
+        <div className="relative p-5">
+          <div className="flex items-center justify-between mb-4">
+            <span className="text-[10px] font-bold uppercase tracking-[0.2em] text-amber-600 dark:text-amber-400">📖 {L('Күннің сөзі', 'Слово дня')}</span>
+            <a
+              href={`https://sozdik.kz/ru/dictionary/translate/kk/ru/${encodeURIComponent(wordOfDay.kk)}/`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[10px] text-blue-500 hover:underline"
+            >
+              sozdik.kz →
+            </a>
+          </div>
+          <div className="text-center mb-4">
+            <div className="text-3xl sm:text-4xl font-extrabold text-foreground tracking-tight mb-1">{wordOfDay.kk}</div>
+            <div className="text-sm text-muted-foreground">{lang === 'ru' ? wordOfDay.ru : wordOfDay.en}</div>
+          </div>
+          <p className="text-xs text-center text-muted-foreground italic mb-3">«{wordOfDay.example}»</p>
+          <div className="flex items-center justify-center gap-2 flex-wrap">
+            <span className="text-[10px] px-2.5 py-0.5 rounded-full border border-amber-300/40 dark:border-amber-700/40 bg-amber-100/50 dark:bg-amber-900/30 text-amber-700 dark:text-amber-300 font-medium">{wordOfDay.type}</span>
+            {wordOfDay.origin && (
+              <span className="text-[10px] text-muted-foreground">{wordOfDay.origin}</span>
+            )}
+          </div>
         </div>
       </div>
 

@@ -10,6 +10,7 @@ interface ShareBarProps {
 
 export function ShareBar({ tool, text }: ShareBarProps) {
   const [url, setUrl] = useState('')
+  const [copied, setCopied] = useState(false)
   const { lang } = useApp()
   const shareText = text || `Quralhub — ${tool}`
 
@@ -17,14 +18,21 @@ export function ShareBar({ tool, text }: ShareBarProps) {
     setUrl(window.location.href)
   }, [])
 
+  const handleCopy = () => {
+    navigator.clipboard?.writeText(url)
+    trackEvent('share', 'social', 'copy')
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
   return (
-    <div className="flex gap-2 mt-5">
+    <div className="grid grid-cols-3 gap-2 mt-5">
       <a
         href={`https://wa.me/?text=${encodeURIComponent(shareText + ' ' + url)}`}
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackEvent('share', 'social', 'whatsapp')}
-        className="h-8 px-3 rounded-full text-[10px] font-semibold tracking-wide text-muted-foreground flex items-center justify-center gap-1 cursor-pointer transition-colors border border-border/60 bg-card/50 hover:border-[#25D366]/50 hover:text-[#25D366]"
+        className="h-10 rounded-xl text-[11px] font-semibold tracking-wide flex items-center justify-center gap-1.5 cursor-pointer transition-colors border border-[#25D366]/20 bg-[#25D366]/10 text-[#25D366] hover:bg-[#25D366]/20"
       >
         WhatsApp
       </a>
@@ -33,15 +41,15 @@ export function ShareBar({ tool, text }: ShareBarProps) {
         target="_blank"
         rel="noopener noreferrer"
         onClick={() => trackEvent('share', 'social', 'telegram')}
-        className="h-8 px-3 rounded-full text-[10px] font-semibold tracking-wide text-muted-foreground flex items-center justify-center gap-1 cursor-pointer transition-colors border border-border/60 bg-card/50 hover:border-[#229ED9]/50 hover:text-[#229ED9]"
+        className="h-10 rounded-xl text-[11px] font-semibold tracking-wide flex items-center justify-center gap-1.5 cursor-pointer transition-colors border border-[#229ED9]/20 bg-[#229ED9]/10 text-[#229ED9] hover:bg-[#229ED9]/20"
       >
         Telegram
       </a>
       <button
-        onClick={() => { navigator.clipboard?.writeText(url); trackEvent('share', 'social', 'copy') }}
-        className="h-8 px-3 rounded-full text-[10px] font-semibold tracking-wide text-muted-foreground flex items-center justify-center gap-1 cursor-pointer transition-colors border border-border/60 bg-card/50 hover:border-primary/50 hover:text-primary"
+        onClick={handleCopy}
+        className="h-10 rounded-xl text-[11px] font-semibold tracking-wide flex items-center justify-center gap-1.5 cursor-pointer transition-colors border border-border/40 bg-muted/30 text-muted-foreground hover:border-primary/40 hover:text-primary"
       >
-        {lang === 'ru' ? 'Скопировать' : 'Көшіру'}
+        {copied ? '✓' : ''} {lang === 'ru' ? 'Скопировать' : 'Көшіру'}
       </button>
     </div>
   )
