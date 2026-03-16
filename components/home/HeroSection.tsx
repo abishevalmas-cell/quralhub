@@ -98,14 +98,18 @@ export function HeroSection() {
         ))}
       </motion.div>
 
-      {/* Infinite marquee */}
+      {/* Infinite marquee — touch pauses animation */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.6, delay: 0.4 }}
         className="relative w-full marquee-container"
       >
-        <div className="marquee-track flex gap-4 w-max py-3">
+        <div
+          className="marquee-track flex gap-4 w-max py-3"
+          onTouchStart={e => (e.currentTarget.style.animationPlayState = 'paused')}
+          onTouchEnd={e => (e.currentTarget.style.animationPlayState = 'running')}
+        >
           {MARQUEE_ITEMS.map((action, i) => (
             <Link
               key={`${action.href}-${i}`}
