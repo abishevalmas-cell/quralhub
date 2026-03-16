@@ -1,0 +1,59 @@
+name: Annual Data Update Reminder (January)
+
+on:
+  schedule:
+    - cron: '0 8 2 1 *'  # January 2nd at 08:00 UTC
+  workflow_dispatch:
+
+permissions:
+  issues: write
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create annual update issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const year = new Date().getFullYear();
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `🔴 КРИТИЧНО: Обновление данных на ${year} год`,
+              body: `## Ежегодное обновление Quralhub на ${year} год
+
+            ### КРИТИЧНЫЕ обновления (до 10 января):
+            - [ ] **МРП** — новое значение на ${year} год (lib/constants.ts → MRP)
+            - [ ] **МЗП** — минимальная зарплата (lib/constants.ts → MZP)
+            - [ ] **ИПН ставки** — проверить прогрессивную шкалу
+            - [ ] **ОПВ, ВОСМС, СО, ООСМС, ОПВР** — ставки отчислений
+            - [ ] **НДС** — ставка (lib/calculations/vat.ts)
+            - [ ] **Вычет ИПН** — сумма в МРП (lib/calculations/salary.ts)
+            - [ ] **Утилизационный сбор** — авто (lib/calculations/customs.ts)
+            - [ ] **Тарифы на номера** — АЕК (lib/data/plates.ts)
+
+            ### Важные обновления (до 1 февраля):
+            - [ ] **Коммунальные тарифы** — все 20 городов (lib/calculations/communal.ts)
+            - [ ] **Транспортный налог** — коэффициенты (lib/calculations/transport.ts)
+            - [ ] **Штрафы ПДД** — если изменения в КоАП (lib/data/fines.ts)
+            - [ ] **Календарь праздников** — на новый год (lib/data/calendars.ts)
+            - [ ] **Банки** — новогодние акции, ставки (lib/data/banks.ts)
+            - [ ] **Ипотека** — условия программ (lib/data/mortgage.ts)
+
+            ### Проверить:
+            - [ ] **HeroSection** — обновить год в stat cards ("${year}")
+            - [ ] **SEO metadata** — обновить год в заголовках
+            - [ ] **FAQ** — актуальность ответов
+            - [ ] **Guides** — статьи актуальны
+
+            ### Источники:
+            - МРП/МЗП: egov.kz, adilet.zan.kz
+            - Налоговый кодекс: online.zakon.kz
+            - Коммунальные: сайты энергосбытов каждого города
+            - Банки: halykbank.kz, kaspi.kz, bcc.kz, forte.kz
+
+            ---
+            🤖 Автоматически создано Quralhub Bot`,
+              labels: ['data-update', 'annual', 'critical']
+            });

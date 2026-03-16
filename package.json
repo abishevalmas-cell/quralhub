@@ -8,6 +8,9 @@
     "start": "next start",
     "lint": "eslint",
     "update-rates": "node scripts/update-rates.js",
+    "update-banks": "node scripts/update-banks.js",
+    "update-telecom": "node scripts/update-telecom.js",
+    "update-mrp": "node scripts/update-mrp.js",
     "validate-data": "node scripts/validate-data.js"
   },
   "dependencies": {

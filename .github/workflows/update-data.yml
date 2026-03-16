@@ -1,25 +1,23 @@
-name: Update Data
+name: Update Exchange Rates (every 2 hours)
 
 on:
   schedule:
-    - cron: '0 6 * * *'  # Every day at 6:00 UTC (12:00 Astana)
-  workflow_dispatch: # Manual trigger
+    - cron: '0 */2 * * *'  # Every 2 hours
+  workflow_dispatch:
 
 permissions:
   contents: write
 
 jobs:
-  update:
+  update-rates:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: '20'
 
-      - name: Update exchange rates
+      - name: Update exchange rates & offices
         run: node scripts/update-rates.js
 
       - name: Validate data
@@ -30,5 +28,5 @@ jobs:
           git config user.name "Quralhub Bot"
           git config user.email "bot@quralhub.kz"
           git add public/data.json
-          git diff --cached --quiet || git commit -m "chore: update exchange rates $(date +%Y-%m-%d)"
+          git diff --cached --quiet || git commit -m "chore: update rates $(date +%Y-%m-%d_%H:%M)"
           git push
