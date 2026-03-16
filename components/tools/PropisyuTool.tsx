@@ -8,6 +8,7 @@ import { TipBox } from '@/components/shared/TipBox'
 import { useApp } from '@/components/layout/Providers'
 import { Input } from '@/components/ui/input'
 import { numToKazakh } from '@/lib/kazakh/numToKazakh'
+import { numToRussian } from '@/lib/kazakh/numToRussian'
 import { F } from '@/lib/constants'
 
 const MONTHS_KZ = ['қаңтар', 'ақпан', 'наурыз', 'сәуір', 'мамыр', 'маусым', 'шілде', 'тамыз', 'қыркүйек', 'қазан', 'қараша', 'желтоқсан']
@@ -25,9 +26,13 @@ export function PropisyuTool() {
   const [dateStr, setDateStr] = useState('2026-03-15')
   const [copied, setCopied] = useState('')
 
-  const CURRENCY_SUFFIX: Record<string, string> = { tenge: 'теңге', dollar: 'доллар', euro: 'еуро', none: '' }
-  const amountWords = amount > 0 ? numToKazakh(amount) : ''
-  const suffix = CURRENCY_SUFFIX[currency] || ''
+  const isRu = lang === 'ru'
+  const numToWords = isRu ? numToRussian : numToKazakh
+
+  const CURRENCY_SUFFIX_KZ: Record<string, string> = { tenge: 'теңге', dollar: 'доллар', euro: 'еуро', none: '' }
+  const CURRENCY_SUFFIX_RU: Record<string, string> = { tenge: 'тенге', dollar: 'долларов', euro: 'евро', none: '' }
+  const suffix = (isRu ? CURRENCY_SUFFIX_RU : CURRENCY_SUFFIX_KZ)[currency] || ''
+  const amountWords = amount > 0 ? numToWords(amount) : ''
   const amountDisplay = amountWords ? `${amountWords}${suffix ? ' ' + suffix : ''}` : ''
 
   const dateParts = dateStr ? dateStr.split('-').map(Number) : []
@@ -35,7 +40,7 @@ export function PropisyuTool() {
   const month = (dateParts[1] || 1) - 1
   const day = dateParts[2] || 1
   const dateKz = dateStr ? `${year} жылғы ${day} (${numToKazakh(day)}) ${MONTHS_KZ[month]}` : ''
-  const dateRu = dateStr ? `${day} ${MONTHS_RU[month]} ${year} года` : ''
+  const dateRu = dateStr ? `${day} (${numToRussian(day)}) ${MONTHS_RU[month]} ${year} года` : ''
 
   const copyText = (text: string, id: string) => {
     navigator.clipboard?.writeText(text)
