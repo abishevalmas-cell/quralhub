@@ -1,4 +1,5 @@
 import { MrpCalc } from '@/components/calculators/MrpCalc'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import type { Metadata } from 'next'
 
@@ -19,6 +20,9 @@ export default function MrpPage() {
       <ToolJsonLd name="МРП ↔ Тенге конвертер" description="МРП 2026 = 4 325₸. МРП-ны тенгеге және тенгені МРП-ға конверттеу." url="/mrp" />
       <FAQJsonLd questions={faqData} />
       <MrpCalc />
+      <div className="max-w-[680px] mx-auto px-5">
+        <RelatedTools toolIds={['salary', 'fines', 'transport']} />
+      </div>
     </>
   )
 }

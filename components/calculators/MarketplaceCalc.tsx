@@ -57,6 +57,11 @@ export function MarketplaceCalc() {
         {L('Маркетплейсте сатудан таза пайда мен маржаны есептеңіз', 'Рассчитайте чистую прибыль и маржу от продаж на маркетплейсе')}
       </p>
 
+      {/* Context block */}
+      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-5 text-sm leading-relaxed text-muted-foreground">
+        <p>{L('Kaspi Магазин — Қазақстандағы ең ірі маркетплейс. Комиссия 5-15% (категорияға байланысты). WB және Ozon — халықаралық маркетплейстер, логистика қымбатырақ. Маржа 30%-дан жоғары болса ғана сату тиімді.', 'Kaspi Магазин — крупнейший маркетплейс Казахстана. Комиссия 5-15% (зависит от категории). WB и Ozon — международные, логистика дороже. Продавать выгодно при марже от 30%.')}</p>
+      </div>
+
       {/* Platform selector chips */}
       <div className="flex flex-wrap gap-2 mb-4">
         {PLATFORMS.map(p => (

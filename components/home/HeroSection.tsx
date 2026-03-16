@@ -49,13 +49,13 @@ export function HeroSection() {
       >
         {lang === 'ru' ? (
           <>
-            Инструменты для{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600">казахстанцев</span>
+            Деньги, документы, язык —{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600">всё в одном месте</span>
           </>
         ) : (
           <>
-            Қазақстандықтар үшін{' '}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600">құралдар</span>
+            Ақша, құжат, тіл —{' '}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600">бәрі бір жерде</span>
           </>
         )}
       </motion.h1>
@@ -67,8 +67,8 @@ export function HeroSection() {
         className="text-base text-muted-foreground max-w-[460px] mx-auto mb-8 leading-relaxed"
       >
         {lang === 'ru'
-          ? 'Калькуляторы, сравнение тарифов, AI переводчик — всё бесплатно'
-          : 'Калькуляторлар, тариф салыстыру, AI аудармашы — бәрі тегін, қазақша'}
+          ? 'Рассчитать зарплату, сравнить тарифы, создать документ — за 3 секунды, бесплатно'
+          : 'Жалақы есептеу, тариф салыстыру, құжат жасау — 3 секундта, тегін, қазақша'}
       </motion.p>
 
       {/* Stat cards */}
@@ -79,7 +79,7 @@ export function HeroSection() {
         className="flex justify-center gap-3 sm:gap-4 mb-8"
       >
         {[
-          { n: '31+', l: lang === 'ru' ? 'Инструменты' : 'Құралдар' },
+          { n: '33+', l: lang === 'ru' ? 'Инструменты' : 'Құралдар' },
           { n: '2026', l: lang === 'ru' ? 'Новый НК' : 'Жаңа НК' },
           { n: '0₸', l: lang === 'ru' ? 'Бесплатно' : 'Тегін' },
         ].map((stat) => (

@@ -37,6 +37,11 @@ export function SalaryCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Жаңа Салық кодексі 2026 (Заң №214-VIII) бойынша есеп', 'Расчёт по новому Налоговому кодексу 2026')}</p>
 
+      {/* Context block */}
+      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-5 text-sm leading-relaxed text-muted-foreground">
+        <p>{L('2026 жылдан бастап жаңа Салық кодексі күшіне енді. Ең маңызды өзгерістер: ИПН вычеті 14 МРП-дан 30 МРП-ға дейін өсті (129 750₸), ОПВР 1.5%-дан 3.5%-ға дейін артты, ИПН прогрессивті шкалаға көшті (10%/15%). Бұл калькулятор барлық жаңа ставкаларды есепке алады.', 'С 2026 года вступил в силу новый Налоговый кодекс. Главные изменения: вычет ИПН вырос с 14 МРП до 30 МРП (129 750₸), ОПВР увеличился с 1.5% до 3.5%, ИПН перешёл на прогрессивную шкалу (10%/15%). Этот калькулятор учитывает все новые ставки.')}</p>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Режим', 'Режим')}</label>

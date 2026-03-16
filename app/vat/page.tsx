@@ -1,4 +1,5 @@
 import { VatCalc } from '@/components/calculators/VatCalc'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import type { Metadata } from 'next'
 
@@ -19,6 +20,9 @@ export default function VatPage() {
       <ToolJsonLd name="НДС 16% калькулятор" description="Жаңа Салық кодексі 2026: НДС 12% → 16%. НДС қосу және бөліп алу есебі." url="/vat" />
       <FAQJsonLd questions={faqData} />
       <VatCalc />
+      <div className="max-w-[680px] mx-auto px-5">
+        <RelatedTools toolIds={['tax', 'invoice', 'mrp']} />
+      </div>
     </>
   )
 }

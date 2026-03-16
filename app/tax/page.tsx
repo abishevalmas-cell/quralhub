@@ -1,4 +1,5 @@
 import { TaxCalc } from '@/components/calculators/TaxCalc'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import { FAQ } from '@/components/seo/FAQ'
 import type { Metadata } from 'next'
@@ -23,6 +24,7 @@ export default function TaxPage() {
       <TaxCalc />
       <div className="max-w-[680px] mx-auto px-5">
         <FAQ items={faqData} />
+        <RelatedTools toolIds={['salary', 'selfemployed', 'vat', 'marketplace']} />
       </div>
     </>
   )

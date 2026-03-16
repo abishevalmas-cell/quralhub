@@ -1,4 +1,5 @@
 import { PlatesPage } from '@/components/tools/PlatesPage'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import { FAQ } from '@/components/seo/FAQ'
 import type { Metadata } from 'next'
@@ -23,6 +24,7 @@ export default function PlatesPageRoute() {
       <PlatesPage />
       <div className="max-w-[680px] mx-auto px-5">
         <FAQ items={faqData} />
+        <RelatedTools toolIds={['transport', 'fines', 'customs']} />
       </div>
     </>
   )

@@ -1,4 +1,5 @@
 import { SalaryCalc } from '@/components/calculators/SalaryCalc'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import type { Metadata } from 'next'
 
@@ -20,6 +21,9 @@ export default function SalaryPage() {
       <ToolJsonLd name="Жалақы калькуляторы" description="Жаңа Салық кодексі 2026 бойынша жалақы есебі. ОПВ, ИПН 10-15%, ВОСМС, ОПВР 3.5% ұсталымдары." url="/salary" />
       <FAQJsonLd questions={faqData} />
       <SalaryCalc />
+      <div className="max-w-[680px] mx-auto px-5">
+        <RelatedTools toolIds={['tax', 'selfemployed', 'vacation', 'maternity', 'mrp']} />
+      </div>
     </>
   )
 }

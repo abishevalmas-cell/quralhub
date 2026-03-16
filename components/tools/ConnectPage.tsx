@@ -56,6 +56,11 @@ export function ConnectPage() {
       <BackButton />
       <h2 className="text-2xl font-extrabold tracking-tight mb-4">{L('Байланыс тарифтерін салыстыру', 'Сравнение тарифов связи')}</h2>
 
+      {/* Context block */}
+      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-5 text-sm leading-relaxed text-muted-foreground">
+        <p>{L('2026 жылы НДС 16%-ға өскендіктен барлық тарифтер 15-20% қымбаттады. Ең арзан безлімит — Altel Арнау (8 690₸). Ең арзан интернет пакет — IZI Ultra (2 690₸/30ГБ). Нөмірді сақтап оператор ауыстыру (MNP) — барлық операторларда жұмыс істейді.', 'В 2026 году из-за повышения НДС до 16% все тарифы подорожали на 15-20%. Самый дешёвый безлимит — Altel Арнау (8 690₸). Самый дешёвый пакет — IZI Ultra (2 690₸/30ГБ). Перенос номера (MNP) работает у всех операторов.')}</p>
+      </div>
+
       {/* Main tabs — full width, large, centered */}
       <div className="grid grid-cols-2 gap-2 mb-5">
         <button

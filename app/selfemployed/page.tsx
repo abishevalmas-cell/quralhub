@@ -1,4 +1,5 @@
 import { SelfemployedCalc } from '@/components/calculators/SelfemployedCalc'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import { FAQ } from '@/components/seo/FAQ'
 import type { Metadata } from 'next'
@@ -23,6 +24,7 @@ export default function SelfemployedPage() {
       <SelfemployedCalc />
       <div className="max-w-[680px] mx-auto px-5">
         <FAQ items={faqData} />
+        <RelatedTools toolIds={['tax', 'salary', 'invoice']} />
       </div>
     </>
   )

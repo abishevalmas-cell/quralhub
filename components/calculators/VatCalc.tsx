@@ -33,6 +33,11 @@ export function VatCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Жаңа Салық кодексі 2026: НДС 12% → 16%. Пониженные: медицина 5%, баспа 10%', 'Новый Налоговый кодекс 2026: НДС 12% → 16%. Пониженные: медицина 5%, печать 10%')}</p>
 
+      {/* Context block */}
+      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-5 text-sm leading-relaxed text-muted-foreground">
+        <p>{L('2026 жылдан бастап ҚҚС ставкасы 12%-дан 16%-ға дейін өсті. Медицина — 5%, баспа — 10%. Упрощёнка бойынша ЖК/ТОО жылдық табысы 43.25 млн ₸-ге дейін ҚҚС-тен босатылған.', 'С 2026 года ставка НДС выросла с 12% до 16%. Медицина — 5%, пресса — 10%. ИП/ТОО на упрощёнке освобождены от НДС при годовом доходе до 43.25 млн ₸.')}</p>
+      </div>
+
       <div className="mb-3">
         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Сома (₸)', 'Сумма (₸)')}</label>
         <Input

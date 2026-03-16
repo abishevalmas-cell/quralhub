@@ -32,6 +32,11 @@ export function TransportCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Жеңіл авто көлікке жылдық салық есебі', 'Расчёт годового налога на легковой автомобиль')}</p>
 
+      {/* Context block */}
+      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-5 text-sm leading-relaxed text-muted-foreground">
+        <p>{L('2026 жылдан бастап ескі автокөліктер салығы азайды: 10-20 жыл — ×0.7 (30% жеңілдік), 20+ жыл — ×0.5 (50% жеңілдік). Электромобильдер 2026 жылға дейін салықтан босатылған. Төлем мерзімі — жыл сайын 1 сәуірге дейін.', 'С 2026 года налог на старые авто снижен: 10-20 лет — ×0.7 (скидка 30%), 20+ лет — ×0.5 (скидка 50%). Электромобили освобождены от налога до 2026 года. Срок оплаты — ежегодно до 1 апреля.')}</p>
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Двигатель көлемі (см³)', 'Объём двигателя (см³)')}</label>

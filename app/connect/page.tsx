@@ -1,4 +1,5 @@
 import { ConnectPage } from '@/components/tools/ConnectPage'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import { FAQ } from '@/components/seo/FAQ'
 import type { Metadata } from 'next'
@@ -23,6 +24,7 @@ export default function ConnectPageRoute() {
       <ConnectPage />
       <div className="max-w-[680px] mx-auto px-5">
         <FAQ items={faqData} />
+        <RelatedTools toolIds={['communal', 'currency']} />
       </div>
     </>
   )

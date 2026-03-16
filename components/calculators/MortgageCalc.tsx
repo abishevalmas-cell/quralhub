@@ -28,6 +28,11 @@ export function MortgageCalc() {
       <h2 className="text-2xl font-extrabold tracking-tight mb-1.5">🏠 {L('Ипотека калькуляторы', 'Ипотечный калькулятор')}</h2>
       <p className="text-sm text-muted-foreground mb-5">{L('Отбасы банк, 7-20-25, коммерциялық ипотека — ай сайынғы төлемді есептеңіз', 'Отбасы банк, 7-20-25, коммерческая ипотека — рассчитайте ежемесячный платёж')}</p>
 
+      {/* Context block */}
+      <div className="p-4 rounded-xl bg-muted/50 border border-border/50 mb-5 text-sm leading-relaxed text-muted-foreground">
+        <p>{L('Қазақстанда 3 негізгі ипотека бағдарламасы бар: Отбасы банк (5%), 7-20-25 бағдарламасы (7%, 25% жарна, 20 жыл) және коммерциялық банктер (16-21%). Отбасы банк — ең тиімді, бірақ кезекте тұру қажет.', 'В Казахстане 3 основные ипотечные программы: Отбасы банк (5%), программа 7-20-25 (7%, 25% взнос, 20 лет) и коммерческие банки (16-21%). Отбасы банк — самый выгодный, но нужно стоять в очереди.')}</p>
+      </div>
+
       <div className="mb-3">
         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Тұрғын үй бағасы (₸)', 'Стоимость жилья (₸)')}</label>
         <Input className="text-base" type="text" inputMode="numeric" value={price || ''} onChange={e => setPrice(parseInt(e.target.value.replace(/\s/g, '')) || 0)} />

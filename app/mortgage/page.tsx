@@ -1,4 +1,5 @@
 import { MortgageCalc } from '@/components/calculators/MortgageCalc'
+import { RelatedTools } from '@/components/shared/RelatedTools'
 import { ToolJsonLd, FAQJsonLd } from '@/components/seo/JsonLd'
 import type { Metadata } from 'next'
 
@@ -19,6 +20,9 @@ export default function MortgagePage() {
       <ToolJsonLd name="Ипотека калькуляторы" description="Отбасы банк, 7-20-25, коммерциялық ипотека — ай сайынғы төлемді есептеңіз." url="/mortgage" />
       <FAQJsonLd questions={faqData} />
       <MortgageCalc />
+      <div className="max-w-[680px] mx-auto px-5">
+        <RelatedTools toolIds={['bankdep', 'bankcred', 'communal']} />
+      </div>
     </>
   )
 }
