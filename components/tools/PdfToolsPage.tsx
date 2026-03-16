@@ -15,8 +15,11 @@ import { PageNumbersPdf } from './pdf/PageNumbersPdf'
 import { WatermarkPdf } from './pdf/WatermarkPdf'
 import { ImageToPdf } from './pdf/ImageToPdf'
 import { TextToPdf } from './pdf/TextToPdf'
+import { EditPdf } from './pdf/EditPdf'
+import { RemoveBackgroundTool } from './pdf/RemoveBackgroundTool'
+import { PdfToImage } from './pdf/PdfToImage'
 
-type ToolKey = 'merge' | 'split' | 'compress' | 'rotate' | 'removepages' | 'pagenums' | 'watermark' | 'img2pdf' | 'text2pdf'
+type ToolKey = 'merge' | 'split' | 'compress' | 'rotate' | 'removepages' | 'pagenums' | 'watermark' | 'img2pdf' | 'text2pdf' | 'edit' | 'removebg' | 'pdf2img'
 
 interface PdfTool {
   key: ToolKey
@@ -35,6 +38,9 @@ const TOOLS: PdfTool[] = [
   { key: 'watermark', icon: '💧', title: ['Су белгі', 'Водяной знак'], desc: ['PDF файлға watermark қосу', 'Добавить водяной знак в PDF'] },
   { key: 'img2pdf', icon: '🖼️', title: ['Сурет → PDF', 'Изображение → PDF'], desc: ['Суреттерді PDF файлға біріктіру', 'Объединить изображения в PDF'] },
   { key: 'text2pdf', icon: '📝', title: ['Мәтін → PDF', 'Текст → PDF'], desc: ['Мәтінді PDF файлға айналдыру', 'Конвертировать текст в PDF'] },
+  { key: 'edit', icon: '✏️', title: ['PDF Редактор', 'Редактор PDF'], desc: ['Печать, подпись', 'Печать, подпись, текст'] },
+  { key: 'removebg', icon: '🎨', title: ['Фон алу', 'Удалить фон'], desc: ['Печать/қолтаңба', 'Для печати/подписи'] },
+  { key: 'pdf2img', icon: '🖼️', title: ['PDF → Сурет', 'PDF → Картинка'], desc: ['JPG/PNG', 'JPG/PNG'] },
 ]
 
 const TOOL_COMPONENTS: Record<ToolKey, React.ComponentType> = {
@@ -47,6 +53,9 @@ const TOOL_COMPONENTS: Record<ToolKey, React.ComponentType> = {
   watermark: WatermarkPdf,
   img2pdf: ImageToPdf,
   text2pdf: TextToPdf,
+  edit: EditPdf,
+  removebg: RemoveBackgroundTool,
+  pdf2img: PdfToImage,
 }
 
 export function PdfToolsPage() {
@@ -64,12 +73,12 @@ export function PdfToolsPage() {
       <BackButton />
       <h2 className="text-2xl font-extrabold tracking-tight mb-1.5">{L('📕 PDF құралдар', '📕 PDF инструменты')}</h2>
       <div className="flex flex-wrap gap-1.5 mb-3">
-        <InfoChip>{L('9 құрал', '9 инструментов')}</InfoChip>
+        <InfoChip>{L('12 құрал', '12 инструментов')}</InfoChip>
         <InfoChip>{L('Тегін', 'Бесплатно')}</InfoChip>
         <InfoChip>{L('100% қауіпсіз', '100% безопасно')}</InfoChip>
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">
-        {L('PDF файлдармен жұмыс — біріктіру, бөлу, сығу, бұру, нөмірлеу', 'Работа с PDF — объединение, разделение, сжатие, поворот, нумерация')}
+        {L('PDF файлдармен жұмыс — біріктіру, бөлу, сығу, бұру, нөмірлеу, редакциялау', 'Работа с PDF — объединение, разделение, сжатие, поворот, нумерация, редактирование')}
       </p>
 
       {/* Security badge */}
