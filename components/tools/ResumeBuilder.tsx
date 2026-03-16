@@ -6,6 +6,7 @@ import { ShareBar } from '@/components/shared/ShareBar'
 import { TipBox } from '@/components/shared/TipBox'
 import { InfoChip } from '@/components/shared/InfoChip'
 import { useApp } from '@/components/layout/Providers'
+import { generateResumeDocx } from '@/lib/docx/generateDocx'
 
 type TemplateName = 'classic' | 'modern' | 'minimal'
 
@@ -387,6 +388,23 @@ export function ResumeBuilder() {
               className="flex-1 py-3 px-4 rounded-full text-sm font-semibold bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all"
             >
               {copied ? L('Көшірілді!', 'Скопировано!') : L('Мәтін көшіру', 'Скопировать текст')}
+            </button>
+            <button
+              onClick={() => generateResumeDocx({
+                name: fullName,
+                phone,
+                email,
+                city,
+                birthYear,
+                goal,
+                education,
+                experience,
+                skills,
+                extra,
+              })}
+              className="flex-1 py-3 px-4 rounded-full text-sm font-semibold bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all"
+            >
+              {L('\ud83d\udce5 Word', '\ud83d\udce5 Word')}
             </button>
             <button
               onClick={handlePrint}

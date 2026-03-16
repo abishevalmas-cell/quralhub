@@ -134,6 +134,40 @@ export function BankDepPage() {
       </div>
 
       {amount > 0 && results.length > 0 && (
+        <>
+        {/* GAER comparison chart */}
+        <div className="mb-5 p-4 bg-card border border-border rounded-xl">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+            {L('ГЭСВ бойынша рейтинг', 'Рейтинг по ГЭСВ')}
+          </h3>
+          <div className="space-y-2">
+            {results.slice(0, 8).map((dep, i) => {
+              const maxGaer = Math.max(...results.map(d => d.gaer))
+              const pct = Math.round(dep.gaer / maxGaer * 100)
+              const isBest = i === 0
+              return (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span className="w-[70px] truncate font-semibold">{dep.shortName}</span>
+                  <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full flex items-center justify-end px-2 text-white text-[10px] font-bold ${isBest ? 'bg-yellow-500' : 'bg-sky-500/70'}`}
+                      style={{ width: `${pct}%`, minWidth: '50px' }}
+                    >
+                      {dep.gaer}%
+                    </div>
+                  </div>
+                  <span className="w-[70px] text-right font-bold text-green-600 text-[11px]">
+                    +{F(dep.profit)}₸
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            {L('Сары = ең жоғары ГЭСВ', 'Жёлтый = лучший ГЭСВ')} | {L('Оңда = таза табыс', 'Справа = чистый доход')}
+          </p>
+        </div>
+
         <div className="space-y-3">
           {results.map((item, idx) => (
             <ResultCard key={`${item.bankName}-${item.product}`}>
@@ -200,6 +234,7 @@ export function BankDepPage() {
             </ResultCard>
           ))}
         </div>
+        </>
       )}
 
       {results.length === 0 && (

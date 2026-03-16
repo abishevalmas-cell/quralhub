@@ -90,12 +90,12 @@ export function SeptikTool() {
       <h2 className="text-2xl font-extrabold tracking-tight mb-4">{L('Септік құралы', 'Инструмент склонения')}</h2>
 
       <Tabs defaultValue="word">
-        <TabsList className="mb-4 flex-wrap">
-          <TabsTrigger value="word">{L('Сөз', 'Слово')}</TabsTrigger>
-          <TabsTrigger value="number">{L('Сан', 'Число')}</TabsTrigger>
-          <TabsTrigger value="position">{L('Лауазым', 'Должность')}</TabsTrigger>
-          <TabsTrigger value="month">{L('Ай', 'Месяц')}</TabsTrigger>
-          <TabsTrigger value="day">{L('Апта күні', 'День недели')}</TabsTrigger>
+        <TabsList className="mb-4 grid grid-cols-3 sm:grid-cols-5 gap-1.5 h-auto bg-transparent p-0">
+          <TabsTrigger value="word" className="py-2.5 px-2 rounded-xl text-xs font-semibold text-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-card data-[state=inactive]:border data-[state=inactive]:border-border data-[state=inactive]:text-muted-foreground">{L('Сөз', 'Слово')}</TabsTrigger>
+          <TabsTrigger value="number" className="py-2.5 px-2 rounded-xl text-xs font-semibold text-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-card data-[state=inactive]:border data-[state=inactive]:border-border data-[state=inactive]:text-muted-foreground">{L('Сан', 'Число')}</TabsTrigger>
+          <TabsTrigger value="position" className="py-2.5 px-2 rounded-xl text-xs font-semibold text-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-card data-[state=inactive]:border data-[state=inactive]:border-border data-[state=inactive]:text-muted-foreground">{L('Лауазым', 'Должность')}</TabsTrigger>
+          <TabsTrigger value="month" className="py-2.5 px-2 rounded-xl text-xs font-semibold text-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-card data-[state=inactive]:border data-[state=inactive]:border-border data-[state=inactive]:text-muted-foreground">{L('Ай', 'Месяц')}</TabsTrigger>
+          <TabsTrigger value="day" className="py-2.5 px-2 rounded-xl text-xs font-semibold text-center data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=inactive]:bg-card data-[state=inactive]:border data-[state=inactive]:border-border data-[state=inactive]:text-muted-foreground">{L('Апта күні', 'День недели')}</TabsTrigger>
         </TabsList>
 
         {/* Tab 1: Word */}

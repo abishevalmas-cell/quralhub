@@ -99,6 +99,39 @@ export function ConnectPage() {
             ))}
           </div>
 
+          {/* Visual comparison */}
+          <div className="mb-4 p-4 bg-card border border-border rounded-xl">
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+              {L('Баға/интернет салыстыру', 'Сравнение цена/интернет')}
+            </h3>
+            <div className="space-y-2">
+              {filteredMobile.map((plan, i) => {
+                const maxPrice = Math.max(...filteredMobile.map(p => p.price))
+                const pricePct = Math.round(plan.price / maxPrice * 100)
+                return (
+                  <div key={i} className="flex items-center gap-2 text-xs">
+                    <span className="w-[50px] truncate font-semibold">{plan.operator}</span>
+                    <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden relative">
+                      <div
+                        className="h-full rounded-full flex items-center px-2 text-white text-[10px] font-bold"
+                        style={{
+                          width: `${pricePct}%`,
+                          backgroundColor: OP_COLORS[plan.operator] || '#888',
+                          minWidth: '40px'
+                        }}
+                      >
+                        {F(plan.price)}₸
+                      </div>
+                    </div>
+                    <span className="w-[45px] text-right font-medium text-blue-600">
+                      {plan.gb === -1 ? '∞ ГБ' : `${plan.gb} ГБ`}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+
           <div className="space-y-2">
             {filteredMobile.map((plan, i) => {
               const isCheapest = plan.price === cheapestPrice
@@ -160,6 +193,36 @@ export function ConnectPage() {
                 {f.label}
               </button>
             ))}
+          </div>
+
+          {/* Visual comparison */}
+          <div className="mb-4 p-4 bg-card border border-border rounded-xl">
+            <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+              {L('Жылдамдық/баға салыстыру', 'Сравнение скорость/цена')}
+            </h3>
+            <div className="space-y-2">
+              {filteredIsp.map((plan, i) => {
+                const maxSpeed = Math.max(...filteredIsp.map(p => p.speed))
+                const speedPct = Math.round(plan.speed / maxSpeed * 100)
+                return (
+                  <div key={i}>
+                    <div className="flex items-center justify-between text-xs mb-1">
+                      <span className="font-semibold">{plan.provider} {plan.name}</span>
+                      <span className="font-bold text-primary">{F(plan.price)}₸</span>
+                    </div>
+                    <div className="flex gap-1 h-4">
+                      <div className="flex-1 bg-muted rounded-full overflow-hidden">
+                        <div className="h-full bg-blue-500 rounded-full" style={{ width: `${speedPct}%` }} />
+                      </div>
+                      <span className="text-[10px] w-[60px] text-right">{plan.speed} Мбит/с</span>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+            <div className="flex items-center gap-4 mt-3 text-[10px] text-muted-foreground">
+              <span className="flex items-center gap-1"><span className="w-3 h-2 bg-blue-500 rounded-full inline-block"></span> {L('Жылдамдық', 'Скорость')}</span>
+            </div>
           </div>
 
           <div className="space-y-2">

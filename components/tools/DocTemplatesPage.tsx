@@ -6,6 +6,7 @@ import { ShareBar } from '@/components/shared/ShareBar'
 import { TipBox } from '@/components/shared/TipBox'
 import { InfoChip } from '@/components/shared/InfoChip'
 import { useApp } from '@/components/layout/Providers'
+import { generateDocx } from '@/lib/docx/generateDocx'
 import {
   CT_FIELDS,
   CONTRACT_TYPE_LABELS,
@@ -410,6 +411,16 @@ export function DocTemplatesPage() {
                   {docCopied ? L('Көшірілді!', 'Скопировано!') : L('Көшіру', 'Скопировать')}
                 </button>
                 <button
+                  onClick={() => generateDocx({
+                    title: isRu ? currentTemplate.nameRu : currentTemplate.name,
+                    content: docGeneratedText,
+                    fileName: `quralhub-${templateKey}`,
+                  })}
+                  className="flex-1 py-3 px-4 rounded-full text-sm font-semibold bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all"
+                >
+                  {L('\ud83d\udce5 Word жүктеу', '\ud83d\udce5 Скачать Word')}
+                </button>
+                <button
                   onClick={() => handlePrint(docGeneratedText)}
                   className="flex-1 py-3 px-4 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all"
                 >
@@ -529,6 +540,16 @@ export function DocTemplatesPage() {
                     ? (contractLang === 'ru' ? L('Скопировано!', 'Скопировано!') : L('Көшірілді!', 'Көшірілді!'))
                     : (contractLang === 'ru' ? L('Копировать текст', 'Скопировать') : L('Мәтін көшіру', 'Көшіру'))
                   }
+                </button>
+                <button
+                  onClick={() => generateDocx({
+                    title: CONTRACT_TYPE_LABELS[contractType]?.[contractLang === 'ru' ? 'ru' : 'kk'] || contractType,
+                    content: contractGeneratedText,
+                    fileName: `quralhub-${contractType}`,
+                  })}
+                  className="flex-1 py-3 px-4 rounded-full text-sm font-semibold bg-card border border-border text-muted-foreground hover:border-primary hover:text-primary transition-all"
+                >
+                  {contractLang === 'ru' ? L('\ud83d\udce5 Скачать Word', '\ud83d\udce5 Скачать Word') : L('\ud83d\udce5 Word жүктеу', '\ud83d\udce5 Word жүктеу')}
                 </button>
                 <button
                   onClick={() => handlePrint(contractGeneratedText)}

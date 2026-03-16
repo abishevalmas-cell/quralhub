@@ -129,6 +129,40 @@ export function BankCredPage() {
       </div>
 
       {amount > 0 && results.length > 0 && (
+        <>
+        {/* Rate comparison chart */}
+        <div className="mb-5 p-4 bg-card border border-border rounded-xl">
+          <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-widest mb-3">
+            {L('Ставка салыстыру', 'Сравнение ставок')}
+          </h3>
+          <div className="space-y-2">
+            {results.slice(0, 8).map((bank, i) => {
+              const maxRate = Math.max(...results.map(b => b.rate))
+              const pct = Math.round(bank.rate / maxRate * 100)
+              const isBest = i === 0
+              return (
+                <div key={i} className="flex items-center gap-2 text-xs">
+                  <span className="w-[70px] truncate font-semibold">{bank.shortName}</span>
+                  <div className="flex-1 h-6 bg-muted rounded-full overflow-hidden">
+                    <div
+                      className={`h-full rounded-full flex items-center justify-end px-2 text-white text-[10px] font-bold ${isBest ? 'bg-green-500' : 'bg-primary/70'}`}
+                      style={{ width: `${pct}%`, minWidth: '50px' }}
+                    >
+                      {bank.rate}%
+                    </div>
+                  </div>
+                  <span className="w-[65px] text-right font-bold text-primary text-[11px]">
+                    {F(bank.monthly)}₸
+                  </span>
+                </div>
+              )
+            })}
+          </div>
+          <p className="text-[10px] text-muted-foreground mt-2">
+            {L('Жасыл = ең тиімді ставка', 'Зелёный = лучшая ставка')} | {L('Оңда = ай сайынғы төлем', 'Справа = ежемесячный платёж')}
+          </p>
+        </div>
+
         <div className="space-y-3">
           {results.map((item, idx) => (
             <ResultCard key={`${item.bankName}-${item.product}`}>
@@ -185,6 +219,7 @@ export function BankCredPage() {
             </ResultCard>
           ))}
         </div>
+        </>
       )}
 
       {results.length === 0 && (
