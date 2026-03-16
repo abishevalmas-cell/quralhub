@@ -18,8 +18,12 @@ import { TextToPdf } from './pdf/TextToPdf'
 import { EditPdf } from './pdf/EditPdf'
 import { RemoveBackgroundTool } from './pdf/RemoveBackgroundTool'
 import { PdfToImage } from './pdf/PdfToImage'
+import { WordToPdf } from './pdf/WordToPdf'
+import { ExcelToPdf } from './pdf/ExcelToPdf'
+import { PdfToWord } from './pdf/PdfToWord'
+import { PdfToExcel } from './pdf/PdfToExcel'
 
-type ToolKey = 'merge' | 'split' | 'compress' | 'rotate' | 'removepages' | 'pagenums' | 'watermark' | 'img2pdf' | 'text2pdf' | 'edit' | 'removebg' | 'pdf2img'
+type ToolKey = 'merge' | 'split' | 'compress' | 'rotate' | 'removepages' | 'pagenums' | 'watermark' | 'img2pdf' | 'text2pdf' | 'edit' | 'removebg' | 'pdf2img' | 'word2pdf' | 'excel2pdf' | 'pdf2word' | 'pdf2excel'
 
 interface PdfTool {
   key: ToolKey
@@ -41,6 +45,10 @@ const TOOLS: PdfTool[] = [
   { key: 'edit', icon: '✏️', title: ['PDF Редактор', 'Редактор PDF'], desc: ['Печать, подпись', 'Печать, подпись, текст'] },
   { key: 'removebg', icon: '🎨', title: ['Фон алу', 'Удалить фон'], desc: ['Печать/қолтаңба', 'Для печати/подписи'] },
   { key: 'pdf2img', icon: '🖼️', title: ['PDF → Сурет', 'PDF → Картинка'], desc: ['JPG/PNG', 'JPG/PNG'] },
+  { key: 'word2pdf', icon: '📝', title: ['Word → PDF', 'Word → PDF'], desc: ['DOCX конвертер', 'DOCX конвертер'] },
+  { key: 'excel2pdf', icon: '📊', title: ['Excel → PDF', 'Excel → PDF'], desc: ['XLSX конвертер', 'XLSX конвертер'] },
+  { key: 'pdf2word', icon: '📝', title: ['PDF → Word', 'PDF → Word'], desc: ['DOCX-ке конвертер', 'DOCX конвертер'] },
+  { key: 'pdf2excel', icon: '📊', title: ['PDF → Excel', 'PDF → Excel'], desc: ['XLSX-ке конвертер', 'XLSX конвертер'] },
 ]
 
 const TOOL_COMPONENTS: Record<ToolKey, React.ComponentType> = {
@@ -56,6 +64,10 @@ const TOOL_COMPONENTS: Record<ToolKey, React.ComponentType> = {
   edit: EditPdf,
   removebg: RemoveBackgroundTool,
   pdf2img: PdfToImage,
+  word2pdf: WordToPdf,
+  excel2pdf: ExcelToPdf,
+  pdf2word: PdfToWord,
+  pdf2excel: PdfToExcel,
 }
 
 export function PdfToolsPage() {
@@ -73,7 +85,7 @@ export function PdfToolsPage() {
       <BackButton />
       <h2 className="text-2xl font-extrabold tracking-tight mb-1.5">{L('📕 PDF құралдар', '📕 PDF инструменты')}</h2>
       <div className="flex flex-wrap gap-1.5 mb-3">
-        <InfoChip>{L('12 құрал', '12 инструментов')}</InfoChip>
+        <InfoChip>{L('16 құрал', '16 инструментов')}</InfoChip>
         <InfoChip>{L('Тегін', 'Бесплатно')}</InfoChip>
         <InfoChip>{L('100% қауіпсіз', '100% безопасно')}</InfoChip>
       </div>
