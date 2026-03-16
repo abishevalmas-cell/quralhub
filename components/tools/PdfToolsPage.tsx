@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import { BackButton } from '@/components/layout/BackButton'
 import { ShareBar } from '@/components/shared/ShareBar'
 import { TipBox } from '@/components/shared/TipBox'
@@ -77,17 +77,45 @@ export function PdfToolsPage() {
 
   const [activeTool, setActiveTool] = useState<ToolKey | null>(null)
 
+  // Handle browser back button — return to tool grid instead of leaving page
+  const selectTool = useCallback((key: ToolKey | null) => {
+    setActiveTool(key)
+    if (key) {
+      window.history.pushState({ pdfTool: key }, '', `/pdf#${key}`)
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    } else {
+      // Going back to grid — replace state
+      window.history.replaceState(null, '', '/pdf')
+    }
+  }, [])
+
+  useEffect(() => {
+    // Handle browser back (swipe back)
+    const handlePopState = () => {
+      setActiveTool(null)
+    }
+    window.addEventListener('popstate', handlePopState)
+
+    // Handle hash on initial load (e.g. /pdf#merge)
+    const hash = window.location.hash.replace('#', '') as ToolKey
+    if (hash && TOOL_COMPONENTS[hash]) {
+      setActiveTool(hash)
+    }
+
+    return () => window.removeEventListener('popstate', handlePopState)
+  }, [])
+
   // Listen for switch-pdf-tool events (from RemoveBackground workflow)
   useEffect(() => {
     const handler = (e: Event) => {
       const detail = (e as CustomEvent).detail
       if (detail && TOOL_COMPONENTS[detail as ToolKey]) {
-        setActiveTool(detail as ToolKey)
+        selectTool(detail as ToolKey)
       }
     }
     window.addEventListener('switch-pdf-tool', handler)
     return () => window.removeEventListener('switch-pdf-tool', handler)
-  }, [])
+  }, [selectTool])
 
   const tool = TOOLS.find(t => t.key === activeTool)
   const ToolComponent = activeTool ? TOOL_COMPONENTS[activeTool] : null
@@ -117,7 +145,7 @@ export function PdfToolsPage() {
           {TOOLS.map(t => (
             <button
               key={t.key}
-              onClick={() => { setActiveTool(t.key); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
+              onClick={() => selectTool(t.key)}
               className="p-4 bg-card border border-border rounded-2xl text-center hover:border-primary hover:shadow-md transition-all group min-h-[44px]"
             >
               <div className="text-2xl mb-2">{t.icon}</div>
@@ -132,7 +160,7 @@ export function PdfToolsPage() {
       {activeTool && ToolComponent && (
         <div className="animate-in fade-in slide-in-from-bottom-1 duration-300">
           <button
-            onClick={() => setActiveTool(null)}
+            onClick={() => { selectTool(null); window.history.back() }}
             className="mb-4 text-sm text-primary font-semibold hover:underline flex items-center gap-1 min-h-[44px]"
           >
             ← {L('Барлық құралдар', 'Все инструменты')}
