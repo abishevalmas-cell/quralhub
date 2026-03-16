@@ -8,7 +8,7 @@ import { ResultTotal } from '@/components/shared/ResultTotal'
 import { ShareBar } from '@/components/shared/ShareBar'
 import { TipBox } from '@/components/shared/TipBox'
 import { InfoChip } from '@/components/shared/InfoChip'
-import { calcCommunal, calcAllCities, CM_TARIFFS, type UtilityKey } from '@/lib/calculations/communal'
+import { calcCommunal, calcAllCities, calcExtras, CM_TARIFFS, EXTRA_SERVICES, type UtilityKey } from '@/lib/calculations/communal'
 import { F } from '@/lib/constants'
 import { useApp } from '@/components/layout/Providers'
 
@@ -54,10 +54,18 @@ export function CommunalCalc() {
   const [hw, setHw] = useState(3)
   const [gas, setGas] = useState(30)
   const [heat, setHeat] = useState(60)
+  const [area, setArea] = useState(65)
+  const [selectedExtras, setSelectedExtras] = useState<string[]>(['maintenance', 'trash'])
 
   const tariff = CM_TARIFFS[city]
   const gasAvailable = tariff?.gas !== null
   const result = calcCommunal(city, el, cw, hw, gasAvailable ? gas : 0, heat)
+  const extras = useMemo(() => calcExtras(area, selectedExtras), [area, selectedExtras])
+  const grandTotal = result.total + extras.total
+
+  const toggleExtra = (id: string) => {
+    setSelectedExtras(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id])
+  }
 
   // Comparison dashboard data
   const comparison = useMemo(() => calcAllCities(), [])
@@ -137,15 +145,76 @@ export function CommunalCalc() {
         </div>
       </div>
 
-      {/* Results */}
+      {/* Results — utilities */}
       <ResultCard>
         <ResultRow label={L('Электр энергиясы', 'Электричество')} value={`${F(result.electricity)} ₸`} />
         <ResultRow label={L('Суық су', 'Холодная вода')} value={`${F(result.coldWater)} ₸`} />
         <ResultRow label={L('Ыстық су', 'Горячая вода')} value={`${F(result.hotWater)} ₸`} />
         {gasAvailable && <ResultRow label={L('Газ', 'Газ')} value={`${F(result.gas)} ₸`} />}
         <ResultRow label={L('Жылыту', 'Отопление')} value={`${F(result.heating)} ₸`} />
-        <ResultTotal label={L('Жалпы', 'Итого')} value={`${F(result.total)} ₸`} />
+        <ResultTotal label={L('Коммуналдық', 'Коммунальные')} value={`${F(result.total)} ₸`} />
       </ResultCard>
+
+      {/* Extra services section */}
+      <div className="bg-card border border-border rounded-xl p-4 mb-4">
+        <h3 className="text-sm font-bold mb-2">{L('🏢 Қосымша қызметтер', '🏢 Дополнительные услуги')}</h3>
+        <p className="text-[10px] text-muted-foreground mb-3">{L('Қажеттілерін белгілеңіз — сома автоматты есептеледі', 'Отметьте нужные — сумма рассчитается автоматически')}</p>
+
+        <div className="mb-3">
+          <label className="text-[10px] font-semibold text-muted-foreground mb-1 block">{L('Пәтер ауданы (м²)', 'Площадь квартиры (м²)')}</label>
+          <Input type="text" inputMode="numeric" value={area || ''} onChange={e => setArea(parseInt(e.target.value.replace(/\s/g, '')) || 0)} className="text-sm !py-2" />
+        </div>
+
+        <div className="space-y-1.5">
+          {EXTRA_SERVICES.map(svc => {
+            const isSelected = selectedExtras.includes(svc.id)
+            const cost = svc.unit === 'sqm' ? Math.round(area * svc.avgRate) : svc.avgRate
+            return (
+              <label
+                key={svc.id}
+                className={`flex items-center gap-3 p-2.5 rounded-xl border cursor-pointer transition-all ${
+                  isSelected ? 'border-primary/40 bg-primary/5' : 'border-border/40 hover:border-primary/20'
+                }`}
+              >
+                <input
+                  type="checkbox"
+                  checked={isSelected}
+                  onChange={() => toggleExtra(svc.id)}
+                  className="w-4 h-4 accent-primary flex-shrink-0"
+                />
+                <div className="flex-1 min-w-0">
+                  <span className="text-xs font-semibold block">{lang === 'ru' ? svc.nameRu : svc.name}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {svc.unit === 'sqm' ? `${svc.avgRate}₸/м² × ${area}м²` : `${F(svc.avgRate)}₸/${L('ай', 'мес')}`}
+                  </span>
+                </div>
+                <span className={`text-xs font-bold tabular-nums ${isSelected ? 'text-primary' : 'text-muted-foreground'}`}>
+                  {F(cost)} ₸
+                </span>
+              </label>
+            )
+          })}
+        </div>
+
+        {extras.total > 0 && (
+          <div className="mt-3 pt-3 border-t border-border/50 flex justify-between items-center">
+            <span className="text-xs text-muted-foreground">{L('Қосымша қызметтер', 'Доп. услуги')}</span>
+            <span className="text-sm font-bold">{F(extras.total)} ₸</span>
+          </div>
+        )}
+      </div>
+
+      {/* Grand total */}
+      <div className="p-4 rounded-2xl bg-primary/10 border border-primary/30 mb-4">
+        <div className="flex justify-between items-center">
+          <span className="text-sm font-bold">{L('ЖАЛПЫ ШЫҒЫН / АЙ', 'ОБЩИЕ РАСХОДЫ / МЕС')}</span>
+          <span className="text-2xl font-extrabold text-primary">{F(grandTotal)} ₸</span>
+        </div>
+        <div className="flex justify-between text-[10px] text-muted-foreground mt-1">
+          <span>{L('Коммуналдық', 'Коммунальные')}: {F(result.total)}₸</span>
+          <span>{L('Қосымша', 'Доп. услуги')}: {F(extras.total)}₸</span>
+        </div>
+      </div>
 
       {/* Tariff breakdown donut-like visual */}
       <div className="bg-card border border-border rounded-xl p-4 mb-4">

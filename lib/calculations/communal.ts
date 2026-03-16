@@ -73,6 +73,35 @@ export function calcCommunal(city: string, el: number, cw: number, hw: number, g
   }
 }
 
+/** Additional housing services (КСК/ОСИ) — average rates per m² or flat */
+export interface ExtraService {
+  id: string
+  name: string
+  nameRu: string
+  unit: 'sqm' | 'flat'  // per m² or flat rate per month
+  avgRate: number        // average ₸
+}
+
+export const EXTRA_SERVICES: ExtraService[] = [
+  { id: 'maintenance', name: 'КСК/ОСИ қызметі', nameRu: 'Содержание дома (КСК/ОСИ)', unit: 'sqm', avgRate: 55 },
+  { id: 'elevator', name: 'Лифт', nameRu: 'Лифт', unit: 'sqm', avgRate: 15 },
+  { id: 'trash', name: 'Қоқыс шығару', nameRu: 'Вывоз мусора', unit: 'flat', avgRate: 650 },
+  { id: 'cleaning', name: 'Аулаңды тазалау', nameRu: 'Уборка территории', unit: 'flat', avgRate: 400 },
+  { id: 'intercom', name: 'Домофон', nameRu: 'Домофон', unit: 'flat', avgRate: 300 },
+  { id: 'antenna', name: 'Антенна/ТВ', nameRu: 'Антенна/ТВ', unit: 'flat', avgRate: 500 },
+  { id: 'internet', name: 'Интернет', nameRu: 'Интернет', unit: 'flat', avgRate: 4500 },
+]
+
+export function calcExtras(area: number, selectedIds: string[]): { items: { id: string; cost: number }[]; total: number } {
+  const items = selectedIds.map(id => {
+    const svc = EXTRA_SERVICES.find(s => s.id === id)
+    if (!svc) return { id, cost: 0 }
+    const cost = svc.unit === 'sqm' ? Math.round(area * svc.avgRate) : svc.avgRate
+    return { id, cost }
+  })
+  return { items, total: items.reduce((s, i) => s + i.cost, 0) }
+}
+
 /** Standard monthly consumption for comparison */
 export const STD_CONSUMPTION = { el: 200, cw: 5, hw: 3, gas: 30, heat: 60 }
 
