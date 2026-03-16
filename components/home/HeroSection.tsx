@@ -26,7 +26,7 @@ export function HeroSection() {
   const { lang } = useApp()
 
   return (
-    <section className="px-5 py-12 md:py-16 text-center relative overflow-hidden">
+    <section className="px-3 sm:px-5 py-8 sm:py-12 md:py-16 text-center relative overflow-hidden">
       <div className="absolute top-[-30%] right-[-15%] w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(147,197,253,0.08)_0%,transparent_70%)] pointer-events-none dark:hidden" />
       <div className="absolute bottom-[-20%] left-[-10%] w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(56,189,248,0.05)_0%,transparent_70%)] pointer-events-none dark:hidden" />
 
@@ -87,7 +87,7 @@ export function HeroSection() {
             key={stat.n}
             whileHover={{ y: -3, scale: 1.03 }}
             transition={{ type: 'spring', stiffness: 300 }}
-            className="relative overflow-hidden bg-card/70 backdrop-blur-xl border border-border/60 rounded-2xl px-5 py-3.5 shadow-sm min-w-[95px]"
+            className="relative overflow-hidden bg-card/70 backdrop-blur-xl border border-border/60 rounded-2xl px-3 py-2.5 sm:px-5 sm:py-3.5 shadow-sm min-w-[80px] sm:min-w-[95px]"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-blue-100/20 via-transparent to-transparent dark:hidden pointer-events-none" />
             <div className="relative">
@@ -110,7 +110,7 @@ export function HeroSection() {
             <Link
               key={`${action.href}-${i}`}
               href={action.href}
-              className="btn-glass-outline !h-12 !px-6 !text-sm !normal-case !tracking-normal !font-semibold flex-shrink-0 hover:!border-primary hover:!text-primary gap-2.5"
+              className="btn-glass-outline !h-10 !px-4 !text-xs sm:!h-12 sm:!px-6 sm:!text-sm !normal-case !tracking-normal !font-semibold flex-shrink-0 hover:!border-primary hover:!text-primary gap-2"
             >
               <span className="text-xl">{action.icon}</span>
               <span>{lang === 'ru' ? action.textRu : action.text}</span>

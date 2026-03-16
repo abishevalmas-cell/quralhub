@@ -44,10 +44,10 @@ export function VatCalc() {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('НДС ставкасы', 'Ставка НДС')}</label>
-          <select className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary" value={rate} onChange={e => setRate(parseInt(e.target.value))}>
+          <select className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary" value={rate} onChange={e => setRate(parseInt(e.target.value))}>
             <option value={16}>{L('16% (негізгі)', '16% (основная)')}</option>
             <option value={5}>{L('5% (медицина 2026)', '5% (медицина 2026)')}</option>
             <option value={10}>{L('10% (баспа)', '10% (печать)')}</option>
@@ -55,7 +55,7 @@ export function VatCalc() {
         </div>
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Есеп тәсілі', 'Метод расчёта')}</label>
-          <select className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary" value={method} onChange={e => setMethod(e.target.value as 'add' | 'extract')}>
+          <select className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary" value={method} onChange={e => setMethod(e.target.value as 'add' | 'extract')}>
             <option value="add">{L('НДС қосу', 'Начислить НДС')}</option>
             <option value="extract">{L('НДС бөліп алу', 'Выделить НДС')}</option>
           </select>

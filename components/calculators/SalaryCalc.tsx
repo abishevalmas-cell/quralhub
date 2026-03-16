@@ -37,11 +37,11 @@ export function SalaryCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Жаңа Салық кодексі 2026 (Заң №214-VIII) бойынша есеп', 'Расчёт по новому Налоговому кодексу 2026')}</p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Режим', 'Режим')}</label>
           <select
-            className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+            className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
             value={regime}
             onChange={e => setRegime(e.target.value as 'emp' | 'emp-simp')}
           >
@@ -52,7 +52,7 @@ export function SalaryCalc() {
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Тәсіл', 'Метод')}</label>
           <select
-            className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+            className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
             value={method}
             onChange={e => setMethod(e.target.value as 'direct' | 'reverse')}
           >

@@ -8,6 +8,7 @@ import { Footer } from '@/components/layout/Footer'
 import { Providers } from '@/components/layout/Providers'
 import { Analytics } from '@/components/analytics/Analytics'
 import { TrackPageView } from '@/components/analytics/TrackPageView'
+import { PwaPrompt } from '@/components/layout/PwaPrompt'
 
 const inter = Inter({
   variable: '--font-inter',
@@ -28,6 +29,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="kk" suppressHydrationWarning>
       <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="theme-color" content="#0B8A6B" />
+        <link rel="apple-touch-icon" href="/icon.svg" />
         <script dangerouslySetInnerHTML={{ __html: `(function(){try{var t=localStorage.getItem('quralhub-theme');if(t==='dark'||(!t&&window.matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()` }} />
       </head>
       <body className={`${inter.variable} font-sans antialiased bg-background text-foreground`}>
@@ -40,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {children}
           </main>
           <Footer />
+          <PwaPrompt />
           <Analytics />
           <TrackPageView />
         </Providers>

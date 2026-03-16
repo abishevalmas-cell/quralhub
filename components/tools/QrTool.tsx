@@ -121,7 +121,7 @@ export function QrTool() {
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Шифрлау', 'Шифрование')}</label>
               <select
-                className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+                className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
                 value={wifiEnc}
                 onChange={e => setWifiEnc(e.target.value as 'WPA' | 'WEP' | 'nopass')}
               >
@@ -186,7 +186,7 @@ export function QrTool() {
           </div>
           <button
             onClick={handleDownload}
-            className="mt-4 py-3 px-6 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all"
+            className="mt-4 py-3 px-6 min-h-[44px] rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all"
           >
             {L('Жүктеп алу', 'Скачать')}
           </button>

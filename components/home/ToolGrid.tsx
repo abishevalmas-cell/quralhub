@@ -8,8 +8,8 @@ export function ToolGrid() {
 
   return (
     <div className="relative space-y-6">
-      {/* Static ambient shapes */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0" aria-hidden="true">
+      {/* Ambient shapes — desktop only */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0 hidden md:block" aria-hidden="true">
         <div className="absolute w-32 h-32 top-[5%] left-[8%] bg-emerald-400 rounded-full opacity-[0.08] dark:opacity-[0.04] blur-3xl" style={{ animation: 'floatBlob 12s ease-in-out infinite' }} />
         <div className="absolute w-40 h-40 top-[25%] right-[5%] bg-blue-400 rounded-full opacity-[0.08] dark:opacity-[0.04] blur-3xl" style={{ animation: 'floatBlob 10s ease-in-out infinite 2s' }} />
         <div className="absolute w-28 h-28 top-[50%] left-[15%] bg-purple-400 rounded-full opacity-[0.08] dark:opacity-[0.04] blur-3xl" style={{ animation: 'floatBlob 14s ease-in-out infinite 4s' }} />

@@ -58,7 +58,7 @@ export function InvoiceTool() {
           <input
             value={yourName}
             onChange={e => setYourName(e.target.value)}
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
+            className="min-h-[44px] w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
             placeholder={L('ЖШС «Мысал»', 'ТОО «Пример»')}
           />
         </div>
@@ -67,7 +67,7 @@ export function InvoiceTool() {
           <input
             value={iin}
             onChange={e => setIin(e.target.value)}
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
+            className="min-h-[44px] w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
             placeholder="123456789012"
             maxLength={12}
           />
@@ -77,7 +77,7 @@ export function InvoiceTool() {
           <input
             value={clientName}
             onChange={e => setClientName(e.target.value)}
-            className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
+            className="min-h-[44px] w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
             placeholder={L('Клиент компаниясы', 'Компания клиента')}
           />
         </div>
@@ -86,12 +86,12 @@ export function InvoiceTool() {
           <h3 className="text-sm font-bold mb-2">{L('Тауарлар / Қызметтер', 'Товары / Услуги')}</h3>
           {items.map((item, idx) => (
             <div key={item.id} className="flex gap-2 items-end mb-2 flex-wrap">
-              <div className="flex-1 min-w-[120px]">
+              <div className="flex-1 min-w-[140px] sm:min-w-[120px]">
                 {idx === 0 && <span className="text-[10px] text-muted-foreground">{L('Аты', 'Название')}</span>}
                 <input
                   value={item.name}
                   onChange={e => updateItem(item.id, 'name', e.target.value)}
-                  className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
+                  className="min-h-[44px] w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
                   placeholder={L('Тауар аты', 'Название товара')}
                 />
               </div>
@@ -101,7 +101,7 @@ export function InvoiceTool() {
                   type="number"
                   value={item.qty}
                   onChange={e => updateItem(item.id, 'qty', Number(e.target.value))}
-                  className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
+                  className="min-h-[44px] w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
                   min={1}
                 />
               </div>
@@ -111,13 +111,13 @@ export function InvoiceTool() {
                   type="number"
                   value={item.price}
                   onChange={e => updateItem(item.id, 'price', Number(e.target.value))}
-                  className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
+                  className="min-h-[44px] w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus:border-ring focus:ring-2 focus:ring-ring/50"
                   min={0}
                 />
               </div>
               <button
                 onClick={() => removeItem(item.id)}
-                className="h-8 w-8 rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-red-500 hover:border-red-500 transition-colors text-sm"
+                className="min-h-[44px] min-w-[44px] rounded-lg border border-border flex items-center justify-center text-muted-foreground hover:text-red-500 hover:border-red-500 transition-colors text-sm"
                 title={L('Жою', 'Удалить')}
               >
                 &times;

@@ -66,16 +66,16 @@ export function PassgenTool() {
         </p>
       </div>
 
-      <div className="flex gap-3 mt-4">
+      <div className="flex flex-col sm:flex-row gap-3 mt-4">
         <button
           onClick={handleCopy}
-          className="flex-1 py-3 px-4 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all"
+          className="flex-1 py-3 px-4 min-h-[44px] rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all"
         >
           {copied ? L('Көшірілді!', 'Скопировано!') : L('Көшіру', 'Скопировать')}
         </button>
         <button
           onClick={regenerate}
-          className="flex-1 py-3 px-4 rounded-full text-sm font-semibold bg-card border border-border text-foreground hover:border-primary hover:text-primary transition-all"
+          className="flex-1 py-3 px-4 min-h-[44px] rounded-full text-sm font-semibold bg-card border border-border text-foreground hover:border-primary hover:text-primary transition-all"
         >
           {L('Жаңарту', 'Обновить')}
         </button>

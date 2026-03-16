@@ -100,7 +100,7 @@ export function CurrencyConverter() {
         {L('Ұлттық Банк курсы бойынша валюта айырбастау + обменниктер салыстыруы', 'Конвертация валют по курсу Нацбанка + сравнение обменников')}
       </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Сома', 'Сумма')}</label>
           <Input
@@ -114,7 +114,7 @@ export function CurrencyConverter() {
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Валюта', 'Валюта')}</label>
           <select
-            className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+            className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
             value={currency}
             onChange={e => setCurrency(e.target.value as CurrencyKey)}
           >
@@ -192,7 +192,7 @@ export function CurrencyConverter() {
           </div>
 
           <div className="overflow-x-auto">
-            <table className="w-full text-sm border-collapse">
+            <table className="w-full text-xs sm:text-sm border-collapse">
               <thead>
                 <tr className="bg-card">
                   <th className="text-left p-3 border border-border font-semibold text-muted-foreground">{L('Обменник', 'Обменник')}</th>

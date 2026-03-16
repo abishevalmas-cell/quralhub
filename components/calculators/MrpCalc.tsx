@@ -26,7 +26,7 @@ export function MrpCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('МРП-ны тенгеге және тенгені МРП-ға конверттеу. Штрафтар, мемлекеттік баж, пособиелер есебі үшін.', 'Конвертация МРП в тенге и обратно. Для расчёта штрафов, госпошлин, пособий.')}</p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('МРП саны', 'Количество МРП')}</label>
           <Input type="number" value={mrpCount || ''} onChange={e => setMrpCount(parseFloat(e.target.value) || 0)} inputMode="numeric" />

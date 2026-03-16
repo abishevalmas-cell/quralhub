@@ -35,7 +35,7 @@ export function TaxCalc() {
       <div className="mb-3">
         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Режим', 'Режим')}</label>
         <select
-          className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+          className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
           value={mode}
           onChange={e => setMode(e.target.value as 'simp' | 'self')}
         >

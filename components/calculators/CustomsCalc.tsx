@@ -32,7 +32,7 @@ export function CustomsCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('ЕАЭС кеден бажы, кәдеге жарату алымы, тіркеу есебі', 'Таможенная пошлина ЕАЭС, утилизационный сбор, регистрация')}</p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Бағасы (€)', 'Цена (€)')}</label>
           <Input
@@ -58,7 +58,7 @@ export function CustomsCalc() {
       <div className="mb-3">
         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Автокөлік жасы', 'Возраст авто')}</label>
         <select
-          className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+          className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
           value={age}
           onChange={e => setAge(e.target.value as 'new' | 'mid' | 'old')}
         >

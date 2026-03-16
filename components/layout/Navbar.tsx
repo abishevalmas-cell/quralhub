@@ -33,7 +33,7 @@ export function Navbar() {
           placeholder={lang === 'kz' ? 'Құрал іздеу...' : 'Поиск...'}
           value={query}
           onChange={e => setQuery(e.target.value)}
-          className="w-full pl-9 pr-3 py-2.5 bg-background border border-border rounded-xl text-sm font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
+          className="w-full pl-9 pr-3 py-2.5 min-h-[44px] bg-background border border-border rounded-xl text-sm font-medium outline-none focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all"
         />
         {filtered.length > 0 && query.trim() && (
           <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-xl shadow-lg max-h-60 overflow-y-auto z-50">
@@ -53,7 +53,7 @@ export function Navbar() {
 
       <button
         onClick={toggleTheme}
-        className="p-2 border border-border rounded-full bg-card hover:border-primary hover:bg-accent transition-all text-sm"
+        className="p-2.5 min-w-[40px] min-h-[40px] flex items-center justify-center border border-border rounded-full bg-card hover:border-primary hover:bg-accent transition-all text-sm"
         title="Тема ауыстыру"
       >
         {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
@@ -61,7 +61,7 @@ export function Navbar() {
 
       <button
         onClick={toggleLang}
-        className="px-3 py-1.5 text-xs font-bold border border-border rounded-full bg-card hover:border-primary hover:text-primary hover:bg-accent transition-all tracking-wider"
+        className="px-3 py-1.5 min-h-[40px] min-w-[40px] flex items-center justify-center text-xs font-bold border border-border rounded-full bg-card hover:border-primary hover:text-primary hover:bg-accent transition-all tracking-wider"
       >
         {lang === 'kz' ? 'RU' : 'KZ'}
       </button>

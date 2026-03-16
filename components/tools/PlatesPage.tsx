@@ -25,14 +25,14 @@ function EgovButtons({ L }: { L: (kz: string, ru: string) => string }) {
     : 'intent://egov.kz#Intent;package=kz.egov.mobile;scheme=https;S.browser_fallback_url=https://play.google.com/store/apps/details?id=kz.egov.mobile;end'
   return (
     <div className="mb-4 space-y-2">
-      <div className="flex gap-2">
-        <a href={EGOV_WEB} target="_blank" rel="noopener noreferrer" className="btn-glass flex-1 !text-xs !h-10 justify-center">
+      <div className="flex flex-col sm:flex-row gap-2">
+        <a href={EGOV_WEB} target="_blank" rel="noopener noreferrer" className="btn-glass flex-1 !text-xs !h-10 !min-h-[44px] justify-center">
           🔍 {L('Egov.kz-де тексеру', 'Проверить на Egov.kz')}
         </a>
         {platform !== 'desktop' ? (
-          <a href={appLink} className="btn-glass-outline flex-1 !text-xs !h-10 justify-center">📱 EGov Mobile</a>
+          <a href={appLink} className="btn-glass-outline flex-1 !text-xs !h-10 !min-h-[44px] justify-center">📱 EGov Mobile</a>
         ) : (
-          <a href={EGOV_TRANSPORT} target="_blank" rel="noopener noreferrer" className="btn-glass-outline flex-1 !text-xs !h-10 justify-center">📋 {L('Онлайн тіркеу', 'Онлайн регистрация')}</a>
+          <a href={EGOV_TRANSPORT} target="_blank" rel="noopener noreferrer" className="btn-glass-outline flex-1 !text-xs !h-10 !min-h-[44px] justify-center">📋 {L('Онлайн тіркеу', 'Онлайн регистрация')}</a>
         )}
       </div>
       <p className="text-[11px] text-muted-foreground text-center">{L('⚠️ Нөмірдің бос/бос емес екенін тек Egov.kz арқылы тексеруге болады', '⚠️ Проверить доступность номера можно только через Egov.kz')}</p>
@@ -92,7 +92,7 @@ export function PlatesPage() {
       {/* === REALISTIC KZ PLATE === */}
       <div className="flex justify-center mb-5">
         <div className="w-full max-w-[440px]">
-          <div className="relative bg-white rounded-md border-[3px] border-neutral-900 shadow-[0_6px_24px_rgba(0,0,0,0.18)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.6)] px-3 sm:px-4 py-3 sm:py-4">
+          <div className="relative bg-white rounded-md border-[3px] border-neutral-900 shadow-[0_6px_24px_rgba(0,0,0,0.18)] dark:shadow-[0_6px_24px_rgba(0,0,0,0.6)] px-2 sm:px-4 py-2.5 sm:py-4">
 
             {/* Number row with flag inline */}
             <div className="flex items-center justify-center">
@@ -129,7 +129,7 @@ export function PlatesPage() {
                   setDigitsPart(v)
                   if (v.length === 3) lettersRef.current?.focus()
                 }}
-                className="w-[90px] sm:w-[110px] text-center text-[36px] sm:text-[44px] font-mono font-black tracking-[0.1em] bg-transparent outline-none text-neutral-900 placeholder:text-neutral-200 caret-primary"
+                className="w-[70px] sm:w-[110px] text-center text-[28px] sm:text-[44px] font-mono font-black tracking-[0.1em] bg-transparent outline-none text-neutral-900 placeholder:text-neutral-200 caret-primary min-h-[44px]"
                 maxLength={3}
                 autoFocus
               />
@@ -150,7 +150,7 @@ export function PlatesPage() {
                     digitsRef.current?.focus()
                   }
                 }}
-                className="w-[80px] sm:w-[100px] text-center text-[30px] sm:text-[36px] font-mono font-bold tracking-[0.12em] bg-transparent outline-none text-neutral-900 placeholder:text-neutral-200 caret-primary"
+                className="w-[65px] sm:w-[100px] text-center text-[24px] sm:text-[36px] font-mono font-bold tracking-[0.12em] bg-transparent outline-none text-neutral-900 placeholder:text-neutral-200 caret-primary min-h-[44px]"
                 maxLength={3}
               />
 
@@ -160,7 +160,7 @@ export function PlatesPage() {
                   ref={regionRef}
                   value={regionCode}
                   onChange={e => setRegionCode(e.target.value)}
-                  className="text-[28px] sm:text-[34px] font-mono font-extrabold bg-transparent text-center outline-none cursor-pointer appearance-none text-neutral-900 w-[44px] sm:w-[50px]"
+                  className="text-[22px] sm:text-[34px] font-mono font-extrabold bg-transparent text-center outline-none cursor-pointer appearance-none text-neutral-900 w-[38px] sm:w-[50px] min-h-[44px]"
                 >
                   {PLATE_REGIONS.map(r => (
                     <option key={r.code} value={r.code}>{r.code}</option>

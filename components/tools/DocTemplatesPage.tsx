@@ -329,11 +329,11 @@ export function DocTemplatesPage() {
       {/* ============================================ */}
       {mainTab === 'docs' && (
         <>
-          <div className="grid grid-cols-2 gap-3 mb-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Санат', 'Категория')}</label>
               <select
-                className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+                className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
                 value={categoryKey}
                 onChange={e => handleCategoryChange(e.target.value)}
               >
@@ -345,7 +345,7 @@ export function DocTemplatesPage() {
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Үлгі', 'Шаблон')}</label>
               <select
-                className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+                className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
                 value={templateKey}
                 onChange={e => handleTemplateChange(e.target.value)}
               >
@@ -429,7 +429,7 @@ export function DocTemplatesPage() {
           {/* Contract type selector */}
           <div className="mb-4">
             <label className="text-xs font-semibold text-muted-foreground mb-2 block">{L('Шарт түрі', 'Тип договора')}</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {(Object.keys(CONTRACT_TYPE_LABELS) as ContractType[]).map(tp => {
                 const info = CONTRACT_TYPE_LABELS[tp]
                 const isActive = contractType === tp

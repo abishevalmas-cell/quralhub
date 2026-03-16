@@ -83,7 +83,7 @@ export function BankCredPage() {
         {L('Барлық банктердің кредит шарттарын салыстырыңыз', 'Сравните условия кредитов всех банков')}
       </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Сома (₸)', 'Сумма (₸)')}</label>
           <Input
@@ -97,7 +97,7 @@ export function BankCredPage() {
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Мерзімі', 'Срок')}</label>
           <select
-            className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+            className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
             value={term}
             onChange={e => setTerm(Number(e.target.value))}
           >
@@ -167,18 +167,18 @@ export function BankCredPage() {
                   )}
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-accent/30 rounded-xl p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground mb-1">{L('Ай сайын', 'Ежемесячно')}</p>
-                    <p className="font-extrabold text-primary text-sm">{F(item.monthly)} ₸</p>
+                <div className="grid grid-cols-3 gap-1.5 sm:gap-2">
+                  <div className="bg-accent/30 rounded-xl p-2 sm:p-3 text-center">
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-1">{L('Ай сайын', 'Ежемесячно')}</p>
+                    <p className="font-extrabold text-primary text-xs sm:text-sm">{F(item.monthly)} ₸</p>
                   </div>
-                  <div className="bg-accent/30 rounded-xl p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground mb-1">{L('Жалпы', 'Итого')}</p>
-                    <p className="font-bold text-sm">{F(item.total)} ₸</p>
+                  <div className="bg-accent/30 rounded-xl p-2 sm:p-3 text-center">
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-1">{L('Жалпы', 'Итого')}</p>
+                    <p className="font-bold text-xs sm:text-sm">{F(item.total)} ₸</p>
                   </div>
-                  <div className="bg-accent/30 rounded-xl p-3 text-center">
-                    <p className="text-[10px] text-muted-foreground mb-1">{L('Артық төлем', 'Переплата')}</p>
-                    <p className="font-bold text-red-500 text-sm">{F(item.overpay)} ₸</p>
+                  <div className="bg-accent/30 rounded-xl p-2 sm:p-3 text-center">
+                    <p className="text-[9px] sm:text-[10px] text-muted-foreground mb-1">{L('Артық төлем', 'Переплата')}</p>
+                    <p className="font-bold text-red-500 text-xs sm:text-sm">{F(item.overpay)} ₸</p>
                   </div>
                 </div>
               </div>

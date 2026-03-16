@@ -1,0 +1,26 @@
+{
+  "name": "Quralhub — Құралдар платформасы",
+  "short_name": "Quralhub",
+  "description": "Қазақстан үшін 33+ тегін құралдар: калькуляторлар, тариф салыстыру, AI аудармашы",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F5F7FA",
+  "theme_color": "#0B8A6B",
+  "orientation": "portrait",
+  "categories": ["finance", "utilities", "productivity"],
+  "lang": "kk",
+  "icons": [
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

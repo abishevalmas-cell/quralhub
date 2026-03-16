@@ -92,7 +92,7 @@ export function BankDepPage() {
         {L('Депозит ставкаларын салыстырып, ең тиімді банкты таңдаңыз', 'Сравните ставки депозитов и выберите лучший банк')}
       </p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Сома (₸)', 'Сумма (₸)')}</label>
           <Input
@@ -106,7 +106,7 @@ export function BankDepPage() {
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Мерзімі', 'Срок')}</label>
           <select
-            className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+            className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
             value={term}
             onChange={e => setTerm(Number(e.target.value))}
           >

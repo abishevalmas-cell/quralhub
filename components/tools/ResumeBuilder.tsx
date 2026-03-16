@@ -188,7 +188,7 @@ export function ResumeBuilder() {
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Аты-жөні', 'Ф.И.О.')}</label>
           <Input type="text" value={fullName} onChange={e => setFullName(e.target.value)} placeholder={L('Абай Қасымов', 'Абай Касымов')} className="text-base" />
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Телефон', 'Телефон')}</label>
             <Input type="tel" value={phone} onChange={e => setPhone(e.target.value)} placeholder="+7 777 123 4567" className="text-base" />
@@ -198,7 +198,7 @@ export function ResumeBuilder() {
             <Input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder="abai@mail.kz" className="text-base" />
           </div>
         </div>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
             <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Қала', 'Город')}</label>
             <Input type="text" value={city} onChange={e => setCity(e.target.value)} placeholder={L('Астана', 'Астана')} className="text-base" />
@@ -218,7 +218,7 @@ export function ResumeBuilder() {
       <div className="mb-4">
         <h3 className="text-sm font-bold mb-2">{eduLabel}</h3>
         {education.map((edu, idx) => (
-          <div key={idx} className="grid grid-cols-2 gap-3 mb-3 p-3 bg-card border border-border rounded-xl">
+          <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 p-3 bg-card border border-border rounded-xl">
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1 block">{L('Оқу орны', 'Учебное заведение')}</label>
               <Input type="text" value={edu.school} onChange={e => updateEducation(idx, 'school', e.target.value)} placeholder={L('ЕНУ', 'ЕНУ')} className="text-sm" />
@@ -249,7 +249,7 @@ export function ResumeBuilder() {
       <div className="mb-4">
         <h3 className="text-sm font-bold mb-2">{expLabel}</h3>
         {experience.map((exp, idx) => (
-          <div key={idx} className="grid grid-cols-2 gap-3 mb-3 p-3 bg-card border border-border rounded-xl">
+          <div key={idx} className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3 p-3 bg-card border border-border rounded-xl">
             <div>
               <label className="text-xs font-semibold text-muted-foreground mb-1 block">{L('Компания', 'Компания')}</label>
               <Input type="text" value={exp.company} onChange={e => updateExperience(idx, 'company', e.target.value)} placeholder="Kaspi.kz" className="text-sm" />

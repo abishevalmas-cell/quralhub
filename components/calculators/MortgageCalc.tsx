@@ -32,7 +32,7 @@ export function MortgageCalc() {
         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Тұрғын үй бағасы (₸)', 'Стоимость жилья (₸)')}</label>
         <Input className="text-base" type="text" inputMode="numeric" value={price || ''} onChange={e => setPrice(parseInt(e.target.value.replace(/\s/g, '')) || 0)} />
       </div>
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Алғашқы жарна (%)', 'Первоначальный взнос (%)')}</label>
           <Input className="text-base" type="number" value={down} onChange={e => setDown(parseFloat(e.target.value) || 0)} />
@@ -44,7 +44,7 @@ export function MortgageCalc() {
       </div>
       <div className="mb-3">
         <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Сыйақы мөлшерлемесі', 'Процентная ставка')}</label>
-        <select className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary" value={rate} onChange={e => setRate(parseFloat(e.target.value))}>
+        <select className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary" value={rate} onChange={e => setRate(parseFloat(e.target.value))}>
           <option value={5}>Отбасы банк — 5%</option>
           <option value={7}>7-20-25 — 7%</option>
           <option value={16}>Halyk / BCC — 16-18%</option>

@@ -71,7 +71,7 @@ export function ConnectPage() {
               <button
                 key={f.key}
                 onClick={() => setMobileFilter(f.key)}
-                className={`text-xs px-3 py-1.5 rounded-full border font-semibold transition-colors ${
+                className={`text-xs px-3 py-2 min-h-[36px] rounded-full border font-semibold transition-colors ${
                   mobileFilter === f.key
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'border-border text-muted-foreground hover:border-primary hover:text-primary'
@@ -133,7 +133,7 @@ export function ConnectPage() {
               <button
                 key={f.key}
                 onClick={() => setIspFilter(f.key)}
-                className={`text-xs px-3 py-1.5 rounded-full border font-semibold transition-colors ${
+                className={`text-xs px-3 py-2 min-h-[36px] rounded-full border font-semibold transition-colors ${
                   ispFilter === f.key
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'border-border text-muted-foreground hover:border-primary hover:text-primary'

@@ -32,8 +32,8 @@ export function DepositCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Депозиттен түсетін пайданы есептеңіз', 'Рассчитайте доход от депозита')}</p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
-        <div className="col-span-2">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
+        <div className="sm:col-span-2">
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Сома (₸)', 'Сумма (₸)')}</label>
           <Input
             type="text"

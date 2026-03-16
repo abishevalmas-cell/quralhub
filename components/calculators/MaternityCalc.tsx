@@ -32,7 +32,7 @@ export function MaternityCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Жүктілік, босану және бала күтімі жәрдемақысын есептеңіз', 'Рассчитайте пособие по беременности, родам и уходу за ребёнком')}</p>
 
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Жалақы (₸)', 'Зарплата (₸)')}</label>
           <Input
@@ -46,7 +46,7 @@ export function MaternityCalc() {
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Босану түрі', 'Тип родов')}</label>
           <select
-            className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+            className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
             value={birthDays}
             onChange={e => setBirthDays(parseInt(e.target.value))}
           >

@@ -31,7 +31,7 @@ export function KaspiCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Kaspi Red бөліп төлеу сомасын есептеңіз', 'Рассчитайте сумму рассрочки Kaspi Red')}</p>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Тауар бағасы (₸)', 'Цена товара (₸)')}</label>
           <Input
@@ -45,7 +45,7 @@ export function KaspiCalc() {
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Бөліп төлеу мерзімі', 'Срок рассрочки')}</label>
           <select
-            className="w-full px-3 py-3 bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
+            className="w-full px-3 py-3 min-h-[44px] bg-card border border-border rounded-xl text-sm outline-none focus:border-primary"
             value={months}
             onChange={e => setMonths(parseInt(e.target.value))}
           >

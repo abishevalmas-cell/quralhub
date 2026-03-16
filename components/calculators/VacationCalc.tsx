@@ -32,7 +32,7 @@ export function VacationCalc() {
       </div>
       <p className="text-sm text-muted-foreground mb-5 leading-relaxed">{L('Жыл сайынғы ақылы демалыс ақысын есептеңіз', 'Рассчитайте сумму ежегодных оплачиваемых отпускных')}</p>
 
-      <div className="grid grid-cols-3 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Орташа айлық жалақы (₸)', 'Средняя зарплата (₸)')}</label>
           <Input

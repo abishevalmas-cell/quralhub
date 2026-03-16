@@ -58,7 +58,7 @@ export function MarketplaceCalc() {
       </p>
 
       {/* Platform selector chips */}
-      <div className="flex gap-2 mb-4">
+      <div className="flex flex-wrap gap-2 mb-4">
         {PLATFORMS.map(p => (
           <button
             key={p.id}
@@ -75,7 +75,7 @@ export function MarketplaceCalc() {
       </div>
 
       {/* Inputs */}
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Сату бағасы (₸)', 'Цена продажи (₸)')}</label>
           <Input
@@ -98,7 +98,7 @@ export function MarketplaceCalc() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Комиссия (%)', 'Комиссия (%)')}</label>
           <Input
@@ -121,7 +121,7 @@ export function MarketplaceCalc() {
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-3 mb-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
         <div>
           <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">{L('Қаптама / дана (₸)', 'Упаковка / шт (₸)')}</label>
           <Input
