@@ -18,12 +18,12 @@ import {
 } from '@/lib/data/dictionary'
 
 const LANGS = [
-  { code: 'kk', label: 'Qazaqsha' },
-  { code: 'ru', label: 'Russkiy' },
+  { code: 'kk', label: 'Қазақша' },
+  { code: 'ru', label: 'Русский' },
   { code: 'en', label: 'English' },
 ]
 
-type TranslateMode = '' | 'Sozdik' | 'Google' | 'API (kesh)' | 'Sozdik (oflain)'
+type TranslateMode = '' | 'Сөздік' | 'Google' | 'API (кэш)' | 'Сөздік (офлайн)'
 
 export function AiToolsPage() {
   const { lang } = useApp()
@@ -66,7 +66,7 @@ export function AiToolsPage() {
     const offlineResult = translateOffline(text, sl, tl)
     if (offlineResult) {
       setTranslated(offlineResult)
-      setTrMode('Sozdik')
+      setTrMode('Сөздік')
     }
 
     // 2. Check cache
@@ -74,7 +74,7 @@ export function AiToolsPage() {
     const cached = getTrCache(cacheKey)
     if (cached) {
       setTranslated(cached)
-      setTrMode('API (kesh)')
+      setTrMode('API (кэш)')
       return
     }
 
@@ -95,7 +95,7 @@ export function AiToolsPage() {
       if (!offlineResult) {
         setTranslated(L('Аударуда қате болды', 'Ошибка перевода'))
       }
-      setTrMode(offlineResult ? 'Sozdik (oflain)' : '')
+      setTrMode(offlineResult ? 'Сөздік (офлайн)' : '')
     } finally {
       setLoading(false)
     }
@@ -113,7 +113,7 @@ export function AiToolsPage() {
     const offlineResult = translateOffline(srcText, fromLang, toLang)
     if (offlineResult) {
       setTranslated(offlineResult)
-      setTrMode('Sozdik')
+      setTrMode('Сөздік')
     }
 
     // Check cache immediately too
@@ -121,7 +121,7 @@ export function AiToolsPage() {
     const cached = getTrCache(cacheKey)
     if (cached) {
       setTranslated(cached)
-      setTrMode('API (kesh)')
+      setTrMode('API (кэш)')
       return // no need for API call
     }
 
@@ -177,7 +177,7 @@ export function AiToolsPage() {
   // Mode badge styling
   const modeBadge = (mode: TranslateMode) => {
     if (!mode) return null
-    const isApi = mode === 'Google' || mode === 'API (kesh)'
+    const isApi = mode === 'Google' || mode === 'API (кэш)'
     return (
       <span
         className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-semibold"
