@@ -1,9 +1,8 @@
 'use client'
 import { useState } from 'react'
 import { ToolCard } from './ToolCard'
-import { TOOLS, SECTIONS, type Tool } from '@/lib/tools'
+import { TOOLS, SECTIONS } from '@/lib/tools'
 import { useApp } from '@/components/layout/Providers'
-import { Search } from 'lucide-react'
 
 const VISIBLE_COUNT = 6
 
@@ -12,22 +11,9 @@ export function ToolGrid() {
   const L = (kz: string, ru: string) => lang === 'ru' ? ru : kz
 
   const [expanded, setExpanded] = useState<Record<string, boolean>>({})
-  const [search, setSearch] = useState('')
 
   const toggleSection = (key: string) => {
     setExpanded(prev => ({ ...prev, [key]: !prev[key] }))
-  }
-
-  const searchLower = search.toLowerCase().trim()
-  const matchesTool = (tool: Tool) => {
-    if (!searchLower) return true
-    return (
-      tool.name.toLowerCase().includes(searchLower) ||
-      tool.nameRu.toLowerCase().includes(searchLower) ||
-      tool.description.toLowerCase().includes(searchLower) ||
-      tool.descriptionRu.toLowerCase().includes(searchLower) ||
-      tool.search.toLowerCase().includes(searchLower)
-    )
   }
 
   return (
@@ -39,41 +25,8 @@ export function ToolGrid() {
         <div className="absolute w-28 h-28 top-[50%] left-[15%] bg-purple-400 rounded-full opacity-[0.08] dark:opacity-[0.04] blur-3xl" style={{ animation: 'floatBlob 14s ease-in-out infinite 4s' }} />
       </div>
 
-      {/* Search bar */}
-      <div className="relative z-10 px-5 max-w-[960px] mx-auto">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={L('Құрал іздеу...', 'Поиск инструмента...')}
-            className="w-full h-10 pl-9 pr-3 rounded-xl bg-card border border-border text-sm outline-none focus:border-primary transition-colors"
-          />
-        </div>
-        {search && (
-          <p className="text-[10px] text-muted-foreground mt-1.5">
-            {TOOLS.filter(matchesTool).length} {L('құрал табылды', 'инструментов найдено')}
-          </p>
-        )}
-      </div>
-
-      {/* Search results */}
-      {searchLower && (
-        <div className="relative z-10 px-5 max-w-[960px] mx-auto">
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 sm:gap-4">
-            {TOOLS.filter(matchesTool).map(tool => (
-              <ToolCard key={tool.id} tool={tool} />
-            ))}
-          </div>
-          {TOOLS.filter(matchesTool).length === 0 && (
-            <p className="text-center py-8 text-muted-foreground text-sm">{L('Ештеңе табылмады', 'Ничего не найдено')}</p>
-          )}
-        </div>
-      )}
-
       {/* Collapsible sections */}
-      {!searchLower && SECTIONS.map(section => {
+      {SECTIONS.map(section => {
         const sectionTools = section.tools.map(id => TOOLS.find(t => t.id === id)!).filter(Boolean)
         const isExpanded = expanded[section.key] || sectionTools.length <= VISIBLE_COUNT
         const visibleTools = isExpanded ? sectionTools : sectionTools.slice(0, VISIBLE_COUNT)
