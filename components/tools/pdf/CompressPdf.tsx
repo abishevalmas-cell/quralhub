@@ -2,15 +2,15 @@
 import { useState, useCallback } from 'react'
 import { useApp } from '@/components/layout/Providers'
 import { PdfUploader } from './PdfUploader'
-import { downloadPdf, formatFileSize } from '@/lib/pdf/pdfUtils'
+import { formatFileSize } from '@/lib/pdf/pdfUtils'
 
 type Quality = 'low' | 'medium' | 'high'
 
-// Quality → image scale factor and JPEG quality
-const QUALITY_CONFIG: Record<Quality, { scale: number; jpegQuality: number; label: string }> = {
-  low: { scale: 0.5, jpegQuality: 0.4, label: 'max compression' },
-  medium: { scale: 0.7, jpegQuality: 0.65, label: 'balanced' },
-  high: { scale: 0.85, jpegQuality: 0.85, label: 'min compression' },
+// Quality presets: scale for rendering, JPEG quality for encoding
+const QUALITY_CONFIG: Record<Quality, { scale: number; jpegQuality: number }> = {
+  low: { scale: 0.75, jpegQuality: 0.5 },
+  medium: { scale: 1.0, jpegQuality: 0.7 },
+  high: { scale: 1.5, jpegQuality: 0.85 },
 }
 
 export function CompressPdf() {
@@ -20,6 +20,7 @@ export function CompressPdf() {
   const [file, setFile] = useState<File | null>(null)
   const [quality, setQuality] = useState<Quality>('medium')
   const [loading, setLoading] = useState(false)
+  const [progress, setProgress] = useState('')
   const [error, setError] = useState('')
   const [result, setResult] = useState<{ original: number; compressed: number } | null>(null)
 
@@ -27,6 +28,7 @@ export function CompressPdf() {
     setFile(files[0] || null)
     setError('')
     setResult(null)
+    setProgress('')
   }, [])
 
   const handleCompress = useCallback(async () => {
@@ -34,103 +36,97 @@ export function CompressPdf() {
     setLoading(true)
     setError('')
     setResult(null)
+    setProgress(L('PDF оқылуда...', 'Чтение PDF...'))
 
     try {
-      const { PDFDocument, PDFName, PDFRawStream } = await import('pdf-lib')
-      const buffer = await file.arrayBuffer()
-      const doc = await PDFDocument.load(buffer, { ignoreEncryption: true })
-
-      // Strategy 1: Strip metadata
-      doc.setTitle('')
-      doc.setAuthor('')
-      doc.setSubject('')
-      doc.setKeywords([])
-      doc.setProducer('Quralhub PDF Compress')
-      doc.setCreator('')
-
-      // Strategy 2: Compress images by re-encoding as JPEG at lower quality
       const config = QUALITY_CONFIG[quality]
-      const pages = doc.getPages()
+      const buffer = await file.arrayBuffer()
 
-      for (const page of pages) {
-        // Access embedded XObjects (images) on the page
-        try {
-          const resources = page.node.get(PDFName.of('Resources'))
-          if (!resources) continue
-          const xObjects = (resources as any).get?.(PDFName.of('XObject'))
-          if (!xObjects) continue
+      // Step 1: Render each page to canvas using pdfjs-dist
+      setProgress(L('Беттер рендерленуде...', 'Рендеринг страниц...'))
 
-          const keys = (xObjects as any).keys?.() || []
-          for (const key of keys) {
-            const xObj = (xObjects as any).get(key)
-            if (!xObj) continue
+      const pdfjsLib = await import('pdfjs-dist')
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
 
-            // Check if it's an image
-            const subtype = xObj.get?.(PDFName.of('Subtype'))
-            if (subtype?.toString() !== '/Image') continue
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+      const numPages = pdf.numPages
 
-            const width = xObj.get?.(PDFName.of('Width'))
-            const height = xObj.get?.(PDFName.of('Height'))
-            if (!width || !height) continue
+      // Collect page renders as JPEG data URLs with dimensions
+      const pageRenders: { dataUrl: string; width: number; height: number }[] = []
 
-            const w = typeof width === 'object' && 'numberValue' in width ? (width as any).numberValue : parseInt(String(width))
-            const h = typeof height === 'object' && 'numberValue' in height ? (height as any).numberValue : parseInt(String(height))
+      for (let i = 0; i < numPages; i++) {
+        setProgress(L(
+          `Бет ${i + 1}/${numPages} рендерленуде...`,
+          `Рендеринг страницы ${i + 1}/${numPages}...`
+        ))
 
-            if (w > 200 && h > 200) {
-              // Large image — mark for re-encoding
-              // pdf-lib doesn't support direct image re-compression
-              // We reduce by stripping filters where possible
-              try {
-                const filter = xObj.get?.(PDFName.of('Filter'))
-                if (filter && filter.toString() !== '/DCTDecode') {
-                  // Non-JPEG image — could be losslessly compressed already
-                  // We can't easily re-compress without full decode
-                }
-              } catch {
-                // Skip problematic images
-              }
-            }
-          }
-        } catch {
-          // Skip page if resource access fails
-        }
+        const page = await pdf.getPage(i + 1)
+        const viewport = page.getViewport({ scale: config.scale })
+        const canvas = document.createElement('canvas')
+        canvas.width = viewport.width
+        canvas.height = viewport.height
+        const ctx = canvas.getContext('2d')!
+
+        // White background for JPEG (no transparency)
+        ctx.fillStyle = '#ffffff'
+        ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+        await (page.render({ canvasContext: ctx, viewport } as any)).promise
+        const dataUrl = canvas.toDataURL('image/jpeg', config.jpegQuality)
+        pageRenders.push({
+          dataUrl,
+          width: viewport.width,
+          height: viewport.height,
+        })
       }
 
-      // Strategy 3: Save with object streams (better compression)
-      const bytes = await doc.save({
-        useObjectStreams: true,
-        addDefaultPage: false,
-        objectsPerTick: 100,
+      // Step 2: Create new PDF with jsPDF, adding each rendered page as JPEG image
+      setProgress(L('Жаңа PDF құрылуда...', 'Создание нового PDF...'))
+
+      const { jsPDF } = await import('jspdf')
+
+      // Use first page dimensions (in pt, divide by scale to get original size)
+      const firstPage = pageRenders[0]
+      const firstW = firstPage.width / config.scale
+      const firstH = firstPage.height / config.scale
+
+      const doc = new jsPDF({
+        orientation: firstW > firstH ? 'l' : 'p',
+        unit: 'pt',
+        format: [firstW, firstH],
       })
 
-      const compressed = bytes.length
+      for (let i = 0; i < pageRenders.length; i++) {
+        const pr = pageRenders[i]
+        const pageW = pr.width / config.scale
+        const pageH = pr.height / config.scale
 
-      // If re-save didn't help much, try copying pages to fresh document (removes orphaned objects)
-      if (compressed >= file.size * 0.95) {
-        const freshDoc = await PDFDocument.create()
-        const copiedPages = await freshDoc.copyPages(doc, doc.getPageIndices())
-        copiedPages.forEach(p => freshDoc.addPage(p))
-        freshDoc.setProducer('Quralhub PDF Compress')
-
-        const freshBytes = await freshDoc.save({
-          useObjectStreams: true,
-          addDefaultPage: false,
-        })
-
-        if (freshBytes.length < compressed) {
-          setResult({ original: file.size, compressed: freshBytes.length })
-          downloadPdf(freshBytes, `compressed_${file.name}`)
-          return
+        if (i > 0) {
+          doc.addPage([pageW, pageH], pageW > pageH ? 'l' : 'p')
         }
+
+        doc.addImage(pr.dataUrl, 'JPEG', 0, 0, pageW, pageH, undefined, 'FAST')
       }
 
+      const pdfOutput = doc.output('arraybuffer')
+      const compressed = pdfOutput.byteLength
+
       setResult({ original: file.size, compressed })
-      downloadPdf(bytes, `compressed_${file.name}`)
+
+      // Download the compressed PDF
+      const blob = new Blob([pdfOutput], { type: 'application/pdf' })
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = `compressed_${file.name}`
+      a.click()
+      URL.revokeObjectURL(url)
     } catch (e) {
       setError(L('PDF сығу кезінде қате болды', 'Ошибка при сжатии PDF'))
       console.error(e)
     } finally {
       setLoading(false)
+      setProgress('')
     }
   }, [file, quality, lang])
 
@@ -174,6 +170,11 @@ export function CompressPdf() {
             </button>
           ))}
         </div>
+        <div className="grid grid-cols-3 gap-2 text-[10px] text-muted-foreground">
+          <span className="text-center">{L('Кіші файл', 'Маленький файл')}</span>
+          <span className="text-center">{L('Баланс', 'Баланс')}</span>
+          <span className="text-center">{L('Жақсы сапа', 'Хорошее качество')}</span>
+        </div>
       </div>
 
       {result && (
@@ -202,9 +203,13 @@ export function CompressPdf() {
               <span className="text-sm font-bold text-green-700 dark:text-green-300">
                 -{savings}% ({formatFileSize(result.original - result.compressed)} {L('үнемделді', 'сэкономлено')})
               </span>
+            ) : savings > 0 ? (
+              <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
+                -{savings}% — {L('аздап сығылды', 'незначительное сжатие')}
+              </span>
             ) : (
               <span className="text-sm font-medium text-amber-700 dark:text-amber-300">
-                {L('Бұл PDF файл қазірдің өзінде оптималды', 'Этот PDF уже оптимизирован')}
+                {L('Файл өлшемі ұлғайды. Жоғары сападағы сығуды қолданыңыз.', 'Размер файла увеличился. Попробуйте более сильное сжатие.')}
               </span>
             )}
           </div>
@@ -213,8 +218,8 @@ export function CompressPdf() {
 
       <div className="p-3 rounded-xl bg-muted/50 text-[12px] text-muted-foreground leading-relaxed">
         {L(
-          'Сығу кезінде пайдаланылмаған объектілер жойылады, метадеректер тазаланады. Суреті көп PDF-тер 10-40% кішірейеді. Мәтіндік PDF-тер аз өзгеруі мүмкін.',
-          'При сжатии удаляются неиспользуемые объекты, очищаются метаданные. PDF с изображениями уменьшатся на 10-40%. Текстовые PDF могут измениться незначительно.'
+          'Әр бет сурет ретінде қайта кодталады — нақты файл өлшемін кішірейтеді. Суреті көп PDF файлдар 30-70% кішірейеді. Мәтін іздеу мүмкіндігі жоғалуы мүмкін.',
+          'Каждая страница перекодируется как изображение — реально уменьшает размер файла. PDF с изображениями уменьшатся на 30-70%. Возможность поиска текста может быть утеряна.'
         )}
       </div>
 
@@ -228,7 +233,9 @@ export function CompressPdf() {
         className="w-full py-3 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all disabled:opacity-50 min-h-[44px] flex items-center justify-center gap-2"
       >
         {loading && <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />}
-        {loading ? L('Сығылуда...', 'Сжатие...') : L('Сығу және жүктеу', 'Сжать и скачать')}
+        {loading
+          ? progress || L('Сығылуда...', 'Сжатие...')
+          : L('Сығу және жүктеу', 'Сжать и скачать')}
       </button>
     </div>
   )

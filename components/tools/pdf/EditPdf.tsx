@@ -3,7 +3,7 @@ import { useState, useCallback, useRef, useEffect } from 'react'
 import { useApp } from '@/components/layout/Providers'
 import { PdfUploader } from './PdfUploader'
 import { editPdfWithStamps, type StampPlacement } from '@/lib/pdf/editPdf'
-import { getPageCount, downloadPdf, readFileAsDataURL } from '@/lib/pdf/pdfUtils'
+import { downloadPdf, readFileAsDataURL } from '@/lib/pdf/pdfUtils'
 import { PDFDocument } from 'pdf-lib'
 
 interface OverlayItem {
@@ -31,11 +31,13 @@ export function EditPdf() {
   const [file, setFile] = useState<File | null>(null)
   const [pageCount, setPageCount] = useState(0)
   const [pageDims, setPageDims] = useState<{ w: number; h: number }[]>([])
+  const [pageImages, setPageImages] = useState<string[]>([])
   const [overlays, setOverlays] = useState<OverlayItem[]>([])
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [activeMode, setActiveMode] = useState<ToolMode>(null)
   const [currentPage, setCurrentPage] = useState(0)
   const [loading, setLoading] = useState(false)
+  const [renderingPages, setRenderingPages] = useState(false)
   const [error, setError] = useState('')
 
   // Text input state
@@ -60,6 +62,35 @@ export function EditPdf() {
     }
   }, [])
 
+  /** Render all PDF pages to images using pdfjs-dist */
+  const renderPdfPages = useCallback(async (buffer: ArrayBuffer) => {
+    setRenderingPages(true)
+    try {
+      const pdfjsLib = await import('pdfjs-dist')
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+
+      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+      const images: string[] = []
+
+      for (let i = 0; i < pdf.numPages; i++) {
+        const page = await pdf.getPage(i + 1)
+        const viewport = page.getViewport({ scale: 2 })
+        const canvas = document.createElement('canvas')
+        canvas.width = viewport.width
+        canvas.height = viewport.height
+        const ctx = canvas.getContext('2d')!
+        await (page.render({ canvasContext: ctx, viewport } as any)).promise
+        images.push(canvas.toDataURL('image/jpeg', 0.85))
+      }
+
+      setPageImages(images)
+    } catch (err) {
+      console.error('Failed to render PDF pages:', err)
+    } finally {
+      setRenderingPages(false)
+    }
+  }, [])
+
   const handleFiles = useCallback(async (files: File[]) => {
     const f = files[0]
     if (!f) return
@@ -68,6 +99,7 @@ export function EditPdf() {
     setOverlays([])
     setSelectedId(null)
     setCurrentPage(0)
+    setPageImages([])
     try {
       const buffer = await f.arrayBuffer()
       const doc = await PDFDocument.load(buffer)
@@ -80,10 +112,14 @@ export function EditPdf() {
         dims.push({ w: width, h: height })
       }
       setPageDims(dims)
+
+      // Render pages with pdfjs-dist
+      const buffer2 = await f.arrayBuffer()
+      renderPdfPages(buffer2)
     } catch {
       setError(L('PDF файлды оқу мүмкін болмады', 'Не удалось прочитать PDF файл'))
     }
-  }, [lang])
+  }, [lang, renderPdfPages])
 
   const genId = () => `item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
 
@@ -319,6 +355,7 @@ export function EditPdf() {
   const currentDim = pageDims[currentPage] || { w: PAGE_W, h: PAGE_H }
   const aspectRatio = currentDim.w / currentDim.h
   const pageOverlays = overlays.filter(o => o.pageIndex === currentPage)
+  const currentPageImage = pageImages[currentPage] || null
 
   return (
     <div className="space-y-4">
@@ -334,6 +371,12 @@ export function EditPdf() {
             <span>📄</span>
             <span className="font-semibold">{file.name}</span>
             <span className="text-muted-foreground">— {pageCount} {L('бет', 'стр.')}</span>
+            {renderingPages && (
+              <span className="text-muted-foreground flex items-center gap-1.5">
+                <span className="w-3 h-3 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />
+                {L('Беттер жүктелуде...', 'Загрузка страниц...')}
+              </span>
+            )}
           </div>
 
           {/* Toolbar */}
@@ -504,76 +547,168 @@ export function EditPdf() {
             </div>
           )}
 
-          {/* Page canvas area */}
-          <div
-            id={`pdf-page-${currentPage}`}
-            className="relative mx-auto border border-border rounded-xl bg-white overflow-hidden select-none"
-            style={{
-              aspectRatio: `${aspectRatio}`,
-              maxWidth: 560,
-              width: '100%',
-            }}
-            onClick={(e) => {
-              // Deselect if clicking empty area
-              if ((e.target as HTMLElement).id === `pdf-page-${currentPage}`) {
-                setSelectedId(null)
-              }
-            }}
-          >
-            {/* Page background placeholder */}
-            <div className="absolute inset-0 flex items-center justify-center text-muted-foreground/30">
-              <div className="text-center">
-                <div className="text-5xl mb-2">📄</div>
-                <p className="text-sm font-semibold">{L('Бет', 'Страница')} {currentPage + 1}</p>
-                <p className="text-xs">{Math.round(currentDim.w)} x {Math.round(currentDim.h)} pt</p>
+          {/* Main area: sidebar + page */}
+          <div className="flex gap-3">
+            {/* Left sidebar — page thumbnails */}
+            {pageCount > 1 && (
+              <div className="hidden sm:flex flex-col gap-2 w-20 shrink-0 max-h-[600px] overflow-y-auto pr-1 scrollbar-thin">
+                {pageImages.map((img, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentPage(idx)}
+                    className={`relative rounded-lg overflow-hidden border-2 transition-all shrink-0 ${
+                      currentPage === idx
+                        ? 'border-primary ring-1 ring-primary/30'
+                        : 'border-border hover:border-primary/50'
+                    }`}
+                    style={{ aspectRatio: `${(pageDims[idx]?.w || PAGE_W) / (pageDims[idx]?.h || PAGE_H)}` }}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={img}
+                      alt={`${idx + 1}`}
+                      className="w-full h-full object-cover"
+                      draggable={false}
+                    />
+                    <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5 font-semibold">
+                      {idx + 1}
+                    </span>
+                    {/* Overlay indicator dot */}
+                    {overlays.some(o => o.pageIndex === idx) && (
+                      <span className="absolute top-1 right-1 w-2 h-2 rounded-full bg-primary" />
+                    )}
+                  </button>
+                ))}
+                {/* Show placeholder thumbnails while rendering */}
+                {pageImages.length === 0 && renderingPages && Array.from({ length: pageCount }).map((_, idx) => (
+                  <div
+                    key={`ph-${idx}`}
+                    className="rounded-lg border-2 border-border bg-muted/30 flex items-center justify-center shrink-0"
+                    style={{ aspectRatio: `${(pageDims[idx]?.w || PAGE_W) / (pageDims[idx]?.h || PAGE_H)}` }}
+                  >
+                    <span className="text-[9px] text-muted-foreground">{idx + 1}</span>
+                  </div>
+                ))}
               </div>
-            </div>
+            )}
 
-            {/* Overlays */}
-            {pageOverlays.map(item => (
-              <div
-                key={item.id}
-                className={`absolute cursor-move group ${
-                  selectedId === item.id ? 'ring-2 ring-blue-500 ring-offset-1' : 'hover:ring-1 hover:ring-blue-300'
-                }`}
-                style={{
-                  left: `${item.xPct}%`,
-                  top: `${item.yPct}%`,
-                  width: `${item.widthPct}%`,
-                  height: `${item.heightPct}%`,
-                }}
-                onMouseDown={(e) => handleOverlayMouseDown(e, item.id)}
-                onTouchStart={(e) => handleOverlayMouseDown(e, item.id)}
-              >
-                {item.type === 'image' ? (
-                  /* eslint-disable-next-line @next/next/no-img-element */
+            {/* Page canvas area */}
+            <div
+              id={`pdf-page-${currentPage}`}
+              className="relative mx-auto border border-border rounded-xl overflow-hidden select-none flex-1"
+              style={{
+                aspectRatio: `${aspectRatio}`,
+                maxWidth: 560,
+                width: '100%',
+              }}
+              onClick={(e) => {
+                // Deselect if clicking empty area
+                if ((e.target as HTMLElement).id === `pdf-page-${currentPage}`) {
+                  setSelectedId(null)
+                }
+              }}
+            >
+              {/* Rendered page image background */}
+              {currentPageImage ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  src={currentPageImage}
+                  alt={`${L('Бет', 'Страница')} ${currentPage + 1}`}
+                  className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+                  draggable={false}
+                />
+              ) : (
+                <div className="absolute inset-0 flex items-center justify-center bg-white text-muted-foreground/30">
+                  {renderingPages ? (
+                    <div className="text-center">
+                      <span className="w-6 h-6 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin inline-block mb-2" />
+                      <p className="text-xs font-semibold">{L('Бет жүктелуде...', 'Загрузка страницы...')}</p>
+                    </div>
+                  ) : (
+                    <div className="text-center">
+                      <div className="text-5xl mb-2">📄</div>
+                      <p className="text-sm font-semibold">{L('Бет', 'Страница')} {currentPage + 1}</p>
+                      <p className="text-xs">{Math.round(currentDim.w)} x {Math.round(currentDim.h)} pt</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Overlays */}
+              {pageOverlays.map(item => (
+                <div
+                  key={item.id}
+                  className={`absolute cursor-move group ${
+                    selectedId === item.id ? 'ring-2 ring-blue-500 ring-offset-1' : 'hover:ring-1 hover:ring-blue-300'
+                  }`}
+                  style={{
+                    left: `${item.xPct}%`,
+                    top: `${item.yPct}%`,
+                    width: `${item.widthPct}%`,
+                    height: `${item.heightPct}%`,
+                  }}
+                  onMouseDown={(e) => handleOverlayMouseDown(e, item.id)}
+                  onTouchStart={(e) => handleOverlayMouseDown(e, item.id)}
+                >
+                  {item.type === 'image' ? (
+                    /* eslint-disable-next-line @next/next/no-img-element */
+                    <img
+                      src={item.data}
+                      alt="stamp"
+                      className="w-full h-full object-contain pointer-events-none"
+                      draggable={false}
+                    />
+                  ) : (
+                    <div
+                      className="w-full h-full flex items-center text-black pointer-events-none overflow-hidden"
+                      style={{ fontSize: `${item.fontSize || 14}px`, lineHeight: 1.2 }}
+                    >
+                      {item.data}
+                    </div>
+                  )}
+
+                  {/* Delete button on hover */}
+                  {selectedId === item.id && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); deleteSelected() }}
+                      className="absolute -top-2.5 -right-2.5 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] flex items-center justify-center hover:bg-red-700 z-10"
+                    >
+                      ✕
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Mobile page thumbnails (horizontal scroll) */}
+          {pageCount > 1 && pageImages.length > 0 && (
+            <div className="sm:hidden flex gap-2 overflow-x-auto pb-2">
+              {pageImages.map((img, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentPage(idx)}
+                  className={`relative rounded-lg overflow-hidden border-2 transition-all shrink-0 w-14 ${
+                    currentPage === idx
+                      ? 'border-primary ring-1 ring-primary/30'
+                      : 'border-border hover:border-primary/50'
+                  }`}
+                  style={{ aspectRatio: `${(pageDims[idx]?.w || PAGE_W) / (pageDims[idx]?.h || PAGE_H)}` }}
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
-                    src={item.data}
-                    alt="stamp"
-                    className="w-full h-full object-contain pointer-events-none"
+                    src={img}
+                    alt={`${idx + 1}`}
+                    className="w-full h-full object-cover"
                     draggable={false}
                   />
-                ) : (
-                  <div
-                    className="w-full h-full flex items-center text-black pointer-events-none overflow-hidden"
-                    style={{ fontSize: `${item.fontSize || 14}px`, lineHeight: 1.2 }}
-                  >
-                    {item.data}
-                  </div>
-                )}
-
-                {/* Delete button on hover */}
-                {selectedId === item.id && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); deleteSelected() }}
-                    className="absolute -top-2.5 -right-2.5 w-5 h-5 rounded-full bg-red-600 text-white text-[10px] flex items-center justify-center hover:bg-red-700 z-10"
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
+                  <span className="absolute bottom-0 inset-x-0 bg-black/60 text-white text-[9px] text-center py-0.5 font-semibold">
+                    {idx + 1}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
 
           {/* Overlay count */}
           {overlays.length > 0 && (
