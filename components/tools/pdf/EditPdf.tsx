@@ -171,37 +171,58 @@ export function EditPdf() {
     }
   }, [])
 
-  /** Render all PDF pages to images using pdfjs-dist */
-  const renderPdfPages = useCallback(async (buffer: ArrayBuffer) => {
+  // Store pdf document reference for lazy rendering
+  const pdfDocRef = useRef<any>(null)
+
+  /** Load PDF and render only current page (lazy) */
+  const loadPdfDoc = useCallback(async (buffer: ArrayBuffer) => {
     setRenderingPages(true)
     try {
       const pdfjsLib = await import('pdfjs-dist')
-      // Use CDN worker with https, fallback to no worker
-      try {
-        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
-      } catch {
-        // Worker not available — will run on main thread
+      // Disable worker on mobile — runs on main thread (slower but reliable)
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+      if (!isMobile) {
+        try {
+          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+        } catch { /* fallback to no worker */ }
       }
 
       const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise
-      const images: string[] = []
+      pdfDocRef.current = pdf
 
-      for (let i = 0; i < pdf.numPages; i++) {
-        const page = await pdf.getPage(i + 1)
-        const viewport = page.getViewport({ scale: 2 })
-        const canvas = document.createElement('canvas')
-        canvas.width = viewport.width
-        canvas.height = viewport.height
-        const ctx = canvas.getContext('2d')!
-        await (page.render({ canvasContext: ctx, viewport } as any)).promise
-        images.push(canvas.toDataURL('image/jpeg', 0.85))
-      }
-
-      setPageImages(images)
+      // Render only first page immediately
+      await renderSinglePage(pdf, 0)
     } catch (err) {
-      console.error('Failed to render PDF pages:', err)
+      console.error('Failed to load PDF:', err)
     } finally {
       setRenderingPages(false)
+    }
+  }, [])
+
+  /** Render a single page by index */
+  const renderSinglePage = useCallback(async (pdf: any, pageIdx: number) => {
+    try {
+      const page = await pdf.getPage(pageIdx + 1)
+      // Lower scale on mobile for performance
+      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
+      const scale = isMobile ? 1.2 : 1.8
+      const viewport = page.getViewport({ scale })
+      const canvas = document.createElement('canvas')
+      canvas.width = viewport.width
+      canvas.height = viewport.height
+      const ctx = canvas.getContext('2d')!
+      ctx.fillStyle = '#ffffff'
+      ctx.fillRect(0, 0, canvas.width, canvas.height)
+      await (page.render({ canvasContext: ctx, viewport } as any)).promise
+      const dataUrl = canvas.toDataURL('image/jpeg', 0.75)
+
+      setPageImages(prev => {
+        const arr = [...prev]
+        arr[pageIdx] = dataUrl
+        return arr
+      })
+    } catch (err) {
+      console.error(`Failed to render page ${pageIdx + 1}:`, err)
     }
   }, [])
 
@@ -231,11 +252,18 @@ export function EditPdf() {
 
       // Render pages with pdfjs-dist
       const buffer2 = await f.arrayBuffer()
-      renderPdfPages(buffer2)
+      loadPdfDoc(buffer2)
     } catch {
       setError(L('PDF файлды оқу мүмкін болмады', 'Не удалось прочитать PDF файл'))
     }
-  }, [lang, renderPdfPages])
+  }, [lang, loadPdfDoc])
+
+  // Lazy render: when page changes, render if not already rendered
+  useEffect(() => {
+    if (pdfDocRef.current && !pageImages[currentPage]) {
+      renderSinglePage(pdfDocRef.current, currentPage)
+    }
+  }, [currentPage, pageImages, renderSinglePage])
 
   const genId = () => `item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
 
