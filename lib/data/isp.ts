@@ -21,9 +21,11 @@ export const ISP_DATA: ISPProvider[] = [
     { name: 'Хит 1000', speed: 1000, price: 9990, tv: 200, tier: 'premium' },
   ]},
   { name: 'Kazakhtelecom', color: '#003DA5', textColor: '#fff', plans: [
+    { name: 'iD Net 60', speed: 60, price: 2990, tv: 0, tier: 'budget' },
     { name: 'iD Net 100', speed: 100, price: 3990, tv: 0, tier: 'budget' },
     { name: 'iD Net 300', speed: 300, price: 5490, tv: 100, tier: 'mid' },
     { name: 'iD TV+Net 500', speed: 500, price: 7990, tv: 200, tier: 'premium' },
+    { name: 'iD Net 1000', speed: 1000, price: 9490, tv: 250, tier: 'premium' },
   ]},
   { name: 'Tele2 Home', color: '#1F2340', textColor: '#fff', plans: [
     { name: 'Базовый', speed: 100, price: 3790, tv: 0, tier: 'budget' },
@@ -37,6 +39,7 @@ export const ISP_DATA: ISPProvider[] = [
   ]},
   { name: 'Kcell Home', color: '#660099', textColor: '#fff', plans: [
     { name: 'Home 100', speed: 100, price: 4290, tv: 0, tier: 'budget' },
+    { name: 'Home 300', speed: 300, price: 5990, tv: 0, tier: 'mid' },
     { name: 'Home 500', speed: 500, price: 6990, tv: 0, tier: 'mid' },
   ]},
   { name: 'iDNet', color: '#00A859', textColor: '#fff', plans: [
