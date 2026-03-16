@@ -46,7 +46,7 @@ export function CompressPdf() {
       setProgress(L('Беттер рендерленуде...', 'Рендеринг страниц...'))
 
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
 
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
       const numPages = pdf.numPages

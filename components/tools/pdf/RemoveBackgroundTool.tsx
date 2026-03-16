@@ -78,7 +78,10 @@ export function RemoveBackgroundTool() {
   const handleUseInEditor = useCallback(() => {
     if (!resultPreview) return
     localStorage.setItem('quralhub_stamp_image', resultPreview)
-    // Show notification
+    // Navigate to PDF Editor tool — trigger parent to switch tool
+    // First try parent callback, then fallback to scroll + alert
+    const event = new CustomEvent('switch-pdf-tool', { detail: 'edit' })
+    window.dispatchEvent(event)
     setError('')
     alert(L(
       'Сурет сақталды! PDF Редакторын ашыңыз — автоматты түрде қосылады.',

@@ -52,18 +52,30 @@ export async function removeBackground(
     const g = data[i + 1]
     const b = data[i + 2]
 
-    // Check if pixel is white/light
+    // Brightness (average)
     const brightness = (r + g + b) / 3
 
-    if (brightness >= opts.threshold) {
+    // Saturation — low saturation = gray/white (background)
+    const maxC = Math.max(r, g, b)
+    const minC = Math.min(r, g, b)
+    const saturation = maxC === 0 ? 0 : (maxC - minC) / maxC
+
+    // Remove white AND gray backgrounds (low saturation + high brightness)
+    const isBackground = brightness >= opts.threshold ||
+      (brightness >= opts.threshold - 50 && saturation < 0.15)
+
+    if (isBackground) {
       // Fully transparent
       data[i + 3] = 0
-    } else if (opts.removeNearWhite && brightness >= opts.threshold - 30) {
-      // Gradual fade for near-white (feathering)
-      const factor = (brightness - (opts.threshold - 30)) / 30
-      data[i + 3] = Math.round(255 * (1 - factor))
+    } else if (opts.removeNearWhite && brightness >= opts.threshold - 40 && saturation < 0.25) {
+      // Gradual fade for near-background (feathering)
+      const factor = Math.max(
+        (brightness - (opts.threshold - 40)) / 40,
+        (0.25 - saturation) / 0.25 * 0.5
+      )
+      data[i + 3] = Math.round(255 * Math.max(0, 1 - factor))
     }
-    // else: keep pixel as-is
+    // else: keep pixel as-is (colored content like stamps)
   }
 
   // Apply feathering pass (soften edges)

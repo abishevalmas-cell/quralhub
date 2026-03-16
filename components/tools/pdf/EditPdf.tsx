@@ -16,13 +16,102 @@ interface OverlayItem {
   heightPct: number
   data: string   // base64 dataURL or text
   fontSize?: number
+  color?: { r: number; g: number; b: number }
 }
 
-type ToolMode = 'stamp' | 'signature' | 'text' | null
+type ToolMode = 'stamp' | 'signature' | 'text' | 'pencil' | 'highlighter' | 'shapes' | null
+type ShapeType = 'rect' | 'circle' | 'line' | 'arrow'
+
+const PENCIL_COLORS = [
+  { label: 'Black', value: '#000000' },
+  { label: 'Red', value: '#EF4444' },
+  { label: 'Blue', value: '#3B82F6' },
+  { label: 'Green', value: '#22C55E' },
+]
+
+const HIGHLIGHTER_COLORS = [
+  { label: 'Yellow', value: '#FACC15' },
+  { label: 'Green', value: '#4ADE80' },
+  { label: 'Pink', value: '#F472B6' },
+  { label: 'Blue', value: '#60A5FA' },
+]
+
+const TEXT_COLORS = [
+  { label: 'Black', rgb: { r: 0, g: 0, b: 0 }, hex: '#000000' },
+  { label: 'Red', rgb: { r: 0.93, g: 0.27, b: 0.27 }, hex: '#EF4444' },
+  { label: 'Blue', rgb: { r: 0.23, g: 0.51, b: 0.96 }, hex: '#3B82F6' },
+  { label: 'Green', rgb: { r: 0.13, g: 0.77, b: 0.37 }, hex: '#22C55E' },
+]
+
+const SHAPE_COLORS = [
+  { label: 'Black', value: '#000000' },
+  { label: 'Red', value: '#EF4444' },
+  { label: 'Blue', value: '#3B82F6' },
+  { label: 'Green', value: '#22C55E' },
+]
 
 // A4 aspect ratio constants
 const PAGE_W = 595
 const PAGE_H = 842
+
+function drawShapeOnCtx(
+  ctx: CanvasRenderingContext2D,
+  shape: ShapeType,
+  x1: number, y1: number, x2: number, y2: number,
+  fill: boolean,
+) {
+  ctx.beginPath()
+  switch (shape) {
+    case 'rect': {
+      const rx = Math.min(x1, x2)
+      const ry = Math.min(y1, y2)
+      const rw = Math.abs(x2 - x1)
+      const rh = Math.abs(y2 - y1)
+      if (fill) {
+        ctx.globalAlpha = 0.3
+        ctx.fillRect(rx, ry, rw, rh)
+        ctx.globalAlpha = 1
+      }
+      ctx.strokeRect(rx, ry, rw, rh)
+      break
+    }
+    case 'circle': {
+      const cx = (x1 + x2) / 2
+      const cy = (y1 + y2) / 2
+      const rx = Math.abs(x2 - x1) / 2
+      const ry = Math.abs(y2 - y1) / 2
+      ctx.ellipse(cx, cy, rx, ry, 0, 0, Math.PI * 2)
+      if (fill) {
+        ctx.globalAlpha = 0.3
+        ctx.fill()
+        ctx.globalAlpha = 1
+      }
+      ctx.stroke()
+      break
+    }
+    case 'line': {
+      ctx.moveTo(x1, y1)
+      ctx.lineTo(x2, y2)
+      ctx.stroke()
+      break
+    }
+    case 'arrow': {
+      ctx.moveTo(x1, y1)
+      ctx.lineTo(x2, y2)
+      ctx.stroke()
+      // Arrowhead
+      const angle = Math.atan2(y2 - y1, x2 - x1)
+      const headLen = 12
+      ctx.beginPath()
+      ctx.moveTo(x2, y2)
+      ctx.lineTo(x2 - headLen * Math.cos(angle - Math.PI / 6), y2 - headLen * Math.sin(angle - Math.PI / 6))
+      ctx.moveTo(x2, y2)
+      ctx.lineTo(x2 - headLen * Math.cos(angle + Math.PI / 6), y2 - headLen * Math.sin(angle + Math.PI / 6))
+      ctx.stroke()
+      break
+    }
+  }
+}
 
 export function EditPdf() {
   const { lang } = useApp()
@@ -40,9 +129,29 @@ export function EditPdf() {
   const [renderingPages, setRenderingPages] = useState(false)
   const [error, setError] = useState('')
 
+  // Undo/Redo stacks
+  const [undoStack, setUndoStack] = useState<OverlayItem[][]>([])
+  const [redoStack, setRedoStack] = useState<OverlayItem[][]>([])
+
+  // Pencil/Highlighter state
+  const [pencilColor, setPencilColor] = useState('#000000')
+  const [pencilThickness, setPencilThickness] = useState(4)
+  const [highlighterColor, setHighlighterColor] = useState('#FACC15')
+  const drawCanvasRef = useRef<HTMLCanvasElement>(null)
+  const isDrawingRef = useRef(false)
+  const drawPointsRef = useRef<{ x: number; y: number }[]>([])
+
+  // Shape state
+  const [shapeType, setShapeType] = useState<ShapeType>('rect')
+  const [shapeColor, setShapeColor] = useState('#000000')
+  const [shapeFill, setShapeFill] = useState(false)
+  const shapeStartRef = useRef<{ x: number; y: number } | null>(null)
+  const shapePreviewRef = useRef<HTMLCanvasElement>(null)
+
   // Text input state
   const [textInput, setTextInput] = useState('')
   const [textFontSize, setTextFontSize] = useState(16)
+  const [textColor, setTextColor] = useState(TEXT_COLORS[0])
 
   // Signature canvas
   const [showSigPad, setShowSigPad] = useState(false)
@@ -67,9 +176,14 @@ export function EditPdf() {
     setRenderingPages(true)
     try {
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+      // Use CDN worker with https, fallback to no worker
+      try {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+      } catch {
+        // Worker not available — will run on main thread
+      }
 
-      const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
+      const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise
       const images: string[] = []
 
       for (let i = 0; i < pdf.numPages; i++) {
@@ -100,6 +214,8 @@ export function EditPdf() {
     setSelectedId(null)
     setCurrentPage(0)
     setPageImages([])
+    setUndoStack([])
+    setRedoStack([])
     try {
       const buffer = await f.arrayBuffer()
       const doc = await PDFDocument.load(buffer)
@@ -123,7 +239,36 @@ export function EditPdf() {
 
   const genId = () => `item_${Date.now()}_${Math.random().toString(36).slice(2, 6)}`
 
-  const addOverlay = useCallback((type: 'image' | 'text', data: string, fontSize?: number) => {
+  const pushUndo = useCallback((currentOverlays: OverlayItem[]) => {
+    setUndoStack(prev => [...prev, currentOverlays])
+    setRedoStack([]) // clear redo on new action
+  }, [])
+
+  const handleUndo = useCallback(() => {
+    setUndoStack(prev => {
+      if (prev.length === 0) return prev
+      const newStack = [...prev]
+      const last = newStack.pop()!
+      setRedoStack(r => [...r, overlays])
+      setOverlays(last)
+      setSelectedId(null)
+      return newStack
+    })
+  }, [overlays])
+
+  const handleRedo = useCallback(() => {
+    setRedoStack(prev => {
+      if (prev.length === 0) return prev
+      const newStack = [...prev]
+      const last = newStack.pop()!
+      setUndoStack(u => [...u, overlays])
+      setOverlays(last)
+      setSelectedId(null)
+      return newStack
+    })
+  }, [overlays])
+
+  const addOverlay = useCallback((type: 'image' | 'text', data: string, fontSize?: number, color?: { r: number; g: number; b: number }) => {
     const item: OverlayItem = {
       id: genId(),
       type,
@@ -134,11 +279,33 @@ export function EditPdf() {
       heightPct: type === 'image' ? 15 : 5,
       data,
       fontSize: fontSize || 16,
+      color,
     }
-    setOverlays(prev => [...prev, item])
+    setOverlays(prev => {
+      pushUndo(prev)
+      return [...prev, item]
+    })
     setSelectedId(item.id)
     setActiveMode(null)
-  }, [currentPage])
+  }, [currentPage, pushUndo])
+
+  /** Add overlay without resetting activeMode (for drawing tools) */
+  const addDrawingOverlay = useCallback((data: string, xPct: number, yPct: number, widthPct: number, heightPct: number) => {
+    const item: OverlayItem = {
+      id: genId(),
+      type: 'image',
+      pageIndex: currentPage,
+      xPct,
+      yPct,
+      widthPct,
+      heightPct,
+      data,
+    }
+    setOverlays(prev => {
+      pushUndo(prev)
+      return [...prev, item]
+    })
+  }, [currentPage, pushUndo])
 
   // Handle stamp image upload
   const handleStampUpload = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -152,10 +319,10 @@ export function EditPdf() {
   // Handle text add
   const handleAddText = useCallback(() => {
     if (!textInput.trim()) return
-    addOverlay('text', textInput.trim(), textFontSize)
+    addOverlay('text', textInput.trim(), textFontSize, textColor.rgb)
     setTextInput('')
     setActiveMode(null)
-  }, [textInput, textFontSize, addOverlay])
+  }, [textInput, textFontSize, textColor, addOverlay])
 
   // Signature pad handlers
   const initSigCanvas = useCallback(() => {
@@ -304,6 +471,7 @@ export function EditPdf() {
 
   const deleteSelected = () => {
     if (!selectedId) return
+    pushUndo(overlays)
     setOverlays(prev => prev.filter(o => o.id !== selectedId))
     setSelectedId(null)
   }
@@ -318,6 +486,239 @@ export function EditPdf() {
       const newH = o.heightPct * ratio
       return { ...o, widthPct: newW, heightPct: Math.max(3, Math.min(80, newH)) }
     }))
+  }
+
+  // ===== Drawing (Pencil / Highlighter) handlers =====
+  const getDrawCanvasPos = (e: React.MouseEvent | React.TouchEvent) => {
+    const canvas = drawCanvasRef.current
+    if (!canvas) return { x: 0, y: 0 }
+    const rect = canvas.getBoundingClientRect()
+    const scaleX = canvas.width / rect.width
+    const scaleY = canvas.height / rect.height
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0]
+      return { x: (touch.clientX - rect.left) * scaleX, y: (touch.clientY - rect.top) * scaleY }
+    }
+    return { x: (e.clientX - rect.left) * scaleX, y: (e.clientY - rect.top) * scaleY }
+  }
+
+  const drawStartHandler = (e: React.MouseEvent | React.TouchEvent) => {
+    if (activeMode !== 'pencil' && activeMode !== 'highlighter') return
+    e.preventDefault()
+    e.stopPropagation()
+    isDrawingRef.current = true
+    const pos = getDrawCanvasPos(e)
+    drawPointsRef.current = [pos]
+    const canvas = drawCanvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+    ctx.beginPath()
+    ctx.moveTo(pos.x, pos.y)
+    if (activeMode === 'pencil') {
+      ctx.strokeStyle = pencilColor
+      ctx.lineWidth = pencilThickness
+      ctx.globalAlpha = 1
+    } else {
+      ctx.strokeStyle = highlighterColor
+      ctx.lineWidth = 20
+      ctx.globalAlpha = 0.5
+    }
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+  }
+
+  const drawMoveHandler = (e: React.MouseEvent | React.TouchEvent) => {
+    if (!isDrawingRef.current) return
+    e.preventDefault()
+    e.stopPropagation()
+    const pos = getDrawCanvasPos(e)
+    drawPointsRef.current.push(pos)
+    const canvas = drawCanvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    ctx.lineTo(pos.x, pos.y)
+    ctx.stroke()
+  }
+
+  const drawEndHandler = () => {
+    if (!isDrawingRef.current) return
+    isDrawingRef.current = false
+    const canvas = drawCanvasRef.current
+    if (!canvas) return
+    const points = drawPointsRef.current
+    if (points.length < 2) {
+      const ctx = canvas.getContext('2d')
+      if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
+      return
+    }
+    // Compute bounding box of the stroke
+    let minX = Infinity, minY = Infinity, maxX = -Infinity, maxY = -Infinity
+    for (const p of points) {
+      if (p.x < minX) minX = p.x
+      if (p.y < minY) minY = p.y
+      if (p.x > maxX) maxX = p.x
+      if (p.y > maxY) maxY = p.y
+    }
+    const pad = activeMode === 'highlighter' ? 14 : pencilThickness + 2
+    minX = Math.max(0, minX - pad)
+    minY = Math.max(0, minY - pad)
+    maxX = Math.min(canvas.width, maxX + pad)
+    maxY = Math.min(canvas.height, maxY + pad)
+    const bw = maxX - minX
+    const bh = maxY - minY
+    if (bw < 2 || bh < 2) return
+
+    // Draw stroke on a temp canvas with precise bounds
+    const tmpCanvas = document.createElement('canvas')
+    tmpCanvas.width = bw * 2
+    tmpCanvas.height = bh * 2
+    const tctx = tmpCanvas.getContext('2d')!
+    tctx.scale(2, 2)
+    tctx.lineCap = 'round'
+    tctx.lineJoin = 'round'
+    if (activeMode === 'pencil') {
+      tctx.strokeStyle = pencilColor
+      tctx.lineWidth = pencilThickness
+      tctx.globalAlpha = 1
+    } else {
+      tctx.strokeStyle = highlighterColor
+      tctx.lineWidth = 20
+      tctx.globalAlpha = 0.5
+    }
+    tctx.beginPath()
+    tctx.moveTo(points[0].x - minX, points[0].y - minY)
+    for (let i = 1; i < points.length; i++) {
+      tctx.lineTo(points[i].x - minX, points[i].y - minY)
+    }
+    tctx.stroke()
+
+    const dataUrl = tmpCanvas.toDataURL('image/png')
+    // Convert pixel coords to percentage of page
+    const xPct = (minX / canvas.width) * 100
+    const yPct = (minY / canvas.height) * 100
+    const wPct = (bw / canvas.width) * 100
+    const hPct = (bh / canvas.height) * 100
+    addDrawingOverlay(dataUrl, xPct, yPct, wPct, hPct)
+
+    // Clear the drawing canvas
+    const ctx = canvas.getContext('2d')
+    if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
+  }
+
+  // ===== Shape drawing handlers =====
+  const getShapeCanvasPos = (e: React.MouseEvent | React.TouchEvent) => {
+    const pageEl = document.getElementById(`pdf-page-${currentPage}`)
+    if (!pageEl) return { x: 0, y: 0 }
+    const rect = pageEl.getBoundingClientRect()
+    if ('touches' in e) {
+      const touch = e.touches[0] || e.changedTouches[0]
+      return { x: touch.clientX - rect.left, y: touch.clientY - rect.top }
+    }
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top }
+  }
+
+  const shapeStartHandler = (e: React.MouseEvent | React.TouchEvent) => {
+    if (activeMode !== 'shapes') return
+    e.preventDefault()
+    e.stopPropagation()
+    const pos = getShapeCanvasPos(e)
+    shapeStartRef.current = pos
+
+    const handleMove = (ev: MouseEvent | TouchEvent) => {
+      if (!shapeStartRef.current) return
+      ev.preventDefault()
+      const canvas = shapePreviewRef.current
+      if (!canvas) return
+      const pageEl = document.getElementById(`pdf-page-${currentPage}`)
+      if (!pageEl) return
+      const rect = pageEl.getBoundingClientRect()
+      canvas.width = rect.width
+      canvas.height = rect.height
+      let cx: number, cy: number
+      if ('touches' in ev) {
+        const t = (ev as TouchEvent).touches[0]
+        cx = t.clientX - rect.left
+        cy = t.clientY - rect.top
+      } else {
+        cx = (ev as MouseEvent).clientX - rect.left
+        cy = (ev as MouseEvent).clientY - rect.top
+      }
+      const ctx = canvas.getContext('2d')!
+      ctx.clearRect(0, 0, canvas.width, canvas.height)
+      ctx.strokeStyle = shapeColor
+      ctx.fillStyle = shapeColor
+      ctx.lineWidth = 2
+      ctx.globalAlpha = 1
+      const sx = shapeStartRef.current.x
+      const sy = shapeStartRef.current.y
+      drawShapeOnCtx(ctx, shapeType, sx, sy, cx, cy, shapeFill)
+    }
+
+    const handleUp = (ev: MouseEvent | TouchEvent) => {
+      if (!shapeStartRef.current) return
+      const pageEl = document.getElementById(`pdf-page-${currentPage}`)
+      if (!pageEl) return
+      const rect = pageEl.getBoundingClientRect()
+      let cx: number, cy: number
+      if ('touches' in ev) {
+        const t = (ev as TouchEvent).changedTouches[0]
+        cx = t.clientX - rect.left
+        cy = t.clientY - rect.top
+      } else {
+        cx = (ev as MouseEvent).clientX - rect.left
+        cy = (ev as MouseEvent).clientY - rect.top
+      }
+      const sx = shapeStartRef.current.x
+      const sy = shapeStartRef.current.y
+      shapeStartRef.current = null
+
+      // Create shape as PNG
+      const minX = Math.min(sx, cx)
+      const minY = Math.min(sy, cy)
+      const maxX = Math.max(sx, cx)
+      const maxY = Math.max(sy, cy)
+      const pad = 4
+      const bw = maxX - minX + pad * 2
+      const bh = maxY - minY + pad * 2
+      if (bw < 4 || bh < 4) return
+
+      const tmpCanvas = document.createElement('canvas')
+      tmpCanvas.width = bw * 2
+      tmpCanvas.height = bh * 2
+      const tctx = tmpCanvas.getContext('2d')!
+      tctx.scale(2, 2)
+      tctx.strokeStyle = shapeColor
+      tctx.fillStyle = shapeColor
+      tctx.lineWidth = 2
+      drawShapeOnCtx(tctx, shapeType, sx - minX + pad, sy - minY + pad, cx - minX + pad, cy - minY + pad, shapeFill)
+
+      const dataUrl = tmpCanvas.toDataURL('image/png')
+      const xPct = (minX - pad) / rect.width * 100
+      const yPct = (minY - pad) / rect.height * 100
+      const wPct = bw / rect.width * 100
+      const hPct = bh / rect.height * 100
+      addDrawingOverlay(dataUrl, Math.max(0, xPct), Math.max(0, yPct), wPct, hPct)
+
+      // Clear preview
+      const canvas = shapePreviewRef.current
+      if (canvas) {
+        const ctx = canvas.getContext('2d')
+        if (ctx) ctx.clearRect(0, 0, canvas.width, canvas.height)
+      }
+
+      document.removeEventListener('mousemove', handleMove)
+      document.removeEventListener('mouseup', handleUp)
+      document.removeEventListener('touchmove', handleMove)
+      document.removeEventListener('touchend', handleUp)
+    }
+
+    document.addEventListener('mousemove', handleMove)
+    document.addEventListener('mouseup', handleUp)
+    document.addEventListener('touchmove', handleMove, { passive: false })
+    document.addEventListener('touchend', handleUp)
   }
 
   // Save & download
@@ -339,6 +740,7 @@ export function EditPdf() {
           height: o.heightPct,
           data: o.data,
           fontSize: o.fontSize,
+          color: o.color,
           opacity: 1,
         }
       })
@@ -379,7 +781,7 @@ export function EditPdf() {
             )}
           </div>
 
-          {/* Toolbar */}
+          {/* Toolbar — Row 1 */}
           <div className="flex flex-wrap gap-2">
             <button
               onClick={() => { setActiveMode('stamp'); stampInputRef.current?.click() }}
@@ -404,6 +806,50 @@ export function EditPdf() {
               }`}
             >
               <span>📝</span> {L('Мәтін', 'Текст')}
+            </button>
+            <button
+              onClick={() => setActiveMode(activeMode === 'pencil' ? null : 'pencil')}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all min-h-[44px] flex items-center gap-1.5 ${
+                activeMode === 'pencil' ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:border-primary'
+              }`}
+            >
+              <span>✏️</span> {L('Карандаш', 'Карандаш')}
+            </button>
+            <button
+              onClick={() => setActiveMode(activeMode === 'highlighter' ? null : 'highlighter')}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all min-h-[44px] flex items-center gap-1.5 ${
+                activeMode === 'highlighter' ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:border-primary'
+              }`}
+            >
+              <span>🖍️</span> {L('Маркер', 'Маркер')}
+            </button>
+          </div>
+
+          {/* Toolbar — Row 2 */}
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={() => setActiveMode(activeMode === 'shapes' ? null : 'shapes')}
+              className={`px-4 py-2 rounded-full text-sm font-semibold transition-all min-h-[44px] flex items-center gap-1.5 ${
+                activeMode === 'shapes' ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:border-primary'
+              }`}
+            >
+              <span>⬜</span> {L('Фигура', 'Фигура')}
+            </button>
+            <button
+              onClick={handleUndo}
+              disabled={undoStack.length === 0}
+              className="px-3 py-2 rounded-full text-sm font-semibold bg-card border border-border hover:border-primary transition-all disabled:opacity-30 min-h-[44px] flex items-center gap-1"
+              title={L('Болдырмау', 'Отменить')}
+            >
+              <span>↩️</span> {L('Болдырмау', 'Отменить')}
+            </button>
+            <button
+              onClick={handleRedo}
+              disabled={redoStack.length === 0}
+              className="px-3 py-2 rounded-full text-sm font-semibold bg-card border border-border hover:border-primary transition-all disabled:opacity-30 min-h-[44px] flex items-center gap-1"
+              title={L('Қайтару', 'Повторить')}
+            >
+              <span>↪️</span> {L('Қайтару', 'Повторить')}
             </button>
             {selectedId && (
               <>
@@ -469,6 +915,24 @@ export function EditPdf() {
                   className="w-full accent-primary"
                 />
               </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                  {L('Түсі', 'Цвет')}
+                </label>
+                <div className="flex gap-2">
+                  {TEXT_COLORS.map(c => (
+                    <button
+                      key={c.hex}
+                      onClick={() => setTextColor(c)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all min-h-[44px] min-w-[44px] flex items-center justify-center ${
+                        textColor.hex === c.hex ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
+                      }`}
+                      style={{ backgroundColor: c.hex }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </div>
               <button
                 onClick={handleAddText}
                 disabled={!textInput.trim()}
@@ -476,6 +940,138 @@ export function EditPdf() {
               >
                 {L('Қосу', 'Добавить')}
               </button>
+            </div>
+          )}
+
+          {/* Pencil options panel */}
+          {activeMode === 'pencil' && (
+            <div className="p-4 bg-card border border-border rounded-xl space-y-3">
+              <label className="text-xs font-semibold text-muted-foreground block">
+                {L('Карандаш — беттегі суретті салыңыз', 'Карандаш — рисуйте на странице')}
+              </label>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                  {L('Түсі', 'Цвет')}
+                </label>
+                <div className="flex gap-2">
+                  {PENCIL_COLORS.map(c => (
+                    <button
+                      key={c.value}
+                      onClick={() => setPencilColor(c.value)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all min-h-[44px] min-w-[44px] ${
+                        pencilColor === c.value ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
+                      }`}
+                      style={{ backgroundColor: c.value }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                  {L('Жуандығы', 'Толщина')}: {pencilThickness}px
+                </label>
+                <div className="flex gap-2">
+                  {[{ label: L('Жіңішке', 'Тонкая'), val: 2 }, { label: L('Орташа', 'Средняя'), val: 4 }, { label: L('Қалың', 'Толстая'), val: 6 }].map(t => (
+                    <button
+                      key={t.val}
+                      onClick={() => setPencilThickness(t.val)}
+                      className={`px-3 py-2 rounded-full text-xs font-semibold transition-all min-h-[44px] ${
+                        pencilThickness === t.val ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:border-primary'
+                      }`}
+                    >
+                      {t.label} ({t.val}px)
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Highlighter options panel */}
+          {activeMode === 'highlighter' && (
+            <div className="p-4 bg-card border border-border rounded-xl space-y-3">
+              <label className="text-xs font-semibold text-muted-foreground block">
+                {L('Маркер — беттегі мәтінді белгілеңіз', 'Маркер — выделяйте текст на странице')}
+              </label>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                  {L('Түсі', 'Цвет')}
+                </label>
+                <div className="flex gap-2">
+                  {HIGHLIGHTER_COLORS.map(c => (
+                    <button
+                      key={c.value}
+                      onClick={() => setHighlighterColor(c.value)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all min-h-[44px] min-w-[44px] ${
+                        highlighterColor === c.value ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
+                      }`}
+                      style={{ backgroundColor: c.value, opacity: 0.6 }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Shapes options panel */}
+          {activeMode === 'shapes' && (
+            <div className="p-4 bg-card border border-border rounded-xl space-y-3">
+              <label className="text-xs font-semibold text-muted-foreground block">
+                {L('Фигура — беттегі фигураны салыңыз', 'Фигура — нарисуйте фигуру на странице')}
+              </label>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                  {L('Фигура түрі', 'Тип фигуры')}
+                </label>
+                <div className="flex gap-2">
+                  {([
+                    { type: 'rect' as ShapeType, label: L('Тіктөртбұрыш', 'Прямоугольник'), icon: '⬜' },
+                    { type: 'circle' as ShapeType, label: L('Шеңбер', 'Круг'), icon: '⭕' },
+                    { type: 'line' as ShapeType, label: L('Сызық', 'Линия'), icon: '➖' },
+                    { type: 'arrow' as ShapeType, label: L('Бағдарша', 'Стрелка'), icon: '➡️' },
+                  ]).map(s => (
+                    <button
+                      key={s.type}
+                      onClick={() => setShapeType(s.type)}
+                      className={`px-3 py-2 rounded-full text-xs font-semibold transition-all min-h-[44px] flex items-center gap-1 ${
+                        shapeType === s.type ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:border-primary'
+                      }`}
+                    >
+                      <span>{s.icon}</span> {s.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground mb-1.5 block">
+                  {L('Түсі', 'Цвет')}
+                </label>
+                <div className="flex gap-2">
+                  {SHAPE_COLORS.map(c => (
+                    <button
+                      key={c.value}
+                      onClick={() => setShapeColor(c.value)}
+                      className={`w-8 h-8 rounded-full border-2 transition-all min-h-[44px] min-w-[44px] ${
+                        shapeColor === c.value ? 'border-primary ring-2 ring-primary/30' : 'border-border hover:border-primary/50'
+                      }`}
+                      style={{ backgroundColor: c.value }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setShapeFill(!shapeFill)}
+                  className={`px-4 py-2 rounded-full text-xs font-semibold transition-all min-h-[44px] ${
+                    shapeFill ? 'bg-primary text-primary-foreground' : 'bg-card border border-border hover:border-primary'
+                  }`}
+                >
+                  {shapeFill ? L('Толтырылған', 'С заливкой') : L('Бос', 'Без заливки')}
+                </button>
+              </div>
             </div>
           )}
 
@@ -595,7 +1191,7 @@ export function EditPdf() {
             {/* Page canvas area */}
             <div
               id={`pdf-page-${currentPage}`}
-              className="relative mx-auto border border-border rounded-xl overflow-hidden select-none flex-1"
+              className="relative mx-auto border border-border rounded-xl overflow-hidden select-none flex-1 touch-none"
               style={{
                 aspectRatio: `${aspectRatio}`,
                 maxWidth: 560,
@@ -660,8 +1256,14 @@ export function EditPdf() {
                     />
                   ) : (
                     <div
-                      className="w-full h-full flex items-center text-black pointer-events-none overflow-hidden"
-                      style={{ fontSize: `${item.fontSize || 14}px`, lineHeight: 1.2 }}
+                      className="w-full h-full flex items-center pointer-events-none overflow-hidden"
+                      style={{
+                        fontSize: `${item.fontSize || 14}px`,
+                        lineHeight: 1.2,
+                        color: item.color
+                          ? `rgb(${Math.round(item.color.r * 255)}, ${Math.round(item.color.g * 255)}, ${Math.round(item.color.b * 255)})`
+                          : '#000000',
+                      }}
                     >
                       {item.data}
                     </div>
@@ -678,6 +1280,37 @@ export function EditPdf() {
                   )}
                 </div>
               ))}
+
+              {/* Drawing canvas for pencil / highlighter */}
+              {(activeMode === 'pencil' || activeMode === 'highlighter') && (
+                <canvas
+                  ref={drawCanvasRef}
+                  width={1120}
+                  height={Math.round(1120 / aspectRatio)}
+                  className="absolute inset-0 w-full h-full z-20"
+                  style={{ cursor: 'crosshair' }}
+                  onMouseDown={drawStartHandler}
+                  onMouseMove={drawMoveHandler}
+                  onMouseUp={drawEndHandler}
+                  onMouseLeave={drawEndHandler}
+                  onTouchStart={drawStartHandler}
+                  onTouchMove={drawMoveHandler}
+                  onTouchEnd={drawEndHandler}
+                />
+              )}
+
+              {/* Shape preview canvas */}
+              {activeMode === 'shapes' && (
+                <canvas
+                  ref={shapePreviewRef}
+                  width={560}
+                  height={Math.round(560 / aspectRatio)}
+                  className="absolute inset-0 w-full h-full z-20"
+                  style={{ cursor: 'crosshair' }}
+                  onMouseDown={shapeStartHandler}
+                  onTouchStart={shapeStartHandler}
+                />
+              )}
             </div>
           </div>
 

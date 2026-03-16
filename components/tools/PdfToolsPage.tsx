@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { BackButton } from '@/components/layout/BackButton'
 import { ShareBar } from '@/components/shared/ShareBar'
 import { TipBox } from '@/components/shared/TipBox'
@@ -77,6 +77,18 @@ export function PdfToolsPage() {
 
   const [activeTool, setActiveTool] = useState<ToolKey | null>(null)
 
+  // Listen for switch-pdf-tool events (from RemoveBackground workflow)
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail
+      if (detail && TOOL_COMPONENTS[detail as ToolKey]) {
+        setActiveTool(detail as ToolKey)
+      }
+    }
+    window.addEventListener('switch-pdf-tool', handler)
+    return () => window.removeEventListener('switch-pdf-tool', handler)
+  }, [])
+
   const tool = TOOLS.find(t => t.key === activeTool)
   const ToolComponent = activeTool ? TOOL_COMPONENTS[activeTool] : null
 
@@ -105,7 +117,7 @@ export function PdfToolsPage() {
           {TOOLS.map(t => (
             <button
               key={t.key}
-              onClick={() => setActiveTool(t.key)}
+              onClick={() => { setActiveTool(t.key); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
               className="p-4 bg-card border border-border rounded-2xl text-center hover:border-primary hover:shadow-md transition-all group min-h-[44px]"
             >
               <div className="text-2xl mb-2">{t.icon}</div>
