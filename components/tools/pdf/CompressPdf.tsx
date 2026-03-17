@@ -46,7 +46,8 @@ export function CompressPdf() {
       setProgress(L('Беттер рендерленуде...', 'Рендеринг страниц...'))
 
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+      // v4.x worker setup — use legacy .js build for Safari/mobile compatibility
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js`
 
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
       const numPages = pdf.numPages
@@ -121,9 +122,17 @@ export function CompressPdf() {
       a.download = `compressed_${file.name}`
       a.click()
       URL.revokeObjectURL(url)
-    } catch (e) {
-      setError(L('PDF сығу кезінде қате болды', 'Ошибка при сжатии PDF'))
+    } catch (e: any) {
       console.error(e)
+      const msg = e?.message || ''
+      if (msg.includes('Worker') || msg.includes('worker') || msg.includes('WASM') || msg.includes('import')) {
+        setError(L(
+          'Сіздің браузер бұл мүмкіндікті қолдамайды. Chrome/Firefox браузерін қолданып көріңіз.',
+          'Ваш браузер не поддерживает эту функцию. Попробуйте использовать Chrome/Firefox на компьютере.'
+        ))
+      } else {
+        setError(L('PDF сығу кезінде қате болды', 'Ошибка при сжатии PDF'))
+      }
     } finally {
       setLoading(false)
       setProgress('')
@@ -146,9 +155,9 @@ export function CompressPdf() {
       />
 
       {file && (
-        <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2">
-          <span>📄</span>
-          <span className="font-semibold truncate">{file.name}</span>
+        <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2 min-w-0">
+          <span className="shrink-0">📄</span>
+          <span className="font-semibold truncate max-w-[200px]">{file.name}</span>
           <span className="text-muted-foreground shrink-0">({formatFileSize(file.size)})</span>
         </div>
       )}

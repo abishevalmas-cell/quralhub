@@ -47,7 +47,8 @@ export function PdfToExcel() {
     try {
       // Load pdfjs-dist to extract text
       const pdfjsLib = await import('pdfjs-dist')
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+      // v4.x worker setup — use legacy .js build for Safari/mobile compatibility
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js`
 
       const buffer = await file.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
@@ -161,9 +162,17 @@ export function PdfToExcel() {
 
       setProgress(100)
       setDone(true)
-    } catch (e) {
-      setError(L('PDF файлды конвертациялау кезінде қате болды', 'Ошибка при конвертации PDF файла'))
+    } catch (e: any) {
       console.error(e)
+      const msg = e?.message || ''
+      if (msg.includes('Worker') || msg.includes('worker') || msg.includes('WASM') || msg.includes('import')) {
+        setError(L(
+          'Сіздің браузер бұл мүмкіндікті қолдамайды. Chrome/Firefox браузерін қолданып көріңіз.',
+          'Ваш браузер не поддерживает эту функцию. Попробуйте использовать Chrome/Firefox на компьютере.'
+        ))
+      } else {
+        setError(L('PDF файлды конвертациялау кезінде қате болды', 'Ошибка при конвертации PDF файла'))
+      }
     } finally {
       setLoading(false)
     }
@@ -177,9 +186,9 @@ export function PdfToExcel() {
       />
 
       {file && pageCount > 0 && (
-        <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2">
-          <span>📄</span>
-          <span className="font-semibold truncate">{file.name}</span>
+        <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2 min-w-0">
+          <span className="shrink-0">📄</span>
+          <span className="font-semibold truncate max-w-[200px]">{file.name}</span>
           <span className="text-muted-foreground shrink-0">
             — {pageCount} {L('бет', 'стр.')} ({formatFileSize(file.size)})
           </span>

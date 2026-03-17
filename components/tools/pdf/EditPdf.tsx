@@ -179,13 +179,8 @@ export function EditPdf() {
     setRenderingPages(true)
     try {
       const pdfjsLib = await import('pdfjs-dist')
-      // Disable worker on mobile — runs on main thread (slower but reliable)
-      const isMobile = typeof window !== 'undefined' && window.innerWidth < 768
-      if (!isMobile) {
-        try {
-          pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
-        } catch { /* fallback to no worker */ }
-      }
+      // v4.x worker setup — use legacy .js build for Safari/mobile compatibility
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js`
 
       const pdf = await pdfjsLib.getDocument({ data: new Uint8Array(buffer) }).promise
       pdfDocRef.current = pdf
@@ -194,6 +189,9 @@ export function EditPdf() {
       await renderSinglePage(pdf, 0)
     } catch (err) {
       console.error('Failed to load PDF:', err)
+      setError(lang === 'ru'
+        ? 'Не удалось отрендерить PDF. Попробуйте Chrome/Firefox на компьютере.'
+        : 'PDF рендерлеу мүмкін болмады. Chrome/Firefox браузерін қолданып көріңіз.')
     } finally {
       setRenderingPages(false)
     }
@@ -797,10 +795,10 @@ export function EditPdf() {
       {file && pageCount > 0 && (
         <>
           {/* File info */}
-          <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2">
-            <span>📄</span>
-            <span className="font-semibold">{file.name}</span>
-            <span className="text-muted-foreground">— {pageCount} {L('бет', 'стр.')}</span>
+          <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2 min-w-0">
+            <span className="shrink-0">📄</span>
+            <span className="font-semibold truncate max-w-[200px]">{file.name}</span>
+            <span className="text-muted-foreground shrink-0">— {pageCount} {L('бет', 'стр.')}</span>
             {renderingPages && (
               <span className="text-muted-foreground flex items-center gap-1.5">
                 <span className="w-3 h-3 border-2 border-muted-foreground/30 border-t-muted-foreground rounded-full animate-spin" />

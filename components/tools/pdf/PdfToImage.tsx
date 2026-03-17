@@ -72,8 +72,8 @@ export function PdfToImage() {
     try {
       // Try to use pdf.js for actual rendering
       const pdfjsLib = await import('pdfjs-dist')
-      // Set worker source
-      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.mjs`
+      // v4.x worker setup — use legacy .js build for Safari/mobile compatibility
+      pdfjsLib.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.8.69/pdf.worker.min.js`
 
       const buffer = await file.arrayBuffer()
       const pdf = await pdfjsLib.getDocument({ data: buffer }).promise
@@ -174,10 +174,10 @@ export function PdfToImage() {
       {file && pages.length > 0 && (
         <>
           {/* File info */}
-          <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2">
-            <span>📄</span>
-            <span className="font-semibold">{file.name}</span>
-            <span className="text-muted-foreground">
+          <div className="p-3 rounded-xl bg-accent/30 text-sm flex items-center gap-2 min-w-0">
+            <span className="shrink-0">📄</span>
+            <span className="font-semibold truncate max-w-[200px]">{file.name}</span>
+            <span className="text-muted-foreground shrink-0">
               — {pages.length} {L('бет', 'стр.')} ({formatFileSize(file.size)})
             </span>
           </div>

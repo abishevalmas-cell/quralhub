@@ -1,10 +1,31 @@
 'use client'
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, Component, type ReactNode } from 'react'
 import { BackButton } from '@/components/layout/BackButton'
 import { ShareBar } from '@/components/shared/ShareBar'
 import { TipBox } from '@/components/shared/TipBox'
 import { InfoChip } from '@/components/shared/InfoChip'
 import { useApp } from '@/components/layout/Providers'
+
+/** Error boundary that catches tool crashes without taking down the whole page */
+class ToolErrorBoundary extends Component<
+  { children: ReactNode; fallback: ReactNode },
+  { hasError: boolean }
+> {
+  constructor(props: { children: ReactNode; fallback: ReactNode }) {
+    super(props)
+    this.state = { hasError: false }
+  }
+  static getDerivedStateFromError() {
+    return { hasError: true }
+  }
+  componentDidCatch(error: Error) {
+    console.error('PDF tool crashed:', error)
+  }
+  render() {
+    if (this.state.hasError) return this.props.fallback
+    return this.props.children
+  }
+}
 
 import { MergePdf } from './pdf/MergePdf'
 import { SplitPdf } from './pdf/SplitPdf'
@@ -82,10 +103,12 @@ export function PdfToolsPage() {
     setActiveTool(key)
     if (key) {
       window.history.pushState({ pdfTool: key }, '', `/pdf#${key}`)
-      window.scrollTo({ top: 0, behavior: 'smooth' })
+      // Instant scroll — smooth doesn't work reliably on mobile Safari
+      window.scrollTo(0, 0)
     } else {
       // Going back to grid — replace state
       window.history.replaceState(null, '', '/pdf')
+      window.scrollTo(0, 0)
     }
   }, [])
 
@@ -100,6 +123,7 @@ export function PdfToolsPage() {
     const hash = window.location.hash.replace('#', '') as ToolKey
     if (hash && TOOL_COMPONENTS[hash]) {
       setActiveTool(hash)
+      window.scrollTo(0, 0)
     }
 
     return () => window.removeEventListener('popstate', handlePopState)
@@ -170,7 +194,30 @@ export function PdfToolsPage() {
             {tool?.icon} {tool ? (isRu ? tool.title[1] : tool.title[0]) : ''}
           </h3>
 
-          <ToolComponent />
+          <ToolErrorBoundary
+            key={activeTool}
+            fallback={
+              <div className="p-4 rounded-xl bg-red-50 dark:bg-red-950/30 text-red-700 dark:text-red-300 text-sm space-y-2">
+                <p className="font-semibold">
+                  {L('Құрал жүктеу кезінде қате болды', 'Ошибка при загрузке инструмента')}
+                </p>
+                <p>
+                  {L(
+                    'Chrome немесе Firefox браузерін компьютерде қолданып көріңіз.',
+                    'Попробуйте использовать Chrome или Firefox на компьютере.'
+                  )}
+                </p>
+                <button
+                  onClick={() => { selectTool(null); window.history.back() }}
+                  className="mt-2 px-4 py-2 rounded-full text-sm font-semibold bg-primary text-primary-foreground hover:opacity-90 transition-all min-h-[44px]"
+                >
+                  ← {L('Барлық құралдар', 'Все инструменты')}
+                </button>
+              </div>
+            }
+          >
+            <ToolComponent />
+          </ToolErrorBoundary>
         </div>
       )}
 
