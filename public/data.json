@@ -1,44 +1,21 @@
 {
   "meta": {
-    "version": 49,
-    "generatedAt": "2026-03-21T18:38:59.711Z"
+    "version": 50,
+    "generatedAt": "2026-03-21T20:29:28.969Z"
   },
   "NB_RATES": {
     "usd": 482.33,
     "eur": 557.57,
     "rub": 5.74,
     "cny": 70.05,
-    "updatedAt": "2026-03-21T18:39:01.130Z",
+    "updatedAt": "2026-03-21T20:29:30.627Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-03-21T18:39:02.778Z",
+    "updatedAt": "2026-03-21T20:29:32.996Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
-        {
-          "name": "BBS Exchange ",
-          "lat": 43.228854,
-          "lng": 76.905778,
-          "address": "ул. Ауэзова, 128 н.п.16",
-          "phone": "+7 (747) 677-70-56",
-          "usd": {
-            "buy": 482.5,
-            "sell": 484
-          },
-          "eur": {
-            "buy": 557,
-            "sell": 560
-          },
-          "rub": {
-            "buy": 5.87,
-            "sell": 5.95
-          },
-          "cny": {
-            "buy": 70,
-            "sell": 74
-          }
-        },
         {
           "name": "YES EXCHANGE №1 (ТОО Сервис)",
           "lat": 43.346622,
