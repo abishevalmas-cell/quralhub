@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 182,
-    "generatedAt": "2026-04-04T18:44:49.172Z"
+    "version": 183,
+    "generatedAt": "2026-04-04T20:34:44.425Z"
   },
   "NB_RATES": {
     "usd": 470.46,
     "eur": 543.1,
     "rub": 5.86,
     "cny": 68.38,
-    "updatedAt": "2026-04-04T18:44:50.353Z",
+    "updatedAt": "2026-04-04T20:34:45.953Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-04-04T18:44:52.243Z",
+    "updatedAt": "2026-04-04T20:34:47.544Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -41,29 +41,6 @@
         }
       ],
       "Астана": [
-        {
-          "name": "Profit-Пайда",
-          "lat": 51.119009,
-          "lng": 71.418634,
-          "address": "ул. Сауран, 7 (рядом с ТД «АНВАР» и рынком «Сауран»)",
-          "phone": "+7 (777) 216-70-02",
-          "usd": {
-            "buy": 467,
-            "sell": 474
-          },
-          "eur": {
-            "buy": 539,
-            "sell": 549
-          },
-          "rub": {
-            "buy": 5.85,
-            "sell": 6.15
-          },
-          "cny": {
-            "buy": 68,
-            "sell": 73
-          }
-        },
         {
           "name": "Ecash Astana 3",
           "lat": 51.026987,
