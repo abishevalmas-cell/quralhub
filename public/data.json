@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 260,
-    "generatedAt": "2026-04-12T22:36:04.067Z"
+    "version": 261,
+    "generatedAt": "2026-04-13T02:50:29.959Z"
   },
   "NB_RATES": {
     "usd": 473.13,
     "eur": 554.08,
     "rub": 6.13,
     "cny": 69.29,
-    "updatedAt": "2026-04-12T22:36:05.546Z",
+    "updatedAt": "2026-04-13T02:50:31.300Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-04-12T22:36:07.491Z",
+    "updatedAt": "2026-04-13T02:50:33.511Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -41,29 +41,6 @@
         }
       ],
       "Астана": [
-        {
-          "name": "Exchange Market 4 (ТОО \"NurlyZhol Exchange\")",
-          "lat": 51.112411,
-          "lng": 71.531777,
-          "address": "р-н Алматы, ул. Мұхамеджан Тынышбайұлы, 8, новый вокзал \"Нұрлы Жол\"",
-          "phone": "+7 (7172) 25-23-45",
-          "usd": {
-            "buy": 471,
-            "sell": 476
-          },
-          "eur": {
-            "buy": 550,
-            "sell": 560
-          },
-          "rub": {
-            "buy": 6.07,
-            "sell": 6.37
-          },
-          "cny": {
-            "buy": 69,
-            "sell": 74
-          }
-        },
         {
           "name": "Profit-Пайда",
           "lat": 51.119009,
@@ -118,15 +95,38 @@
           "phone": "+7 (701) 714-39-99",
           "usd": {
             "buy": 470,
-            "sell": 476
+            "sell": 477
           },
           "eur": {
-            "buy": 551,
-            "sell": 559
+            "buy": 550,
+            "sell": 560
           },
           "rub": {
-            "buy": 5.9,
-            "sell": 6.3
+            "buy": 6.07,
+            "sell": 6.37
+          },
+          "cny": {
+            "buy": 69,
+            "sell": 74
+          }
+        },
+        {
+          "name": "Exchange Market 4 (ТОО \"NurlyZhol Exchange\")",
+          "lat": 51.112411,
+          "lng": 71.531777,
+          "address": "р-н Алматы, ул. Мұхамеджан Тынышбайұлы, 8, новый вокзал \"Нұрлы Жол\"",
+          "phone": "+7 (7172) 25-23-45",
+          "usd": {
+            "buy": 470,
+            "sell": 477
+          },
+          "eur": {
+            "buy": 550,
+            "sell": 560
+          },
+          "rub": {
+            "buy": 6.07,
+            "sell": 6.37
           },
           "cny": {
             "buy": 69,
