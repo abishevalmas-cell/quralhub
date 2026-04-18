@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 309,
-    "generatedAt": "2026-04-18T18:54:15.545Z"
+    "version": 310,
+    "generatedAt": "2026-04-18T20:39:28.018Z"
   },
   "NB_RATES": {
     "usd": 469.52,
     "eur": 553.75,
     "rub": 6.15,
     "cny": 68.82,
-    "updatedAt": "2026-04-18T18:54:16.853Z",
+    "updatedAt": "2026-04-18T20:39:29.510Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-04-18T18:54:18.925Z",
+    "updatedAt": "2026-04-18T20:39:32.558Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
