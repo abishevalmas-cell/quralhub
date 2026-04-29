@@ -1,44 +1,21 @@
 {
   "meta": {
-    "version": 390,
-    "generatedAt": "2026-04-29T19:28:08.084Z"
+    "version": 391,
+    "generatedAt": "2026-04-29T21:07:50.012Z"
   },
   "NB_RATES": {
     "usd": 461.55,
     "eur": 540.38,
     "rub": 6.15,
     "cny": 67.54,
-    "updatedAt": "2026-04-29T19:28:09.768Z",
+    "updatedAt": "2026-04-29T21:07:51.855Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-04-29T19:28:12.439Z",
+    "updatedAt": "2026-04-29T21:07:53.349Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
-        {
-          "name": "TAMA Exchange",
-          "lat": 43.230306,
-          "lng": 76.904942,
-          "address": "ул. Ауэзова, 165, уг. ул. Бухар жырау",
-          "phone": "+7 (708) 707-10-70",
-          "usd": {
-            "buy": 460,
-            "sell": 462.7
-          },
-          "eur": {
-            "buy": 538,
-            "sell": 545
-          },
-          "rub": {
-            "buy": 6,
-            "sell": 6.05
-          },
-          "cny": {
-            "buy": 67,
-            "sell": 70
-          }
-        },
         {
           "name": "YES EXCHANGE №1 (ТОО Сервис)",
           "lat": 43.346622,
@@ -96,29 +73,6 @@
           "usd": {
             "buy": 459,
             "sell": 464
-          },
-          "eur": {
-            "buy": 536,
-            "sell": 546
-          },
-          "rub": {
-            "buy": 5.9,
-            "sell": 6.2
-          },
-          "cny": {
-            "buy": 67,
-            "sell": 73
-          }
-        },
-        {
-          "name": "SILK WAY ВАЛЮТА АЙЫРБАСТАУ №2",
-          "lat": null,
-          "lng": null,
-          "address": "пр. Республики, 21",
-          "phone": "+7 (701) 856-61-60",
-          "usd": {
-            "buy": 459,
-            "sell": 466
           },
           "eur": {
             "buy": 536,
