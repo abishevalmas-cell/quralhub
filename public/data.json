@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 427,
-    "generatedAt": "2026-05-04T21:09:56.141Z"
+    "version": 428,
+    "generatedAt": "2026-05-05T02:51:13.347Z"
   },
   "NB_RATES": {
     "usd": 464.53,
     "eur": 543.73,
     "rub": 6.15,
     "cny": 68.01,
-    "updatedAt": "2026-05-04T21:09:57.699Z",
+    "updatedAt": "2026-05-05T02:51:14.525Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-05-04T21:09:59.309Z",
+    "updatedAt": "2026-05-05T02:51:16.699Z",
     "source": "kurs.kz",
     "data": {
       "Астана": [
@@ -70,7 +70,7 @@
           "phone": "+7 (7172) 25-23-45",
           "usd": {
             "buy": 461,
-            "sell": 467
+            "sell": 468
           },
           "eur": {
             "buy": 539,
@@ -94,15 +94,15 @@
           "address": "ул. Бокенбай батыра, 44",
           "phone": "+7 (707) 933-44-44",
           "usd": {
-            "buy": 463,
-            "sell": 467
+            "buy": 463.5,
+            "sell": 466.5
           },
           "eur": {
             "buy": 542,
-            "sell": 547
+            "sell": 546.5
           },
           "rub": {
-            "buy": 5.97,
+            "buy": 5.98,
             "sell": 6.04
           },
           "cny": {
