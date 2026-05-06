@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 434,
-    "generatedAt": "2026-05-05T21:04:25.116Z"
+    "version": 435,
+    "generatedAt": "2026-05-06T02:58:05.620Z"
   },
   "NB_RATES": {
     "usd": 465.01,
     "eur": 543.55,
     "rub": 6.15,
     "cny": 68.08,
-    "updatedAt": "2026-05-05T21:04:26.833Z",
+    "updatedAt": "2026-05-06T02:58:07.863Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-05-05T21:04:28.827Z",
+    "updatedAt": "2026-05-06T02:58:10.401Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -95,14 +95,14 @@
           "phone": "+7 (7172) 25-23-45",
           "usd": {
             "buy": 461,
-            "sell": 467
+            "sell": 468
           },
           "eur": {
             "buy": 539,
             "sell": 549
           },
           "rub": {
-            "buy": 5.95,
+            "buy": 5.9,
             "sell": 6.2
           },
           "cny": {
