@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 506,
-    "generatedAt": "2026-05-16T20:50:41.700Z"
+    "version": 507,
+    "generatedAt": "2026-05-16T22:47:58.302Z"
   },
   "NB_RATES": {
     "usd": 470.17,
     "eur": 547.47,
     "rub": 6.42,
     "cny": 69.04,
-    "updatedAt": "2026-05-16T20:50:42.891Z",
+    "updatedAt": "2026-05-16T22:47:59.408Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-05-16T20:50:44.917Z",
+    "updatedAt": "2026-05-16T22:48:02.427Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -62,6 +62,29 @@
           "cny": {
             "buy": 67,
             "sell": 71
+          }
+        },
+        {
+          "name": "Ecash Astana 3",
+          "lat": 51.026987,
+          "lng": 71.460909,
+          "address": "пр. Кабанбай батыр, 119 (1 этаж, внутренние рейсы)  Аэропорт \"Нурсултан Назарбаев\" ",
+          "phone": "+7 (707) 548-48-88",
+          "usd": {
+            "buy": 467,
+            "sell": 474
+          },
+          "eur": {
+            "buy": 544,
+            "sell": 554
+          },
+          "rub": {
+            "buy": 6.2,
+            "sell": 6.5
+          },
+          "cny": {
+            "buy": 67,
+            "sell": 73
           }
         },
         {
