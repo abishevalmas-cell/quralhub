@@ -1,42 +1,42 @@
 {
   "meta": {
-    "version": 664,
-    "generatedAt": "2026-06-12T18:07:52.030Z"
+    "version": 665,
+    "generatedAt": "2026-06-12T21:46:15.370Z"
   },
   "NB_RATES": {
     "usd": 489.33,
     "eur": 566.3,
     "rub": 6.74,
     "cny": 72.36,
-    "updatedAt": "2026-06-12T18:07:53.443Z",
+    "updatedAt": "2026-06-12T21:46:17.305Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-06-12T18:07:55.206Z",
+    "updatedAt": "2026-06-12T21:46:19.457Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
         {
-          "name": "YES EXCHANGE (ТОО \"Сервис Almaty 7\")",
-          "lat": 43.229603,
-          "lng": 76.905858,
-          "address": "ул. Ауэзова, 124 (ниже ул. Габдуллина)",
-          "phone": "+7 (706) 444-88-28",
+          "name": "Ecash 4",
+          "lat": 43.2338,
+          "lng": 76.935422,
+          "address": "пр. Сейфуллина, 617 (ТРК \"FORUM\" )",
+          "phone": "+7 (777) 304-40-74",
           "usd": {
-            "buy": 489,
+            "buy": 487.5,
             "sell": 491
           },
           "eur": {
-            "buy": 564,
+            "buy": 567,
             "sell": 571
           },
           "rub": {
-            "buy": 6.55,
-            "sell": 6.61
+            "buy": 6.53,
+            "sell": 6.64
           },
           "cny": {
-            "buy": 71,
-            "sell": 73
+            "buy": 70.7,
+            "sell": 73.3
           }
         },
         {
