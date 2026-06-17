@@ -1,20 +1,45 @@
 {
   "meta": {
-    "version": 693,
-    "generatedAt": "2026-06-17T18:19:48.161Z"
+    "version": 694,
+    "generatedAt": "2026-06-17T22:01:25.207Z"
   },
   "NB_RATES": {
     "usd": 489.39,
     "eur": 567.5,
     "rub": 6.69,
     "cny": 72.42,
-    "updatedAt": "2026-06-17T18:19:49.285Z",
+    "updatedAt": "2026-06-17T22:01:26.335Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-06-17T18:19:51.246Z",
+    "updatedAt": "2026-06-17T22:01:28.239Z",
     "source": "kurs.kz",
     "data": {
+      "Алматы": [
+        {
+          "name": "Ecash 4",
+          "lat": 43.2338,
+          "lng": 76.935422,
+          "address": "пр. Сейфуллина, 617 (ТРК \"FORUM\" )",
+          "phone": "+7 (777) 304-40-74",
+          "usd": {
+            "buy": 487.5,
+            "sell": 490.5
+          },
+          "eur": {
+            "buy": 567,
+            "sell": 571
+          },
+          "rub": {
+            "buy": 6.47,
+            "sell": 6.55
+          },
+          "cny": {
+            "buy": 70.7,
+            "sell": 72.9
+          }
+        }
+      ],
       "Астана": [
         {
           "name": "Ecash Astana 3 (ТОО \"Esil Reserve\")",
@@ -102,31 +127,6 @@
           "rub": {
             "buy": 6.3,
             "sell": 6.62
-          },
-          "cny": {
-            "buy": 71,
-            "sell": 73
-          }
-        }
-      ],
-      "Шымкент": [
-        {
-          "name": "FLY EXCHANGE (Аэропорт Шымкент)",
-          "lat": 42.366365,
-          "lng": 69.493334,
-          "address": "Ынтымақ шағын ауданы, Бақбаев көшесі, 51/3",
-          "phone": "+7 (701) 884- 07-51",
-          "usd": {
-            "buy": 488,
-            "sell": 490
-          },
-          "eur": {
-            "buy": 563,
-            "sell": 570
-          },
-          "rub": {
-            "buy": 6.48,
-            "sell": 6.55
           },
           "cny": {
             "buy": 71,
