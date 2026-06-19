@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 703,
-    "generatedAt": "2026-06-19T17:59:17.026Z"
+    "version": 704,
+    "generatedAt": "2026-06-19T19:59:26.530Z"
   },
   "NB_RATES": {
     "usd": 488.37,
     "eur": 559.77,
     "rub": 6.64,
     "cny": 72.15,
-    "updatedAt": "2026-06-19T17:59:18.610Z",
+    "updatedAt": "2026-06-19T19:59:28.100Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-06-19T17:59:20.305Z",
+    "updatedAt": "2026-06-19T19:59:29.774Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -40,26 +40,26 @@
           }
         },
         {
-          "name": "YES EXCHANGE (ТОО YR EXCHANGE)",
-          "lat": null,
-          "lng": null,
-          "address": "пр. Сейфуллина, 506/99 (угол ул. Кабанбай батыра, гостиница «Rixos Almaty», 1 этаж)",
-          "phone": "+7 (777) 891-33-66",
+          "name": "Ecash 4",
+          "lat": 43.2338,
+          "lng": 76.935422,
+          "address": "пр. Сейфуллина, 617 (ТРК \"FORUM\" )",
+          "phone": "+7 (777) 304-40-74",
           "usd": {
-            "buy": 488,
-            "sell": 490
+            "buy": 487,
+            "sell": 491
           },
           "eur": {
-            "buy": 558,
-            "sell": 564
+            "buy": 560.5,
+            "sell": 564.5
           },
           "rub": {
             "buy": 6.37,
-            "sell": 6.45
+            "sell": 6.48
           },
           "cny": {
-            "buy": 72,
-            "sell": 73.5
+            "buy": 71.5,
+            "sell": 73.9
           }
         }
       ],
@@ -122,36 +122,11 @@
           },
           "eur": {
             "buy": 558,
-            "sell": 568
+            "sell": 567
           },
           "rub": {
             "buy": 6.2,
             "sell": 6.5
-          },
-          "cny": {
-            "buy": 71,
-            "sell": 73
-          }
-        }
-      ],
-      "Шымкент": [
-        {
-          "name": "FLY EXCHANGE (Аэропорт Шымкент)",
-          "lat": 42.366365,
-          "lng": 69.493334,
-          "address": "Ынтымақ шағын ауданы, Бақбаев көшесі, 51/3",
-          "phone": "+7 (701) 884- 07-51",
-          "usd": {
-            "buy": 487.5,
-            "sell": 489.5
-          },
-          "eur": {
-            "buy": 558,
-            "sell": 564
-          },
-          "rub": {
-            "buy": 6.38,
-            "sell": 6.43
           },
           "cny": {
             "buy": 71,
