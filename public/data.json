@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 711,
-    "generatedAt": "2026-06-20T17:26:55.517Z"
+    "version": 712,
+    "generatedAt": "2026-06-20T19:38:36.692Z"
   },
   "NB_RATES": {
     "usd": 488.37,
     "eur": 559.77,
     "rub": 6.64,
     "cny": 72.15,
-    "updatedAt": "2026-06-20T17:26:57.131Z",
+    "updatedAt": "2026-06-20T19:38:38.187Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-06-20T17:26:59.113Z",
+    "updatedAt": "2026-06-20T19:38:40.830Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -37,6 +37,29 @@
           "cny": {
             "buy": 72,
             "sell": 73.5
+          }
+        },
+        {
+          "name": "Ecash 4",
+          "lat": 43.2338,
+          "lng": 76.935422,
+          "address": "пр. Сейфуллина, 617 (ТРК \"FORUM\" )",
+          "phone": "+7 (777) 304-40-74",
+          "usd": {
+            "buy": 487,
+            "sell": 491
+          },
+          "eur": {
+            "buy": 560.5,
+            "sell": 564.5
+          },
+          "rub": {
+            "buy": 6.37,
+            "sell": 6.48
+          },
+          "cny": {
+            "buy": 71.5,
+            "sell": 73.9
           }
         },
         {
@@ -111,29 +134,6 @@
           }
         },
         {
-          "name": "Ecash Astana 4 (ТОО \"Esil prime\")",
-          "lat": 51.089204,
-          "lng": 71.406696,
-          "address": "пр. Қабанбай Батыр, 62 (ТРЦ \"Mega Silk Way\", цокольный этаж № 0-12)",
-          "phone": "+7 (700) 895-88-86",
-          "usd": {
-            "buy": 484,
-            "sell": 491
-          },
-          "eur": {
-            "buy": 558,
-            "sell": 568
-          },
-          "rub": {
-            "buy": 6.25,
-            "sell": 6.55
-          },
-          "cny": {
-            "buy": 71,
-            "sell": 74.5
-          }
-        },
-        {
           "name": "Exchange Market 4 (ТОО \"NurlyZhol Exchange\")",
           "lat": 51.112411,
           "lng": 71.531777,
@@ -141,7 +141,7 @@
           "phone": "+7 (7172) 25-23-45",
           "usd": {
             "buy": 484,
-            "sell": 490
+            "sell": 489
           },
           "eur": {
             "buy": 558,
