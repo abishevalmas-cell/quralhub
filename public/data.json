@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 724,
-    "generatedAt": "2026-06-22T20:50:01.162Z"
+    "version": 725,
+    "generatedAt": "2026-06-22T23:20:43.677Z"
   },
   "NB_RATES": {
     "usd": 487.01,
     "eur": 557.87,
     "rub": 6.59,
     "cny": 71.89,
-    "updatedAt": "2026-06-22T20:50:02.392Z",
+    "updatedAt": "2026-06-22T23:20:45.396Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-06-22T20:50:04.456Z",
+    "updatedAt": "2026-06-22T23:20:50.789Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -154,29 +154,6 @@
           "cny": {
             "buy": 71,
             "sell": 73
-          }
-        },
-        {
-          "name": "Ecash Astana 3 (ТОО \"Esil Reserve\")",
-          "lat": 51.026987,
-          "lng": 71.460909,
-          "address": "пр. Кабанбай батыр, 119 (1 этаж, внутренние рейсы)  Аэропорт \"Нурсултан Назарбаев\" ",
-          "phone": "+7 (707) 548-48-88",
-          "usd": {
-            "buy": 483,
-            "sell": 489
-          },
-          "eur": {
-            "buy": 556,
-            "sell": 566
-          },
-          "rub": {
-            "buy": 6.15,
-            "sell": 6.48
-          },
-          "cny": {
-            "buy": 71,
-            "sell": 75
           }
         }
       ],
