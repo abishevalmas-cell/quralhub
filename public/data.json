@@ -1,44 +1,21 @@
 {
   "meta": {
-    "version": 800,
-    "generatedAt": "2026-07-02T21:08:40.761Z"
+    "version": 801,
+    "generatedAt": "2026-07-02T23:08:47.041Z"
   },
   "NB_RATES": {
     "usd": 474.47,
     "eur": 541.37,
     "rub": 6.08,
     "cny": 69.89,
-    "updatedAt": "2026-07-02T21:08:42.551Z",
+    "updatedAt": "2026-07-02T23:08:48.153Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-02T21:08:44.768Z",
+    "updatedAt": "2026-07-02T23:08:50.569Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
-        {
-          "name": "DIMAK EXCHANGE",
-          "lat": 43.221365,
-          "lng": 76.855409,
-          "address": "6-й мкр., 5, (по пр. Абая не доезжая ул. Саина, по верхней стороне)",
-          "phone": "+7 (701) 222-22-80",
-          "usd": {
-            "buy": 475,
-            "sell": 478
-          },
-          "eur": {
-            "buy": 542,
-            "sell": 546
-          },
-          "rub": {
-            "buy": 5.9,
-            "sell": 6
-          },
-          "cny": {
-            "buy": 70,
-            "sell": 72.5
-          }
-        },
         {
           "name": "Ecash 4",
           "lat": 43.2338,
