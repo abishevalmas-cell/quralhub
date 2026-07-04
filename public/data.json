@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 812,
-    "generatedAt": "2026-07-04T19:15:12.005Z"
+    "version": 813,
+    "generatedAt": "2026-07-04T20:58:41.768Z"
   },
   "NB_RATES": {
     "usd": 472.03,
     "eur": 540.29,
     "rub": 6.11,
     "cny": 69.61,
-    "updatedAt": "2026-07-04T19:15:13.443Z",
+    "updatedAt": "2026-07-04T20:58:43.221Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-04T19:15:15.647Z",
+    "updatedAt": "2026-07-04T20:58:44.973Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -85,29 +85,6 @@
           "cny": {
             "buy": 69,
             "sell": 74
-          }
-        },
-        {
-          "name": "Esil Exchange (Аэропорт Т2)",
-          "lat": 51.026987,
-          "lng": 71.460909,
-          "address": "пр. Кабанбай батыр, 119 (1 этаж, внутренние рейсы)  Аэропорт \"Нурсултан Назарбаев\" ",
-          "phone": "+7 (707) 548-48-88",
-          "usd": {
-            "buy": 472,
-            "sell": 479
-          },
-          "eur": {
-            "buy": 540,
-            "sell": 550
-          },
-          "rub": {
-            "buy": 5.8,
-            "sell": 6.1
-          },
-          "cny": {
-            "buy": 71,
-            "sell": 75
           }
         },
         {
