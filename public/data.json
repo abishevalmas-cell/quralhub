@@ -1,21 +1,44 @@
 {
   "meta": {
-    "version": 836,
-    "generatedAt": "2026-07-07T23:02:20.608Z"
+    "version": 837,
+    "generatedAt": "2026-07-08T02:47:41.398Z"
   },
   "NB_RATES": {
     "usd": 471.04,
     "eur": 538.54,
     "rub": 6.17,
     "cny": 69.34,
-    "updatedAt": "2026-07-07T23:02:22.085Z",
+    "updatedAt": "2026-07-08T02:47:42.835Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-07T23:02:24.856Z",
+    "updatedAt": "2026-07-08T02:47:45.607Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
+        {
+          "name": "YES EXCHANGE (ТОО YR EXCHANGE)",
+          "lat": null,
+          "lng": null,
+          "address": "пр. Сейфуллина, 506/99 (угол ул. Кабанбай батыра, гостиница «Rixos Almaty», 1 этаж)",
+          "phone": "+7 (777) 891-33-66",
+          "usd": {
+            "buy": 470,
+            "sell": 473
+          },
+          "eur": {
+            "buy": 535,
+            "sell": 543
+          },
+          "rub": {
+            "buy": 5.87,
+            "sell": 5.97
+          },
+          "cny": {
+            "buy": 71,
+            "sell": 72.8
+          }
+        },
         {
           "name": "Ecash 4",
           "lat": 43.2338,
@@ -46,8 +69,8 @@
           "address": "ул. Майлина, 1, Пассажирский терминал  \"Международный Аэропорт г. Алматы\", 1 этаж",
           "phone": "+7 (777) 891-33-66",
           "usd": {
-            "buy": 468,
-            "sell": 475
+            "buy": 466,
+            "sell": 473
           },
           "eur": {
             "buy": 533,
@@ -131,6 +154,31 @@
           "cny": {
             "buy": 70,
             "sell": 73
+          }
+        }
+      ],
+      "Ақтөбе": [
+        {
+          "name": "Eurotrade-24 AIRPORT",
+          "lat": null,
+          "lng": null,
+          "address": "ул. Бокенбай батыра, 44",
+          "phone": "+7 (707) 933-44-44",
+          "usd": {
+            "buy": 469,
+            "sell": 474
+          },
+          "eur": {
+            "buy": 536,
+            "sell": 542
+          },
+          "rub": {
+            "buy": 5.82,
+            "sell": 5.95
+          },
+          "cny": {
+            "buy": 70,
+            "sell": 75
           }
         }
       ],
