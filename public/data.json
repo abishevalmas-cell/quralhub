@@ -1,44 +1,21 @@
 {
   "meta": {
-    "version": 868,
-    "generatedAt": "2026-07-11T20:49:46.474Z"
+    "version": 869,
+    "generatedAt": "2026-07-11T22:50:00.669Z"
   },
   "NB_RATES": {
     "usd": 464.71,
     "eur": 531.26,
     "rub": 6.05,
     "cny": 68.6,
-    "updatedAt": "2026-07-11T20:49:47.981Z",
+    "updatedAt": "2026-07-11T22:50:02.153Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-11T20:49:50.870Z",
+    "updatedAt": "2026-07-11T22:50:04.624Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
-        {
-          "name": "DIMAK EXCHANGE",
-          "lat": 43.221365,
-          "lng": 76.855409,
-          "address": "6-й мкр., 5, (по пр. Абая не доезжая ул. Саина, по верхней стороне)",
-          "phone": "+7 (701) 222-22-80",
-          "usd": {
-            "buy": 471.5,
-            "sell": 475
-          },
-          "eur": {
-            "buy": 542,
-            "sell": 546
-          },
-          "rub": {
-            "buy": 5.77,
-            "sell": 5.88
-          },
-          "cny": {
-            "buy": 70,
-            "sell": 71.3
-          }
-        },
         {
           "name": "Ecash 4",
           "lat": 43.2338,
@@ -108,29 +85,6 @@
           "cny": {
             "buy": 69,
             "sell": 74
-          }
-        },
-        {
-          "name": "Exchange Market 5 (ТОО \"NurlyZhol Exchange\")",
-          "lat": 51.112411,
-          "lng": 71.531777,
-          "address": "р-н Алматы, ул. Мұхамеджан Тынышбайұлы, 8, новый вокзал \"Нұрлы Жол\"",
-          "phone": "+7 (7172) 25-23-45",
-          "usd": {
-            "buy": 471,
-            "sell": 477
-          },
-          "eur": {
-            "buy": 537,
-            "sell": 546
-          },
-          "rub": {
-            "buy": 5.75,
-            "sell": 6.05
-          },
-          "cny": {
-            "buy": 70,
-            "sell": 73
           }
         },
         {
