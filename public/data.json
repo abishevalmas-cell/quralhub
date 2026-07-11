@@ -1,44 +1,21 @@
 {
   "meta": {
-    "version": 867,
-    "generatedAt": "2026-07-11T19:04:49.412Z"
+    "version": 868,
+    "generatedAt": "2026-07-11T20:49:46.474Z"
   },
   "NB_RATES": {
     "usd": 464.71,
     "eur": 531.26,
     "rub": 6.05,
     "cny": 68.6,
-    "updatedAt": "2026-07-11T19:04:50.655Z",
+    "updatedAt": "2026-07-11T20:49:47.981Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-11T19:04:54.907Z",
+    "updatedAt": "2026-07-11T20:49:50.870Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
-        {
-          "name": "YES EXCHANGE (ТОО YR EXCHANGE)",
-          "lat": null,
-          "lng": null,
-          "address": "пр. Сейфуллина, 506/99 (угол ул. Кабанбай батыра, гостиница «Rixos Almaty», 1 этаж)",
-          "phone": "+7 (777) 891-33-66",
-          "usd": {
-            "buy": 472.5,
-            "sell": 477.5
-          },
-          "eur": {
-            "buy": 537,
-            "sell": 545
-          },
-          "rub": {
-            "buy": 5.75,
-            "sell": 5.9
-          },
-          "cny": {
-            "buy": 69.5,
-            "sell": 72.2
-          }
-        },
         {
           "name": "DIMAK EXCHANGE",
           "lat": 43.221365,
