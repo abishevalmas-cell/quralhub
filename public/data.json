@@ -1,44 +1,21 @@
 {
   "meta": {
-    "version": 885,
-    "generatedAt": "2026-07-13T19:25:09.000Z"
+    "version": 886,
+    "generatedAt": "2026-07-13T20:57:05.663Z"
   },
   "NB_RATES": {
     "usd": 477.11,
     "eur": 545.58,
     "rub": 6.2,
     "cny": 70.4,
-    "updatedAt": "2026-07-13T19:25:10.175Z",
+    "updatedAt": "2026-07-13T20:57:07.133Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-13T19:25:12.260Z",
+    "updatedAt": "2026-07-13T20:57:09.884Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
-        {
-          "name": "1 KURS.KZ",
-          "lat": 43.235403,
-          "lng": 76.898932,
-          "address": "ул. Жандарбекова/Сатпаева, 152/57 (ул. Сатпаева/Жарокова между АЗС \"Sinooil\" и Автомойкой)",
-          "phone": "+7 (701) 761-11-60",
-          "usd": {
-            "buy": 472.8,
-            "sell": 475
-          },
-          "eur": {
-            "buy": 540.5,
-            "sell": 545.5
-          },
-          "rub": {
-            "buy": 5.85,
-            "sell": 5.93
-          },
-          "cny": {
-            "buy": 69.9,
-            "sell": 72.3
-          }
-        },
         {
           "name": "Ecash 4",
           "lat": 43.2338,
