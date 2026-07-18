@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 920,
-    "generatedAt": "2026-07-17T22:51:43.883Z"
+    "version": 921,
+    "generatedAt": "2026-07-18T02:34:47.665Z"
   },
   "NB_RATES": {
     "usd": 469.83,
     "eur": 536.83,
     "rub": 5.97,
     "cny": 69.32,
-    "updatedAt": "2026-07-17T22:51:45.418Z",
+    "updatedAt": "2026-07-18T02:34:49.817Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-17T22:51:47.868Z",
+    "updatedAt": "2026-07-18T02:34:51.865Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -165,7 +165,7 @@
           "address": "Ж/Д Вокзал, Привокзальная площадь, 1/1",
           "phone": "+7 (718) 222-30-40",
           "usd": {
-            "buy": 472,
+            "buy": 470,
             "sell": 475
           },
           "eur": {
