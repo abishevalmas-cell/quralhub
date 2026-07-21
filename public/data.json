@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 952,
-    "generatedAt": "2026-07-21T21:10:22.726Z"
+    "version": 953,
+    "generatedAt": "2026-07-21T22:57:47.107Z"
   },
   "NB_RATES": {
     "usd": 469.59,
     "eur": 536.22,
     "rub": 5.96,
     "cny": 69.41,
-    "updatedAt": "2026-07-21T21:10:24.137Z",
+    "updatedAt": "2026-07-21T22:57:48.668Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-07-21T21:10:26.857Z",
+    "updatedAt": "2026-07-21T22:57:51.495Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -60,29 +60,6 @@
           "cny": {
             "buy": 68,
             "sell": 71
-          }
-        },
-        {
-          "name": "YES EXCHANGE №1 (ТОО Сервис)",
-          "lat": 43.346622,
-          "lng": 77.012102,
-          "address": "ул. Майлина, 1, Пассажирский терминал  \"Международный Аэропорт г. Алматы\", 1 этаж",
-          "phone": "+7 (777) 891-33-66",
-          "usd": {
-            "buy": 463,
-            "sell": 470
-          },
-          "eur": {
-            "buy": 530,
-            "sell": 540
-          },
-          "rub": {
-            "buy": 5,
-            "sell": 6.3
-          },
-          "cny": {
-            "buy": 67,
-            "sell": 76
           }
         }
       ],
