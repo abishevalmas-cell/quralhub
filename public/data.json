@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 1054,
-    "generatedAt": "2026-08-02T20:56:07.020Z"
+    "version": 1055,
+    "generatedAt": "2026-08-02T22:56:56.876Z"
   },
   "NB_RATES": {
     "usd": 473.59,
     "eur": 544.68,
     "rub": 5.94,
     "cny": 70.15,
-    "updatedAt": "2026-08-02T20:56:08.692Z",
+    "updatedAt": "2026-08-02T22:56:57.984Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-08-02T20:56:11.492Z",
+    "updatedAt": "2026-08-02T22:56:59.780Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -131,6 +131,29 @@
           "cny": {
             "buy": 68,
             "sell": 73
+          }
+        },
+        {
+          "name": "Exchange Market 5 (ТОО \"NurlyZhol Exchange\")",
+          "lat": 51.112411,
+          "lng": 71.531777,
+          "address": "р-н Алматы, ул. Мұхамеджан Тынышбайұлы, 8, новый вокзал \"Нұрлы Жол\"",
+          "phone": "+7 (7172) 25-23-45",
+          "usd": {
+            "buy": 469,
+            "sell": 475
+          },
+          "eur": {
+            "buy": 537,
+            "sell": 545
+          },
+          "rub": {
+            "buy": 5.6,
+            "sell": 5.8
+          },
+          "cny": {
+            "buy": 70,
+            "sell": 72
           }
         }
       ],
