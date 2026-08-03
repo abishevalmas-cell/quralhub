@@ -1,21 +1,44 @@
 {
   "meta": {
-    "version": 1055,
-    "generatedAt": "2026-08-02T22:56:56.876Z"
+    "version": 1056,
+    "generatedAt": "2026-08-03T02:52:56.657Z"
   },
   "NB_RATES": {
     "usd": 473.59,
     "eur": 544.68,
     "rub": 5.94,
     "cny": 70.15,
-    "updatedAt": "2026-08-02T22:56:57.984Z",
+    "updatedAt": "2026-08-03T02:52:58.195Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-08-02T22:56:59.780Z",
+    "updatedAt": "2026-08-03T02:53:00.718Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
+        {
+          "name": "YES EXCHANGE (ТОО YR EXCHANGE)",
+          "lat": null,
+          "lng": null,
+          "address": "пр. Сейфуллина, 506/99 (угол ул. Кабанбай батыра, гостиница «Rixos Almaty», 1 этаж)",
+          "phone": "+7 (777) 891-33-66",
+          "usd": {
+            "buy": 472.5,
+            "sell": 475
+          },
+          "eur": {
+            "buy": 542,
+            "sell": 547.5
+          },
+          "rub": {
+            "buy": 5.63,
+            "sell": 5.73
+          },
+          "cny": {
+            "buy": 69,
+            "sell": 71.5
+          }
+        },
         {
           "name": "Ecash 4",
           "lat": 43.2338,
@@ -41,29 +64,6 @@
         }
       ],
       "Астана": [
-        {
-          "name": "Profit-Пайда",
-          "lat": 51.119009,
-          "lng": 71.418634,
-          "address": "ул. Сауран, 7 (рядом с ТД «АНВАР» и рынком «Сауран»)",
-          "phone": "+7 (777) 216-70-02",
-          "usd": {
-            "buy": 469,
-            "sell": 476
-          },
-          "eur": {
-            "buy": 537,
-            "sell": 547
-          },
-          "rub": {
-            "buy": 5.6,
-            "sell": 5.8
-          },
-          "cny": {
-            "buy": 68,
-            "sell": 73
-          }
-        },
         {
           "name": "Esil Exchange (Аэропорт Т2)",
           "lat": 51.026987,
@@ -141,11 +141,11 @@
           "phone": "+7 (7172) 25-23-45",
           "usd": {
             "buy": 469,
-            "sell": 475
+            "sell": 476
           },
           "eur": {
             "buy": 537,
-            "sell": 545
+            "sell": 547
           },
           "rub": {
             "buy": 5.6,
