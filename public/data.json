@@ -1,21 +1,44 @@
 {
   "meta": {
-    "version": 1100,
-    "generatedAt": "2026-08-08T18:38:05.989Z"
+    "version": 1101,
+    "generatedAt": "2026-08-08T20:30:34.127Z"
   },
   "NB_RATES": {
     "usd": 469.93,
     "eur": 541.64,
     "rub": 5.71,
     "cny": 69.65,
-    "updatedAt": "2026-08-08T18:38:07.454Z",
+    "updatedAt": "2026-08-08T20:30:35.320Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-08-08T18:38:10.640Z",
+    "updatedAt": "2026-08-08T20:30:37.805Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
+        {
+          "name": "Ecash 4",
+          "lat": 43.2338,
+          "lng": 76.935422,
+          "address": "пр. Сейфуллина, 617 (ТРК \"FORUM\" )",
+          "phone": "+7 (777) 304-40-74",
+          "usd": {
+            "buy": 466,
+            "sell": 471.8
+          },
+          "eur": {
+            "buy": 537,
+            "sell": 544
+          },
+          "rub": {
+            "buy": 5.41,
+            "sell": 5.54
+          },
+          "cny": {
+            "buy": 69.2,
+            "sell": 71.7
+          }
+        },
         {
           "name": "YES EXCHANGE №1 (ТОО Сервис)",
           "lat": 43.346622,
