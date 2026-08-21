@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 1222,
-    "generatedAt": "2026-08-20T22:28:00.391Z"
+    "version": 1223,
+    "generatedAt": "2026-08-21T01:19:57.552Z"
   },
   "NB_RATES": {
     "usd": 458.23,
     "eur": 535.99,
     "rub": 5.46,
     "cny": 68.17,
-    "updatedAt": "2026-08-20T22:28:01.964Z",
+    "updatedAt": "2026-08-21T01:19:58.797Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-08-20T22:28:03.939Z",
+    "updatedAt": "2026-08-21T01:20:00.808Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -131,6 +131,31 @@
           "cny": {
             "buy": 68,
             "sell": 71.5
+          }
+        }
+      ],
+      "Ақтөбе": [
+        {
+          "name": "Eurotrade-24 AIRPORT",
+          "lat": null,
+          "lng": null,
+          "address": "ул. Бокенбай батыра, 44",
+          "phone": "+7 (707) 933-44-44",
+          "usd": {
+            "buy": 456,
+            "sell": 459.5
+          },
+          "eur": {
+            "buy": 533,
+            "sell": 538.5
+          },
+          "rub": {
+            "buy": 5.15,
+            "sell": 5.5
+          },
+          "cny": {
+            "buy": 70,
+            "sell": 74
           }
         }
       ],
