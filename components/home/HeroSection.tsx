@@ -79,7 +79,7 @@ export function HeroSection() {
         className="flex justify-center gap-3 sm:gap-4 mb-8"
       >
         {[
-          { n: '33+', l: lang === 'ru' ? 'Инструменты' : 'Құралдар' },
+          { n: '34+', l: lang === 'ru' ? 'Инструменты' : 'Құралдар' },
           { n: '2026', l: lang === 'ru' ? 'Новый НК' : 'Жаңа НК' },
           { n: '0₸', l: lang === 'ru' ? 'Бесплатно' : 'Тегін' },
         ].map((stat) => (

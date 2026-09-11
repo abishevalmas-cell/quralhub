@@ -8,7 +8,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     'mortgage', 'transport', 'communal', 'customs',
     'currency', 'bankdep', 'bankcred', 'connect',
     'aitools', 'septik', 'propisyu', 'holidays',
-    'doctemplates', 'resume', 'invoice', 'qr', 'pdf', 'passgen',
+    'doctemplates', 'resume', 'invoice', 'qr', 'pdf', 'passgen', 'collage',
     'marketplace', 'fines', 'plates', 'calendars',
     'feedback',
   ]
