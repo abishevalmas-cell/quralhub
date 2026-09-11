@@ -7,6 +7,7 @@ import {
   centerOf,
   angleBetween,
   resizeByHandle,
+  sheetToLocal,
   type Point,
   type ResizeHandle,
 } from '@/lib/collage/geometry'
@@ -22,12 +23,16 @@ interface Props {
   selectedIds: string[]
   view: CanvasView
   spacePan: boolean
+  /** Magic-eraser mode: a click wipes the background region under the cursor */
+  eraserMode: boolean
   onSelect: (ids: string[]) => void
   onViewChange: (view: CanvasView) => void
   /** Called once when a gesture starts, so history gets a single entry */
   onGestureStart: () => void
   onItemsChange: (items: CollageItem[]) => void
   onDropFiles: (files: File[]) => void
+  /** Seed point in the item's own image pixels */
+  onEraseAt: (id: string, px: number, py: number) => void
 }
 
 type Gesture =
@@ -47,11 +52,13 @@ export function CollageCanvas({
   selectedIds,
   view,
   spacePan,
+  eraserMode,
   onSelect,
   onViewChange,
   onGestureStart,
   onItemsChange,
   onDropFiles,
+  onEraseAt,
 }: Props) {
   const viewportRef = useRef<HTMLDivElement>(null)
   const sheetRef = useRef<HTMLDivElement>(null)
@@ -126,6 +133,17 @@ export function CollageCanvas({
     (e: React.PointerEvent, item: CollageItem) => {
       if (item.locked) return
       e.stopPropagation()
+
+      if (eraserMode && item.kind === 'image') {
+        const point = toSheet(e.clientX, e.clientY)
+        const local = sheetToLocal(item, point.x, point.y)
+        const nx = (local.x / item.w) * item.naturalW
+        const ny = (local.y / item.h) * item.naturalH
+        onSelect([item.id])
+        onEraseAt(item.id, item.flipX ? item.naturalW - nx : nx, ny)
+        return
+      }
+
       const additive = e.shiftKey
       const ids = additive
         ? selectedIds.includes(item.id)
@@ -150,7 +168,7 @@ export function CollageCanvas({
       }
       ;(e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId)
     },
-    [doc.items, selectedIds, onSelect, onGestureStart, toSheet],
+    [doc.items, eraserMode, onEraseAt, selectedIds, onSelect, onGestureStart, toSheet],
   )
 
   const startResize = useCallback(
@@ -400,7 +418,7 @@ export function CollageCanvas({
                 transform: `rotate(${item.rotation}deg)`,
                 transformOrigin: 'center',
                 opacity: item.opacity,
-                cursor: item.locked ? 'not-allowed' : spacePan ? 'grab' : 'move',
+                cursor: item.locked ? 'not-allowed' : eraserMode ? 'crosshair' : spacePan ? 'grab' : 'move',
                 outline: isSelected ? `${1.5 / view.zoom}px solid var(--color-primary)` : undefined,
               }}
             >

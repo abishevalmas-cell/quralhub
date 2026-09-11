@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test'
+import { TOOLS } from '../lib/tools'
 
 // ============================================================
 // 1. HOMEPAGE
@@ -8,7 +9,7 @@ test.describe('Homepage', () => {
   test('loads and shows hero section', async ({ page }) => {
     await page.goto('/')
     await expect(page.locator('h1')).toBeVisible()
-    await expect(page.getByText('30+').first()).toBeVisible()
+    await expect(page.getByText(`${TOOLS.length}+`).first()).toBeVisible()
   })
 
   test('shows all tool sections', async ({ page }) => {

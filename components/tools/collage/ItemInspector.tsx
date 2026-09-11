@@ -1,6 +1,7 @@
 'use client'
 import { useApp } from '@/components/layout/Providers'
 import type { CollageItem } from '@/lib/collage/types'
+import type { CutoutMethod } from '@/lib/collage/autoCutout'
 
 interface Props {
   item: CollageItem | null
@@ -9,7 +10,10 @@ interface Props {
   onChange: (patch: Partial<CollageItem>) => void
   onCommit: () => void
   onToggleBg: (enabled: boolean) => void
-  onReprocessBg: (threshold: number) => void
+  onRecut: (patch: { tolerance?: number; keepMain?: boolean }) => void
+  onErase: () => void
+  eraserMode: boolean
+  onCrop: () => void
   onOrder: (op: 'front' | 'forward' | 'backward' | 'back') => void
   onAlign: (op: 'left' | 'hcenter' | 'right' | 'top' | 'vcenter' | 'bottom') => void
   onDuplicate: () => void
@@ -30,7 +34,15 @@ const inputCls =
   'w-full h-9 px-2.5 rounded-lg bg-background border border-border text-sm outline-none focus:border-primary'
 
 const chipCls =
-  'flex-1 min-h-[36px] px-2 rounded-lg border border-border bg-card text-[11px] font-semibold hover:border-primary transition-colors'
+  'flex-1 min-h-[36px] px-2 rounded-lg border border-border bg-card text-[11px] font-semibold hover:border-primary transition-colors disabled:opacity-40'
+
+/** What the automatic pass decided about this picture */
+const METHOD_LABEL: Record<CutoutMethod, [string, string]> = {
+  alpha: ['Сурет мөлдір PNG — сол күйінде', 'Изображение уже без фона — взято как есть'],
+  subject: ['Зат автоматты табылды', 'Предмет определён автоматически'],
+  threshold: ['Ашық фон жарықтық бойынша алынды', 'Светлый фон убран по яркости'],
+  none: ['Фон анықталмады — ластикті қолданыңыз', 'Фон не определён — используйте ластик'],
+}
 
 export function ItemInspector({
   item,
@@ -39,7 +51,10 @@ export function ItemInspector({
   onChange,
   onCommit,
   onToggleBg,
-  onReprocessBg,
+  onRecut,
+  onErase,
+  eraserMode,
+  onCrop,
   onOrder,
   onAlign,
   onDuplicate,
@@ -210,22 +225,57 @@ export function ItemInspector({
               <span className="text-xs font-semibold">{L('Фонсыз', 'Без фона')}</span>
               {processing && <span className="w-3 h-3 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />}
             </label>
+
+            <p className="text-[10px] text-muted-foreground">
+              {METHOD_LABEL[item.cutoutMethod][lang === 'ru' ? 1 : 0]}
+            </p>
+
             {item.bgRemoved && (
-              <div>
-                <span className="text-[11px] text-muted-foreground">
-                  {L('Сезімталдық', 'Порог')}: {item.bgThreshold}
-                </span>
-                <input
-                  type="range"
-                  min={150}
-                  max={255}
-                  value={item.bgThreshold}
-                  disabled={processing}
-                  onChange={e => onChange({ bgThreshold: Number(e.target.value) })}
-                  onPointerUp={e => onReprocessBg(Number((e.target as HTMLInputElement).value))}
-                  className="w-full accent-primary"
-                />
-              </div>
+              <>
+                <div>
+                  <span className="text-[11px] text-muted-foreground">
+                    {L('Дәлдік', 'Точность выделения')}: {item.tolerance}
+                  </span>
+                  <input
+                    type="range"
+                    min={8}
+                    max={80}
+                    value={item.tolerance}
+                    disabled={processing}
+                    onChange={e => onChange({ tolerance: Number(e.target.value) })}
+                    onPointerUp={e => onRecut({ tolerance: Number((e.target as HTMLInputElement).value) })}
+                    className="w-full accent-primary"
+                  />
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={item.keepMain}
+                    disabled={processing}
+                    onChange={e => onRecut({ keepMain: e.target.checked })}
+                    className="w-4 h-4 accent-primary"
+                  />
+                  <span className="text-xs font-semibold">{L('Тек негізгі зат', 'Только главный предмет')}</span>
+                </label>
+              </>
+            )}
+
+            <div className="flex gap-1.5">
+              <button
+                onClick={onErase}
+                disabled={processing}
+                className={`${chipCls} ${eraserMode ? '!border-primary !bg-primary/10' : ''}`}
+              >
+                {eraserMode ? L('Өшіру: қосулы', 'Ластик: вкл') : L('Фонды өшіру', 'Стереть фон кликом')}
+              </button>
+              <button onClick={onCrop} disabled={processing} className={chipCls}>
+                {L('Қиып алу', 'Обрезать')}
+              </button>
+            </div>
+            {eraserMode && (
+              <p className="text-[10px] text-muted-foreground">
+                {L('Парақтағы фонның артық бөлігін басыңыз', 'Щёлкайте по лишним кускам фона прямо на листе')}
+              </p>
             )}
           </div>
 

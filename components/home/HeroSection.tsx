@@ -3,6 +3,7 @@ import { Star } from 'lucide-react'
 import { motion } from 'framer-motion'
 import Link from 'next/link'
 import { useApp } from '@/components/layout/Providers'
+import { TOOLS } from '@/lib/tools'
 
 const ACTIONS = [
   { text: 'Жалақыңызды есептеңіз', textRu: 'Рассчитайте зарплату', href: '/salary', icon: '💰' },
@@ -79,7 +80,7 @@ export function HeroSection() {
         className="flex justify-center gap-3 sm:gap-4 mb-8"
       >
         {[
-          { n: '34+', l: lang === 'ru' ? 'Инструменты' : 'Құралдар' },
+          { n: `${TOOLS.length}+`, l: lang === 'ru' ? 'Инструменты' : 'Құралдар' },
           { n: '2026', l: lang === 'ru' ? 'Новый НК' : 'Жаңа НК' },
           { n: '0₸', l: lang === 'ru' ? 'Бесплатно' : 'Тегін' },
         ].map((stat) => (

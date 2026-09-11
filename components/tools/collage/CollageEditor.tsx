@@ -8,10 +8,11 @@ import { LayersPanel } from './LayersPanel'
 import { useCollageDoc } from './useCollageDoc'
 import { autoLayout, DEFAULT_LAYOUT_OPTIONS } from '@/lib/collage/layout'
 import { exportDoc, downloadBlob } from '@/lib/collage/render'
-import { cutoutFromDataUrl, fileToDataUrl, loadImage, prepareItem, downscale } from '@/lib/collage/background'
+import { autoCropTransparent, autoCutout, eraseAt, fileToDataUrl, loadImage, prepareItem, downscale } from '@/lib/collage/background'
 import { BACKGROUND_SWATCHES, DEFAULT_SHEET, SHEET_PRESETS, STORAGE_KEY } from '@/lib/collage/constants'
 import { boundsOf } from '@/lib/collage/geometry'
 import type { CollageDoc, CollageItem, LayoutMode } from '@/lib/collage/types'
+import { normalizeDoc } from '@/lib/collage/types'
 
 const uid = () => `it_${Date.now().toString(36)}_${Math.random().toString(36).slice(2, 7)}`
 
@@ -40,7 +41,9 @@ export function CollageEditor() {
   const [view, setView] = useState<CanvasView>({ zoom: 0.35, panX: 40, panY: 30 })
   const [spacePan, setSpacePan] = useState(false)
   const [removeBgOnImport, setRemoveBgOnImport] = useState(true)
-  const [threshold, setThreshold] = useState(225)
+  const [tolerance, setTolerance] = useState(32)
+  const [keepMain, setKeepMain] = useState(true)
+  const [eraserMode, setEraserMode] = useState(false)
   const [layoutMode, setLayoutMode] = useState<LayoutMode>('shelf')
   const [keepScale, setKeepScale] = useState(true)
   const [density, setDensity] = useState(DEFAULT_LAYOUT_OPTIONS.density)
@@ -121,11 +124,17 @@ export function CollageEditor() {
 
     const created: CollageItem[] = []
     let failed = 0
+    let weak = 0
 
     for (let i = 0; i < images.length; i++) {
       setBusy(L(`Өңделуде ${i + 1}/${images.length}`, `Обработка ${i + 1}/${images.length}`))
       try {
-        const prepared = await prepareItem(images[i], { removeBg: removeBgOnImport, threshold })
+        // Give the progress counter a frame before the segmentation blocks
+        await new Promise(r => setTimeout(r, 0))
+        const prepared = await prepareItem(images[i], {
+          removeBg: removeBgOnImport,
+          options: { tolerance, keepMain, feather: 1 },
+        })
         const sheet = docRef.current.sheet
         const ar = prepared.width / Math.max(prepared.height, 1)
         let w = sheet.w * 0.24
@@ -135,6 +144,7 @@ export function CollageEditor() {
           h = maxH
           w = h * ar
         }
+        if (removeBgOnImport && (prepared.method === 'none' || prepared.confidence === 'low')) weak++
         const n = docRef.current.items.length + created.length
         created.push({
           id: uid(),
@@ -143,8 +153,10 @@ export function CollageEditor() {
           src: prepared.src,
           originalSrc: prepared.originalSrc,
           cutoutSrc: prepared.cutoutSrc,
-          bgRemoved: removeBgOnImport,
-          bgThreshold: threshold,
+          bgRemoved: removeBgOnImport && prepared.method !== 'none',
+          cutoutMethod: prepared.method,
+          tolerance,
+          keepMain,
           naturalW: prepared.width,
           naturalH: prepared.height,
           x: sheet.w / 2 - w / 2 + (n % 6) * 30,
@@ -170,9 +182,15 @@ export function CollageEditor() {
     }
     if (failed) {
       setNotice(L(`${failed} файл өңделмеді`, `Не удалось обработать файлов: ${failed}`))
-      setTimeout(() => setNotice(''), 4000)
+      setTimeout(() => setNotice(''), 5000)
+    } else if (weak) {
+      setNotice(L(
+        `${weak} суреттің фоны күрделі — «Фонды өшіру» режимін қосып, фонды басыңыз`,
+        `У ${weak} фото сложный фон — включите «Стереть фон кликом» в свойствах и щёлкните по фону`,
+      ))
+      setTimeout(() => setNotice(''), 7000)
     }
-  }, [L, commit, docRef, removeBgOnImport, threshold])
+  }, [L, commit, docRef, keepMain, removeBgOnImport, tolerance])
 
   const addText = useCallback(() => {
     const sheet = docRef.current.sheet
@@ -188,7 +206,9 @@ export function CollageEditor() {
         src: '',
         originalSrc: '',
         bgRemoved: false,
-        bgThreshold: threshold,
+        cutoutMethod: 'none',
+        tolerance,
+        keepMain,
         naturalW: w,
         naturalH: h,
         fontSize: Math.round(sheet.h * 0.034),
@@ -207,7 +227,7 @@ export function CollageEditor() {
         visible: true,
       }],
     }))
-  }, [L, commit, docRef, threshold])
+  }, [L, commit, docRef, keepMain, tolerance])
 
   /* ---------------------------------------------------------- item edits */
 
@@ -340,64 +360,148 @@ export function CollageEditor() {
 
   /* ------------------------------------------------------- background op */
 
+  /** Swap an item's picture while keeping it centred where it already sits */
+  const swapSource = useCallback((
+    item: CollageItem,
+    src: string,
+    width: number,
+    height: number,
+    extra: Partial<CollageItem> = {},
+  ) => {
+    const cx = item.x + item.w / 2
+    const cy = item.y + item.h / 2
+    const w = item.w
+    const h = w / (width / Math.max(height, 1))
+    patchItem(item.id, {
+      src,
+      naturalW: width,
+      naturalH: height,
+      w,
+      h,
+      x: cx - w / 2,
+      y: cy - h / 2,
+      ...extra,
+    })
+  }, [patchItem])
+
+  const warn = useCallback((kz: string, ru: string) => {
+    setNotice(L(kz, ru))
+    setTimeout(() => setNotice(''), 5000)
+  }, [L])
+
+  /** Turn the cutout on or off for the selected object */
   const applyCutout = useCallback(async (enabled: boolean) => {
     if (!single || single.kind !== 'image') return
     setProcessing(true)
     try {
       if (!enabled) {
         const img = await loadImage(single.originalSrc)
-        const ar = img.naturalWidth / img.naturalHeight
-        patchItem(single.id, {
-          src: single.originalSrc,
+        swapSource(single, single.originalSrc, img.naturalWidth, img.naturalHeight, {
           bgRemoved: false,
-          naturalW: img.naturalWidth,
-          naturalH: img.naturalHeight,
-          h: single.w / ar,
+          cutoutMethod: 'none',
         })
+      } else if (single.cutoutSrc) {
+        const img = await loadImage(single.cutoutSrc)
+        swapSource(single, single.cutoutSrc, img.naturalWidth, img.naturalHeight, { bgRemoved: true })
       } else {
-        const cached = single.cutoutSrc && single.bgThreshold === threshold ? single.cutoutSrc : null
-        const src = cached ?? (await cutoutFromDataUrl(single.originalSrc, single.bgThreshold)).dataUrl
-        const img = await loadImage(src)
-        const ar = img.naturalWidth / img.naturalHeight
-        patchItem(single.id, {
-          src,
-          cutoutSrc: src,
+        const cut = await autoCutout(single.originalSrc, {
+          tolerance: single.tolerance,
+          keepMain: single.keepMain,
+          feather: 1,
+        })
+        if (cut.method === 'none') {
+          warn('Фон автоматты анықталмады', 'Фон не определился — попробуйте ползунок точности или ластик')
+          return
+        }
+        swapSource(single, cut.dataUrl, cut.width, cut.height, {
+          cutoutSrc: cut.dataUrl,
           bgRemoved: true,
-          naturalW: img.naturalWidth,
-          naturalH: img.naturalHeight,
-          h: single.w / ar,
+          cutoutMethod: cut.method,
         })
       }
     } catch {
-      setNotice(L('Фонды өңдеу қатесі', 'Ошибка обработки фона'))
-      setTimeout(() => setNotice(''), 4000)
+      warn('Фонды өңдеу қатесі', 'Ошибка обработки фона')
     } finally {
       setProcessing(false)
     }
-  }, [L, patchItem, single, threshold])
+  }, [single, swapSource, warn])
 
-  const reprocessCutout = useCallback(async (value: number) => {
+  /** Re-detect the subject with different settings */
+  const recutSelected = useCallback(async (patch: { tolerance?: number; keepMain?: boolean }) => {
+    if (!single || single.kind !== 'image') return
+    const next = {
+      tolerance: patch.tolerance ?? single.tolerance,
+      keepMain: patch.keepMain ?? single.keepMain,
+      feather: 1,
+    }
+    setProcessing(true)
+    try {
+      const cut = await autoCutout(single.originalSrc, next)
+      if (cut.method === 'none') {
+        patchItem(single.id, { tolerance: next.tolerance, keepMain: next.keepMain })
+        warn('Фон автоматты анықталмады', 'Фон не определился — попробуйте другое значение точности')
+        return
+      }
+      swapSource(single, cut.dataUrl, cut.width, cut.height, {
+        cutoutSrc: cut.dataUrl,
+        bgRemoved: true,
+        cutoutMethod: cut.method,
+        tolerance: next.tolerance,
+        keepMain: next.keepMain,
+      })
+    } catch {
+      warn('Фонды өңдеу қатесі', 'Ошибка обработки фона')
+    } finally {
+      setProcessing(false)
+    }
+  }, [patchItem, single, swapSource, warn])
+
+  /** Magic eraser — the designer clicks a leftover piece of background */
+  const eraseOnItem = useCallback(async (id: string, px: number, py: number) => {
+    const item = docRef.current.items.find(i => i.id === id)
+    if (!item || item.kind !== 'image') return
+    setProcessing(true)
+    try {
+      const erased = await eraseAt(item.src, px, py, item.tolerance)
+      if (erased.removedRatio < 0.0005) {
+        warn('Бұл жерде өшіретін ештеңе жоқ', 'Здесь нечего стирать — щёлкните по фону предмета')
+        return
+      }
+      patchItem(id, { src: erased.dataUrl, cutoutSrc: erased.dataUrl, bgRemoved: true })
+    } catch {
+      warn('Фонды өңдеу қатесі', 'Ошибка обработки фона')
+    } finally {
+      setProcessing(false)
+    }
+  }, [docRef, patchItem, warn])
+
+  /** Crop the transparent margin away and keep the object where it is */
+  const cropSelected = useCallback(async () => {
     if (!single || single.kind !== 'image') return
     setProcessing(true)
     try {
-      const cut = await cutoutFromDataUrl(single.originalSrc, value)
-      const ar = cut.width / Math.max(cut.height, 1)
+      const cropped = await autoCropTransparent(single.src)
+      if (cropped.width === single.naturalW && cropped.height === single.naturalH) return
+      const scale = single.w / single.naturalW
+      const box = { w: cropped.width * scale, h: cropped.height * scale }
+      const cx = single.x + single.w / 2
+      const cy = single.y + single.h / 2
       patchItem(single.id, {
-        src: cut.dataUrl,
-        cutoutSrc: cut.dataUrl,
-        bgRemoved: true,
-        bgThreshold: value,
-        naturalW: cut.width,
-        naturalH: cut.height,
-        h: single.w / ar,
+        src: cropped.dataUrl,
+        cutoutSrc: cropped.dataUrl,
+        naturalW: cropped.width,
+        naturalH: cropped.height,
+        w: box.w,
+        h: box.h,
+        x: cx - box.w / 2,
+        y: cy - box.h / 2,
       })
     } catch {
-      setNotice(L('Фонды өңдеу қатесі', 'Ошибка обработки фона'))
-      setTimeout(() => setNotice(''), 4000)
+      warn('Қию қатесі', 'Не удалось обрезать')
     } finally {
       setProcessing(false)
     }
-  }, [L, patchItem, single])
+  }, [patchItem, single, warn])
 
   /* ------------------------------------------------------------- layouts */
 
@@ -439,9 +543,9 @@ export function CollageEditor() {
   const loadProject = useCallback(async (file: File) => {
     try {
       const text = await file.text()
-      const parsed = JSON.parse(text) as CollageDoc
+      const parsed = JSON.parse(text)
       if (!parsed?.sheet || !Array.isArray(parsed.items)) throw new Error('bad file')
-      replace(parsed)
+      replace(normalizeDoc(parsed))
       setSelectedIds([])
       setTimeout(fitToScreen, 60)
     } catch {
@@ -480,9 +584,9 @@ export function CollageEditor() {
     try {
       const saved = localStorage.getItem(STORAGE_KEY)
       if (!saved) return
-      const parsed = JSON.parse(saved) as CollageDoc
+      const parsed = JSON.parse(saved)
       if (parsed?.sheet && Array.isArray(parsed.items) && parsed.items.length) {
-        replace(parsed)
+        replace(normalizeDoc(parsed))
         setNotice(L('Соңғы коллаж қалпына келтірілді', 'Восстановлен последний коллаж'))
         setTimeout(() => setNotice(''), 4000)
       }
@@ -578,8 +682,8 @@ export function CollageEditor() {
         </h1>
         <p className="text-sm text-muted-foreground mt-1 max-w-[70ch]">
           {L(
-            'Заттардың фонын алып тастаңыз, еркін параққа орналастырыңыз, масштабы мен қабаттарын өзгертіңіз. Барлығы браузерде — файлдар серверге жіберілмейді.',
-            'Уберите фон у предметов, разложите их на свободном листе, меняйте масштаб и слои. Всё считается в браузере — файлы никуда не отправляются.',
+            'Кез келген суретті жүктеңіз — зат автоматты түрде танылып, фоны алынады. Содан кейін еркін параққа орналастырыңыз. Барлығы браузерде — файлдар серверге жіберілмейді.',
+            'Загрузите любое фото — предмет определяется сам, фон убирается автоматически. Дальше раскладывайте по свободному листу. Всё считается в браузере, файлы никуда не отправляются.',
           )}
         </p>
       </header>
@@ -620,21 +724,39 @@ export function CollageEditor() {
                 <span className="text-xs font-semibold">{L('Жүктегенде фонды алу', 'Убирать фон при загрузке')}</span>
               </label>
               {removeBgOnImport && (
-                <div>
-                  <span className="text-[11px] text-muted-foreground">
-                    {L('Сезімталдық', 'Порог')}: {threshold}
-                  </span>
-                  <input
-                    type="range"
-                    min={150}
-                    max={255}
-                    value={threshold}
-                    onChange={e => setThreshold(Number(e.target.value))}
-                    className="w-full accent-primary"
-                  />
+                <div className="space-y-2">
                   <p className="text-[10px] text-muted-foreground">
-                    {L('Ақ фонды каталог суреттері үшін 210–235', 'Для каталожных фото на белом фоне — 210–235')}
+                    {L(
+                      'Кез келген сурет: ақ, түрлі-түсті немесе градиент фон — зат автоматты табылады. Мөлдір PNG сол күйінде қалады.',
+                      'Любое фото: белый, цветной или градиентный фон — предмет определяется автоматически. Прозрачный PNG берётся как есть.',
+                    )}
                   </p>
+                  <div>
+                    <span className="text-[11px] text-muted-foreground">
+                      {L('Дәлдік', 'Точность выделения')}: {tolerance}
+                    </span>
+                    <input
+                      type="range"
+                      min={8}
+                      max={80}
+                      value={tolerance}
+                      onChange={e => setTolerance(Number(e.target.value))}
+                      className="w-full accent-primary"
+                    />
+                    <div className="flex justify-between text-[10px] text-muted-foreground">
+                      <span>{L('Дәл', 'Аккуратно')}</span>
+                      <span>{L('Батыл', 'Агрессивно')}</span>
+                    </div>
+                  </div>
+                  <label className="flex items-center gap-2 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={keepMain}
+                      onChange={e => setKeepMain(e.target.checked)}
+                      className="w-4 h-4 accent-primary"
+                    />
+                    <span className="text-xs font-semibold">{L('Тек негізгі зат', 'Только главный предмет')}</span>
+                  </label>
                 </div>
               )}
               <button onClick={addText} className={`${btn} w-full`}>
@@ -845,11 +967,13 @@ export function CollageEditor() {
               selectedIds={selectedIds}
               view={view}
               spacePan={spacePan}
+              eraserMode={eraserMode}
               onSelect={setSelectedIds}
               onViewChange={setView}
               onGestureStart={begin}
               onItemsChange={items => update(d => ({ ...d, items }))}
               onDropFiles={files => void addFiles(files)}
+              onEraseAt={(id, px, py) => void eraseOnItem(id, px, py)}
             />
             {busy && (
               <div className="absolute inset-0 z-10 flex items-center justify-center bg-background/70 backdrop-blur-sm rounded-2xl">
@@ -898,7 +1022,10 @@ export function CollageEditor() {
               onChange={patchSelected}
               onCommit={endEdit}
               onToggleBg={enabled => void applyCutout(enabled)}
-              onReprocessBg={value => void reprocessCutout(value)}
+              onRecut={patch => void recutSelected(patch)}
+              onErase={() => setEraserMode(v => !v)}
+              eraserMode={eraserMode}
+              onCrop={() => void cropSelected()}
               onOrder={reorder}
               onAlign={align}
               onDuplicate={duplicateSelected}
