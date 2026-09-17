@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 1375,
-    "generatedAt": "2026-09-17T21:13:32.384Z"
+    "version": 1376,
+    "generatedAt": "2026-09-17T23:56:30.929Z"
   },
   "NB_RATES": {
     "usd": 444.58,
     "eur": 510.29,
     "rub": 5.27,
     "cny": 66.28,
-    "updatedAt": "2026-09-17T21:13:33.724Z",
+    "updatedAt": "2026-09-17T23:56:32.089Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-09-17T21:13:36.604Z",
+    "updatedAt": "2026-09-17T23:56:34.966Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -84,29 +84,6 @@
           },
           "cny": {
             "buy": 68.5,
-            "sell": 72
-          }
-        },
-        {
-          "name": "ОТРАР FINANCE 1",
-          "lat": 51.153331,
-          "lng": 71.429225,
-          "address": "мкр. Самал, 12 (ТД \"SPACES\", бывший \"Рамстор\")",
-          "phone": "+7 (702) 904-64-56",
-          "usd": {
-            "buy": 443,
-            "sell": 450
-          },
-          "eur": {
-            "buy": 509,
-            "sell": 519
-          },
-          "rub": {
-            "buy": 4.95,
-            "sell": 5.15
-          },
-          "cny": {
-            "buy": 68,
             "sell": 72
           }
         },
