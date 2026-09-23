@@ -1,42 +1,42 @@
 {
   "meta": {
-    "version": 1399,
-    "generatedAt": "2026-09-23T18:16:50.675Z"
+    "version": 1400,
+    "generatedAt": "2026-09-23T22:45:44.313Z"
   },
   "NB_RATES": {
     "usd": 445.65,
     "eur": 508.71,
     "rub": 5.3,
     "cny": 66.45,
-    "updatedAt": "2026-09-23T18:16:51.900Z",
+    "updatedAt": "2026-09-23T22:45:45.404Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-09-23T18:16:54.140Z",
+    "updatedAt": "2026-09-23T22:45:47.849Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
         {
-          "name": "1 KURS.KZ",
-          "lat": 43.235403,
-          "lng": 76.898932,
-          "address": "ул. Жандарбекова/Сатпаева, 152/57 (ул. Сатпаева/Жарокова между АЗС \"Sinooil\" и Автомойкой)",
-          "phone": "+7 (701) 761-11-60",
+          "name": "Ecash 4",
+          "lat": 43.2338,
+          "lng": 76.935422,
+          "address": "пр. Сейфуллина, 617 (ТРК \"FORUM\" )",
+          "phone": "+7 (777) 304-40-74",
           "usd": {
-            "buy": 445,
-            "sell": 445.9
+            "buy": 442.5,
+            "sell": 447.8
           },
           "eur": {
-            "buy": 508,
+            "buy": 506,
             "sell": 512
           },
           "rub": {
-            "buy": 5.03,
-            "sell": 5.11
+            "buy": 4.99,
+            "sell": 5.12
           },
           "cny": {
-            "buy": 67,
-            "sell": 68.5
+            "buy": 66.7,
+            "sell": 69.2
           }
         }
       ],
