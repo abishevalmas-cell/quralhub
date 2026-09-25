@@ -1,44 +1,21 @@
 {
   "meta": {
-    "version": 1409,
-    "generatedAt": "2026-09-25T19:52:38.097Z"
+    "version": 1410,
+    "generatedAt": "2026-09-25T23:08:21.050Z"
   },
   "NB_RATES": {
     "usd": 441.88,
     "eur": 503.61,
     "rub": 5.24,
     "cny": 65.83,
-    "updatedAt": "2026-09-25T19:52:39.760Z",
+    "updatedAt": "2026-09-25T23:08:22.317Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-09-25T19:52:42.012Z",
+    "updatedAt": "2026-09-25T23:08:24.185Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
-        {
-          "name": "YES EXCHANGE (ТОО YR EXCHANGE)",
-          "lat": null,
-          "lng": null,
-          "address": "пр. Сейфуллина, 506/99 (угол ул. Кабанбай батыра, гостиница «Rixos Almaty», 1 этаж)",
-          "phone": "+7 (777) 891-33-66",
-          "usd": {
-            "buy": 442,
-            "sell": 444
-          },
-          "eur": {
-            "buy": 500,
-            "sell": 506
-          },
-          "rub": {
-            "buy": 5,
-            "sell": 5.1
-          },
-          "cny": {
-            "buy": 67,
-            "sell": 70
-          }
-        },
         {
           "name": "Ecash 4",
           "lat": 43.2338,
@@ -60,29 +37,6 @@
           "cny": {
             "buy": 66,
             "sell": 68.5
-          }
-        },
-        {
-          "name": "YES EXCHANGE №1 (ТОО Сервис)",
-          "lat": 43.346622,
-          "lng": 77.012102,
-          "address": "ул. Майлина, 1, Пассажирский терминал  \"Международный Аэропорт г. Алматы\", 1 этаж",
-          "phone": "+7 (777) 891-33-66",
-          "usd": {
-            "buy": 438,
-            "sell": 445
-          },
-          "eur": {
-            "buy": 499,
-            "sell": 509
-          },
-          "rub": {
-            "buy": 4.4,
-            "sell": 5.4
-          },
-          "cny": {
-            "buy": 62,
-            "sell": 72
           }
         }
       ],
@@ -154,29 +108,6 @@
           "cny": {
             "buy": 64.7,
             "sell": 69.7
-          }
-        },
-        {
-          "name": "Exchange Market 5 (ТОО \"NurlyZhol Exchange\")",
-          "lat": 51.112411,
-          "lng": 71.531777,
-          "address": "р-н Алматы, ул. Мұхамеджан Тынышбайұлы, 8, новый вокзал \"Нұрлы Жол\"",
-          "phone": "+7 (7172) 25-23-45",
-          "usd": {
-            "buy": 439,
-            "sell": 446
-          },
-          "eur": {
-            "buy": 500,
-            "sell": 510
-          },
-          "rub": {
-            "buy": 5,
-            "sell": 5.2
-          },
-          "cny": {
-            "buy": 67,
-            "sell": 71
           }
         }
       ],
