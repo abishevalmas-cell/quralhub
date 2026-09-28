@@ -1,18 +1,18 @@
 {
   "meta": {
-    "version": 1421,
-    "generatedAt": "2026-09-28T17:58:38.327Z"
+    "version": 1422,
+    "generatedAt": "2026-09-28T23:10:50.576Z"
   },
   "NB_RATES": {
     "usd": 441.77,
     "eur": 502.38,
     "rub": 5.23,
     "cny": 65.83,
-    "updatedAt": "2026-09-28T17:58:39.557Z",
+    "updatedAt": "2026-09-28T23:10:51.795Z",
     "source": "nationalbank.kz"
   },
   "EXCHANGE_OFFICES": {
-    "updatedAt": "2026-09-28T17:58:41.875Z",
+    "updatedAt": "2026-09-28T23:10:54.749Z",
     "source": "kurs.kz",
     "data": {
       "Алматы": [
@@ -37,6 +37,29 @@
           "cny": {
             "buy": 66,
             "sell": 69
+          }
+        },
+        {
+          "name": "Ecash 4",
+          "lat": 43.2338,
+          "lng": 76.935422,
+          "address": "пр. Сейфуллина, 617 (ТРК \"FORUM\" )",
+          "phone": "+7 (700) 333 22 23",
+          "usd": {
+            "buy": 438.2,
+            "sell": 443.8
+          },
+          "eur": {
+            "buy": 501,
+            "sell": 505
+          },
+          "rub": {
+            "buy": 4.95,
+            "sell": 5.05
+          },
+          "cny": {
+            "buy": 65.8,
+            "sell": 68.3
           }
         }
       ],
