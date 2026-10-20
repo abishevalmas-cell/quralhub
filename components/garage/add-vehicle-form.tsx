@@ -4,12 +4,15 @@ import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { setActiveVehicle } from "@/components/home/active-vehicle";
 import { Field, Input, Select } from "@/components/ui/field";
+import { Icon } from "@/components/ui/icon";
 import { ApiError, api } from "@/lib/client/api";
 import { cn } from "@/lib/utils";
 import { VIN_LENGTH, WMI_TABLE, validateVin, vinSummary } from "@/lib/vin";
+import { ModelPicker } from "./model-picker";
 
-type Mode = "vin" | "manual";
+export type AddMode = "vin" | "model";
 type Created = { vehicle: { id: string } };
 
 // Must match INVALID_VIN in lib/services/vehicles.ts: "invalid_vin:<VIN>,<VIN>" carries suggested fixes.
@@ -19,15 +22,27 @@ const MIN_YEAR = 1980;
 const MORE_BRANDS = ["Avatr", "Denza", "Dongfeng", "Exeed", "FAW", "Hongqi", "JAC", "Jaecoo", "Jetour", "Leapmotor", "Omoda", "Voyah", "Xpeng"];
 const BRANDS = [...new Set([...Object.values(WMI_TABLE).flatMap((e) => e.brands), ...MORE_BRANDS])].sort((a, b) => a.localeCompare(b));
 
-const TABS: { id: Mode; label: string }[] = [
+const TABS: { id: AddMode; label: string }[] = [
   { id: "vin", label: "По VIN" },
-  { id: "manual", label: "Без VIN" },
+  { id: "model", label: "Выбрать модель" },
 ];
 
-export function AddVehicleForm({ initialVin, initialMode, maxYear }: { initialVin: string; initialMode: Mode; maxYear: number }) {
-  const [mode, setMode] = useState<Mode>(initialMode);
+export function AddVehicleForm({
+  initialVin,
+  initialMode,
+  initialModelId,
+  maxYear,
+}: {
+  initialVin: string;
+  initialMode: AddMode;
+  initialModelId: string | null;
+  maxYear: number;
+}) {
+  const [mode, setMode] = useState<AddMode>(initialMode);
+  // The free-text form for a car that is not in the model list.
+  const [typed, setTyped] = useState(false);
   return (
-    <Card>
+    <Card className="p-4 sm:p-6">
       <div role="tablist" aria-label="Как добавить машину" className="mb-5 grid grid-cols-2 gap-1 rounded-xl bg-soft p-1">
         {TABS.map((tab) => (
           <button
@@ -47,7 +62,17 @@ export function AddVehicleForm({ initialVin, initialMode, maxYear }: { initialVi
           </button>
         ))}
       </div>
-      {mode === "vin" ? <VinPanel initialVin={initialVin} /> : <ManualPanel maxYear={maxYear} />}
+      {mode === "vin" ? (
+        <VinPanel initialVin={initialVin} />
+      ) : (
+        <div id="panel-model" role="tabpanel" aria-labelledby="tab-model">
+          {typed ? (
+            <ManualPanel maxYear={maxYear} onBack={() => setTyped(false)} />
+          ) : (
+            <ModelPicker initialModelId={initialModelId} maxYear={maxYear} onManual={() => setTyped(true)} />
+          )}
+        </div>
+      )}
     </Card>
   );
 }
@@ -83,6 +108,7 @@ function VinPanel({ initialVin }: { initialVin: string }) {
     setServerError(null);
     try {
       const result = await api<Created>("/api/vehicles", { body: { vin: check.vin, label: label.trim() || undefined } });
+      setActiveVehicle(result.vehicle.id);
       router.push(`/garage/${result.vehicle.id}`);
     } catch (error) {
       const code = error instanceof ApiError ? error.code : undefined;
@@ -164,7 +190,7 @@ function VinPanel({ initialVin }: { initialVin: string }) {
   );
 }
 
-function ManualPanel({ maxYear }: { maxYear: number }) {
+function ManualPanel({ maxYear, onBack }: { maxYear: number; onBack: () => void }) {
   const router = useRouter();
   const [form, setForm] = useState({ brand: "", model: "", year: "", trim: "", label: "" });
   const [error, setError] = useState<string | null>(null);
@@ -188,6 +214,7 @@ function ManualPanel({ maxYear }: { maxYear: number }) {
           label: form.label.trim() || undefined,
         },
       });
+      setActiveVehicle(result.vehicle.id);
       router.push(`/garage/${result.vehicle.id}`);
     } catch (e) {
       setError((e as Error).message);
@@ -196,7 +223,14 @@ function ManualPanel({ maxYear }: { maxYear: number }) {
   }
 
   return (
-    <form id="panel-manual" role="tabpanel" aria-labelledby="tab-manual" onSubmit={submit} className="grid gap-4" noValidate>
+    <form onSubmit={submit} className="grid gap-4" noValidate aria-label="Марка и модель вручную">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h3 className="text-base font-bold">Марка и модель вручную</h3>
+        <button type="button" onClick={onBack} className="inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-muted hover:text-ink">
+          <Icon name="chevron-left" className="size-4" />
+          Выбрать из списка
+        </button>
+      </div>
       <p className="text-sm text-muted">
         Без VIN каталог не откроется. Подборщик проверит совместимость по марке, модели, году и фото детали.
       </p>

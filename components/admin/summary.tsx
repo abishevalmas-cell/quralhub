@@ -58,9 +58,9 @@ export function Summary({ data }: { data: Dashboard }) {
     <>
       <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {tiles.map((tile) => (
-          <div key={tile.label} className="grid content-start gap-1 rounded-2xl border border-line bg-card p-4">
+          <div key={tile.label} className="grid content-start gap-1 rounded-[18px] border border-line bg-card p-4">
             <dt className="text-sm font-semibold text-muted">{tile.label}</dt>
-            <dd className="text-[32px] font-extrabold leading-tight tabular-nums">{formatCount(tile.value)}</dd>
+            <dd className="text-[32px] font-bold leading-tight tracking-[-0.03em] tabular-nums">{formatCount(tile.value)}</dd>
             <dd className="text-sm text-muted">{tile.note}</dd>
           </div>
         ))}

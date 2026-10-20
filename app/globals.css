@@ -1,43 +1,90 @@
 @import "tailwindcss";
 
-/* Tetix tokens: light paper, graphite ink, lime used only for the main action. */
+/*
+ * Tetix tokens. Light: cool paper, white surfaces, graphite ink, lime for the main action.
+ * Dark: graphite surfaces with the same lime accent. Every colour on the site comes from here.
+ *
+ * --strong / --on-strong / --strong-lime are graphite surfaces that stay dark in both themes
+ * (mode pill, assistant button), so lime text on them always reads. --ink on --paper inverts in dark mode.
+ */
 :root {
-  --paper: #f5f7f4;
+  --paper: #f5f7f8;
   --card: #ffffff;
   --ink: #17232c;
-  --muted: #5d6a71;
-  --line: #dde3e0;
-  --soft: #ecf0ec;
+  --muted: #616f78;
+  --line: #e3e8eb;
+  --line-strong: #cfd8dd;
+  --soft: #edf2f5;
   --lime: #d5fa64;
-  --lime-ink: #3f5a00;
-  --ok: #1f7a4d;
-  --ok-bg: #e3f3ea;
-  --warn: #8a5a00;
-  --warn-bg: #fbf0d9;
+  --lime-hover: #c8ee50;
+  --lime-ink: #4d6b00;
+  --on-lime: #17232c;
+  --dot: #b7db41;
+  --strong: #17232c;
+  --on-strong: #ffffff;
+  --strong-lime: #d5fa64;
+  --stage-a: #e4edf1;
+  --stage-b: #edf2f5;
+  --stage-line: #e1e8ec;
+  --hotspot-halo: rgb(255 255 255 / 0.55);
+  --car-plastic: #1c2226;
+  --car-tyre: #121518;
+  --car-tyre-edge: #0b0d0f;
+  --ghost-body: #dde5ea;
+  --ghost-glass: #c6d1d8;
+  --ghost-tyre: #b3c0c8;
+  --ghost-rim: #e9eef1;
+  --ok: #1c7547;
+  --ok-bg: #e5f4ec;
+  --warn: #86601a;
+  --warn-bg: #fbf3e2;
   --hand: #3b5b7a;
-  --hand-bg: #e6eef6;
+  --hand-bg: #e8eff6;
   --bad: #a3352b;
-  --bad-bg: #f8e5e2;
+  --bad-bg: #f9e7e4;
+  --shadow: rgb(21 37 48 / 0.18);
+  --backdrop: rgb(18 33 43 / 0.5);
+  color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --paper: #0f1519;
-    --card: #161f25;
-    --ink: #e6ecee;
-    --muted: #9aa8ae;
-    --line: #27333a;
-    --soft: #1c262d;
-    --lime: #cdf25a;
-    --lime-ink: #cdf25a;
+    --paper: #0d1317;
+    --card: #141c21;
+    --ink: #e7edf0;
+    --muted: #9aa9b1;
+    --line: #253139;
+    --line-strong: #34434c;
+    --soft: #1b252b;
+    --lime: #d5fa64;
+    --lime-hover: #e0fd85;
+    --lime-ink: #d5fa64;
+    --on-lime: #17232c;
+    --dot: #d5fa64;
+    --strong: #26343d;
+    --on-strong: #f3f6f7;
+    --strong-lime: #d5fa64;
+    --stage-a: #213039;
+    --stage-b: #161f25;
+    --stage-line: #24313a;
+    --hotspot-halo: rgb(213 250 100 / 0.22);
+    --car-plastic: #283136;
+    --car-tyre: #1b2125;
+    --car-tyre-edge: #20272c;
+    --ghost-body: #263540;
+    --ghost-glass: #1a252d;
+    --ghost-tyre: #364650;
+    --ghost-rim: #2c3b45;
     --ok: #6fd39c;
-    --ok-bg: #16301f;
+    --ok-bg: #13291d;
     --warn: #f0c46a;
-    --warn-bg: #33280f;
+    --warn-bg: #2f2510;
     --hand: #9cc2e6;
-    --hand-bg: #172636;
+    --hand-bg: #15222f;
     --bad: #f09a90;
-    --bad-bg: #3a1a17;
+    --bad-bg: #361a17;
+    --shadow: rgb(0 0 0 / 0.45);
+    --backdrop: rgb(4 8 10 / 0.66);
     color-scheme: dark;
   }
 }
@@ -48,9 +95,19 @@
   --color-ink: var(--ink);
   --color-muted: var(--muted);
   --color-line: var(--line);
+  --color-line-strong: var(--line-strong);
   --color-soft: var(--soft);
   --color-lime: var(--lime);
+  --color-lime-hover: var(--lime-hover);
   --color-lime-ink: var(--lime-ink);
+  --color-on-lime: var(--on-lime);
+  --color-dot: var(--dot);
+  --color-strong: var(--strong);
+  --color-on-strong: var(--on-strong);
+  --color-strong-lime: var(--strong-lime);
+  --color-stage-a: var(--stage-a);
+  --color-stage-b: var(--stage-b);
+  --color-stage-line: var(--stage-line);
   --color-ok: var(--ok);
   --color-ok-bg: var(--ok-bg);
   --color-warn: var(--warn);
@@ -62,27 +119,122 @@
   --font-sans: var(--font-manrope), system-ui, -apple-system, "Segoe UI", sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
   --font-zh: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  --shadow-float: 0 6px 24px var(--shadow);
+  --shadow-dialog: 0 30px 100px var(--shadow);
+  --shadow-field: 0 5px 18px rgb(23 35 44 / 0.04);
+}
+
+html {
+  /* The bottom bar and the sticky header must not cover a focused field or an anchor target. */
+  scroll-padding-top: 6rem;
+  scroll-padding-bottom: 6rem;
 }
 
 body {
   background: var(--paper);
   color: var(--ink);
   font-family: var(--font-sans);
+  line-height: 1.5;
   -webkit-tap-highlight-color: transparent;
 }
 
-:focus-visible {
-  outline: 3px solid var(--lime-ink);
-  outline-offset: 2px;
+/* In the base layer, so an outline utility on an element (focus-visible:outline-none on the search input inside its
+   framed box) still wins. */
+@layer base {
+  :focus-visible {
+    outline: 3px solid var(--lime-ink);
+    outline-offset: 2px;
+  }
 }
 
 .zh {
   font-family: var(--font-zh);
 }
 
+/* Shared classes live in the components layer, so a Tailwind utility on the same element still wins. */
+@layer components {
+  /* The big vehicle stage of the original Tetix: a soft light pool under the car. */
+  .stage-bg {
+    background:
+      radial-gradient(ellipse at 50% 65%, var(--stage-a), transparent 65%),
+      var(--stage-b);
+    border: 1px solid var(--stage-line);
+  }
+
+  /* Dark round "+" over a part of the car, with a light halo. */
+  .hotspot {
+    display: grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    border-radius: 9999px;
+    background: var(--strong);
+    color: var(--on-strong);
+    box-shadow: 0 0 0 6px var(--hotspot-halo);
+    transition:
+      transform 0.2s,
+      background-color 0.2s;
+  }
+  .hotspot:hover {
+    transform: scale(1.12);
+    background: var(--lime-ink);
+    color: var(--card);
+  }
+  @media (max-width: 639px) {
+    .hotspot {
+      width: 26px;
+      height: 26px;
+      box-shadow: 0 0 0 4px var(--hotspot-halo);
+    }
+  }
+
+  /* Small letter-spaced section label: "МОЙ АВТОМОБИЛЬ", "КАБИНЕТ МАСТЕРА". */
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Horizontal chip rows scroll on phones instead of wrapping into a tall block; no visible scrollbar. */
+  .scroll-row {
+    overflow-x: auto;
+    scrollbar-width: none;
+    overscroll-behavior-x: contain;
+  }
+  .scroll-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Native dialog: Tailwind's reset removes the browser's centring margin. */
+  dialog.sheet {
+    margin: auto;
+    max-height: min(88dvh, 860px);
+    width: min(560px, calc(100% - 24px));
+    border-radius: 22px;
+    background: var(--card);
+    color: var(--ink);
+    box-shadow: var(--shadow-dialog);
+    overflow: auto;
+    overscroll-behavior: contain;
+  }
+  dialog.sheet::backdrop {
+    background: var(--backdrop);
+    backdrop-filter: blur(6px);
+  }
+  @media (max-width: 639px) {
+    dialog.sheet {
+      border-radius: 18px;
+      max-height: 86dvh;
+    }
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
     animation: none !important;
+    scroll-behavior: auto !important;
   }
 }

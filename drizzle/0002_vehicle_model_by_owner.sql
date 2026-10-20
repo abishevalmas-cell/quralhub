@@ -1,0 +1,1 @@
+ALTER TABLE "vehicles" ADD COLUMN "model_by_owner" boolean DEFAULT false NOT NULL;

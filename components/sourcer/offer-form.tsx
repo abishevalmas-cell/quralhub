@@ -194,7 +194,7 @@ export function OfferForm({
     <form
       id="offer-form"
       onSubmit={save}
-      className="grid scroll-mt-24 gap-4 rounded-2xl border border-ink/30 bg-card p-4"
+      className="grid scroll-mt-24 gap-4 rounded-[18px] border border-ink/30 bg-card p-4 shadow-[0_8px_30px_rgb(23_35_44/0.06)] sm:p-5"
       aria-label={offer ? `Черновик «${offer.title}»` : "Новое предложение"}
     >
       <h4 className="font-bold">

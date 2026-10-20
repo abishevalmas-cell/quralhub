@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { CarThumb } from "@/components/car";
+import { carLook } from "@/components/garage/garage-car";
 import { ORDER_STATUS } from "@/components/orders/labels";
 import { CancelRequestButton } from "@/components/requests/cancel-request-button";
 import { AXIS_LABEL, REQUEST_STATUS, SIDE_LABEL } from "@/components/requests/labels";
@@ -9,7 +11,8 @@ import { OfferCard } from "@/components/requests/offer-card";
 import { PhotoGallery } from "@/components/requests/photo-gallery";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { ButtonLink } from "@/components/ui/button";
-import { Card, KeyValue, PageHeader } from "@/components/ui/card";
+import { Callout } from "@/components/ui/callout";
+import { Card, CardTitle, KeyValue, PageHeader, SectionTitle } from "@/components/ui/card";
 import { getActor } from "@/lib/auth/current";
 import type { Actor } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
@@ -38,6 +41,7 @@ export default async function RequestPage({ params, searchParams }: Props) {
   // Notification links open /requests/<number>; the page itself lives at the id.
   if (view.request.id !== id) redirect(`/requests/${view.request.id}`);
   const { request, vehicle, offers, order } = view;
+  const look = carLook(view.car);
   const status = REQUEST_STATUS[request.status];
   const open = request.status !== "closed" && request.status !== "cancelled";
   const now = new Date();
@@ -57,61 +61,57 @@ export default async function RequestPage({ params, searchParams }: Props) {
   if (vehicle?.trim) vehicleItems.push(["Комплектация", vehicle.trim]);
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <PageHeader
         eyebrow={`Заявка №${request.number} · ${formatDate(request.createdAt)}`}
         title={<span className="break-words">{request.title}</span>}
-        actions={<RequestStatusBadge status={request.status} className="px-3 py-1 text-sm" />}
+        actions={<RequestStatusBadge status={request.status} pill />}
       >
         {status.hint}
       </PageHeader>
 
       {created ? (
-        <div className="mb-6 grid gap-2 rounded-2xl bg-ok-bg p-4 text-ok sm:p-5" role="status">
-          <p className="font-bold">Заявка отправлена</p>
+        <Callout tone="ok" icon="check" title="Заявка отправлена" role="status" className="mb-6">
           {view.attachments.length ? (
             <p>Фото прикреплены. Подборщик ответит в чате ниже.</p>
           ) : (
             <p>
               Добавьте фото старой детали или места установки: по ним подборщик быстрее найдёт нужную.{" "}
-              <a href="#photos" className="font-semibold underline">
-                Добавить фото
-              </a>
+              <a href="#photos">Добавить фото</a>
             </p>
           )}
-        </div>
+        </Callout>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_340px]">
         <div className="grid min-w-0 content-start gap-6">
           <section aria-labelledby="offers-title" className="grid gap-3">
-            <h2 id="offers-title" className="text-xl font-extrabold tracking-tight">
-              Предложения
-            </h2>
+            <SectionTitle id="offers-title">Предложения</SectionTitle>
             {order ? (
-              <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-ok-bg p-4 text-ok">
-                <div className="grid gap-0.5">
-                  <p className="font-bold">Заказ №{order.number} создан</p>
-                  <p className="text-sm">Статус: {ORDER_STATUS[order.status]?.label ?? order.status}</p>
-                </div>
-                <ButtonLink href={`/orders/${order.id}`} variant="primary">
-                  Открыть заказ
-                </ButtonLink>
-              </div>
+              <Callout
+                tone="ok"
+                icon="box"
+                title={`Заказ №${order.number} создан`}
+                action={
+                  <ButtonLink href={`/orders/${order.id}`} variant="primary">
+                    Открыть заказ
+                  </ButtonLink>
+                }
+              >
+                Статус: {ORDER_STATUS[order.status]?.label ?? order.status}
+              </Callout>
             ) : null}
             {offers.length ? (
               offers.map((offer) => <OfferCard key={offer.id} offer={offer} canAccept={request.status === "offered"} now={now} />)
             ) : (
-              <p className="rounded-2xl border border-dashed border-line bg-card px-4 py-6 text-center text-muted">
+              <p className="rounded-[18px] border border-dashed border-line-strong bg-card px-4 py-8 text-center text-muted">
                 {open ? "Пока нет предложений. Когда подборщик найдёт варианты, они появятся здесь." : "Предложений не было."}
               </p>
             )}
           </section>
 
           <section id="chat" aria-labelledby="chat-title" className="grid scroll-mt-24 gap-3">
-            <h2 id="chat-title" className="text-xl font-extrabold tracking-tight">
-              Переписка
-            </h2>
+            <SectionTitle id="chat-title">Переписка</SectionTitle>
             <Card className="grid gap-5 p-4 sm:p-5">
               <MessageThread messages={view.messages} />
               {view.chatOpen ? (
@@ -125,7 +125,8 @@ export default async function RequestPage({ params, searchParams }: Props) {
 
         <aside className="grid content-start gap-4">
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">Машина</h2>
+            <CardTitle>Машина</CardTitle>
+            {look ? <CarThumb body={look.body} color={look.color} /> : null}
             {vehicle ? (
               <KeyValue items={vehicleItems} />
             ) : (
@@ -137,17 +138,17 @@ export default async function RequestPage({ params, searchParams }: Props) {
               </p>
             )}
             {vehicle?.decodeStatus === "ambiguous" && !vehicle.trim ? (
-              <p className="rounded-xl bg-warn-bg px-3 py-2 text-sm text-warn">Комплектация не уточнена — подборщик сверит детали по VIN.</p>
+              <p className="rounded-[12px] bg-warn-bg px-3 py-2 text-sm text-warn">Комплектация не уточнена — подборщик сверит детали по VIN.</p>
             ) : null}
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">Что ищем</h2>
+            <CardTitle>Что ищем</CardTitle>
             <KeyValue items={details} />
           </Card>
 
           <Card id="photos" className="grid scroll-mt-24 gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">Фото</h2>
+            <CardTitle>Фото</CardTitle>
             <PhotoGallery
               requestId={request.id}
               photos={view.attachments.map((a) => ({ id: a.id, name: a.name, mime: a.mime }))}

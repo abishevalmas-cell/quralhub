@@ -98,8 +98,8 @@ export function Composer({
               <label
                 htmlFor={`compose-${m.id}`}
                 className={cn(
-                  "inline-flex h-10 cursor-pointer items-center gap-1.5 rounded-xl border border-line bg-card px-3 text-sm font-semibold",
-                  "peer-checked:border-ink peer-checked:bg-ink peer-checked:text-paper",
+                  "inline-flex min-h-10 cursor-pointer items-center gap-1.5 rounded-[30px] border border-line bg-card px-3.5 text-sm font-semibold transition hover:border-line-strong",
+                  "peer-checked:border-strong peer-checked:bg-strong peer-checked:text-on-strong dark:peer-checked:border-line-strong",
                   "peer-disabled:cursor-not-allowed peer-disabled:opacity-50",
                   "peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-lime-ink",
                 )}

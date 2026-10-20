@@ -32,8 +32,8 @@ export function VehiclePicker({
     return (
       <p className="px-1 text-sm text-muted">
         Гараж пока пуст. Введите VIN в поиск — добавим машину и откроем её каталог. Нет VIN под рукой?{" "}
-        <Link href="/garage/new?mode=manual" className="font-semibold text-ink underline">
-          Добавить без VIN
+        <Link href="/garage/new?mode=model" className="font-semibold text-ink underline">
+          Выбрать модель
         </Link>
       </p>
     );
@@ -73,12 +73,12 @@ export function VehiclePicker({
                 onClick={() => onSelect(v.id)}
                 className={cn(
                   "flex min-h-10 max-w-full items-center gap-2 rounded-full border px-3.5 py-1.5 text-left text-sm transition",
-                  active ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink hover:bg-soft",
+                  active ? "border-strong bg-strong text-on-strong dark:border-line-strong" : "border-line bg-card text-ink hover:bg-soft",
                 )}
               >
                 {active ? <Icon name="check" className="size-4" /> : <Icon name="car" className="size-4 text-muted" />}
                 <span className="min-w-0 truncate font-semibold">{v.title}</span>
-                <span className={cn("shrink-0 text-xs", active ? "text-paper/75" : "text-muted")}>{CATALOG_NOTE[v.catalog]}</span>
+                <span className={cn("shrink-0 text-xs", active ? "text-on-strong/75" : "text-muted")}>{CATALOG_NOTE[v.catalog]}</span>
               </button>
             </li>
           );

@@ -11,6 +11,7 @@ import {
   partRequests,
   requestMessages,
   users,
+  vehicles,
   type OrderStatus,
 } from "@/lib/db/schema";
 import { notifyAfterResponse, notifyStaff, notifyUser, type NotifyDeps } from "@/lib/notify";
@@ -19,7 +20,7 @@ import { getPartType } from "@/lib/taxonomy";
 import { formatKzt } from "@/lib/utils";
 import { assertStaffCanEdit, isUuid } from "./access";
 import { FITMENT_LIMITS, fitmentOeKey, fitmentSummaryForOe, fitmentsForVin, fitmentVin, recordFitment } from "./fitments";
-import { notifyRequestStaff, readSnapshot } from "./requests";
+import { carRef, notifyRequestStaff, readSnapshot } from "./requests";
 import { customerOffer } from "./visibility";
 
 export type OrderDeps = { notify?: NotifyDeps; now?: Date };
@@ -126,14 +127,25 @@ export async function listMyOrders(db: Db, actor: Actor) {
       requestNumber: partRequests.number,
       requestTitle: partRequests.title,
       vehicleSnapshot: partRequests.vehicleSnapshot,
+      // The car's picture only: its catalog model and paint.
+      carModelId: vehicles.modelId,
+      carColor: vehicles.color,
     })
     .from(orders)
     .innerJoin(offers, eq(offers.id, orders.offerId))
     .innerJoin(partRequests, eq(partRequests.id, orders.requestId))
+    .leftJoin(vehicles, eq(vehicles.id, partRequests.vehicleId))
     .where(eq(orders.customerId, actor.id))
     .orderBy(desc(orders.createdAt), desc(orders.number))
     .limit(200);
-  return rows.map(({ vehicleSnapshot, ...row }) => ({ ...row, vehicleLabel: readSnapshot(vehicleSnapshot)?.label ?? null }));
+  return rows.map(({ vehicleSnapshot, carModelId, carColor, ...row }) => {
+    const snapshot = readSnapshot(vehicleSnapshot);
+    return {
+      ...row,
+      vehicleLabel: snapshot?.label ?? null,
+      car: snapshot ? carRef(snapshot, { modelId: carModelId, color: carColor }) : null,
+    };
+  });
 }
 export type MyOrderItem = Awaited<ReturnType<typeof listMyOrders>>[number];
 

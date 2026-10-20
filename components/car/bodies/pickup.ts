@@ -1,0 +1,91 @@
+import { raise, type BodyGeometry } from "../geometry";
+
+// Double-cab pickup in the spirit of Great Wall Poer: tall square nose, long flat hood, four-door cab, open bed
+// with a high rail, wide flares, side step, all-terrain tyres.
+// Drawn on 52-unit wheels, then raised onto 58-unit ones (+12%) with the ground clearance to match.
+const base: BodyGeometry = {
+  wheelR: 52,
+  frontX: 168,
+  rearX: 584,
+  rimRatio: 0.6,
+  rim: "beadlock",
+  rimFace: "silver",
+  archGap: 9,
+  archLift: 4,
+  nose: [62, 246],
+  outline: [
+    "C 54 244, 50 238, 50 230",
+    "L 50 160",
+    "C 50 150, 54 144, 62 142",
+    "C 110 138, 180 134, 250 130",
+    "C 280 108, 310 82, 336 64",
+    "C 342 59, 350 56, 362 56",
+    "L 500 54",
+    "C 510 54, 516 58, 518 66",
+    "L 521 126",
+    "L 744 124",
+    "C 748 124, 750 127, 750 132",
+    "L 750 222",
+    "C 750 232, 746 240, 738 244",
+    "L 730 247",
+  ].join(" "),
+  tail: [730, 247],
+  sillY: 251,
+  top: 54,
+  belt: 132,
+  glass: [
+    "M 256 132 C 280 112, 308 86, 332 70 C 338 66, 344 64, 352 64 L 382 63.7 L 382 129.9 Z",
+    "M 396 63.6 L 496 63 C 504 63, 508 66, 509 72 L 512 126.8 L 396 129.5 Z",
+  ],
+  pillars: ["M 382 63.7 L 396 63.6 L 396 129.5 L 382 129.9 Z"],
+  dloTrim: { kind: "black", d: "M 254 133.5 L 512 127.5" },
+  seats: [
+    [352, 88],
+    [470, 86],
+  ],
+  shoulder: "M 66 150 C 300 145, 520 141, 746 136",
+  seams: [
+    "M 258 134 C 258 168, 257 200, 256 226",
+    "M 389 131 L 389 226",
+    "M 512 128 L 512 222",
+    "M 742 130 L 742 236",
+  ].join(" "),
+  handles: [
+    [318, 148, 30],
+    [446, 146, 28],
+  ],
+  mirror:
+    "M 262 116 C 262 107, 271 102, 284 102 C 296 102, 303 106, 304 114 C 305 123, 299 128, 288 128 L 275 128 C 267 128, 262 123, 262 116 Z M 276 127 L 290 127 L 292 135 L 272 135 Z",
+  headlight: "M 52 148 C 64 142, 86 138, 116 136 L 120 142 C 96 144, 72 150, 54 160 Z",
+  drl: "M 54 147.5 C 66 142, 88 138.6, 116 137.2",
+  grille: "M 50.4 164 L 62 163.6 L 62 198 L 50.5 198 Z",
+  taillight: "M 750 134 L 750 184 L 743 184 L 743 134 Z",
+  tailLine: "M 746.5 137 L 746.5 181",
+  cladding: 22,
+  flare: 14,
+  flap: { x: 538, y: 136, w: 22, h: 18 },
+  details: [
+    { kind: "trim", d: "M 521 124.6 L 526 124.5 L 526 238 L 521 238 Z" },
+    { kind: "trim", d: "M 244 249 L 490 249 L 488 257 L 246 257 Z" },
+    { kind: "crease", d: "M 530 168 L 738 166" },
+    { kind: "trim", d: "M 51 204 L 70 204 L 70 226 L 52 226 Z" },
+  ],
+  tread: true,
+  exhaust: [702, 250],
+  zones: {
+    front: [58, 196],
+    hood: [214, 141],
+    windshield: [310, 84],
+    mirror: [283, 116],
+    door: [330, 196],
+    "wheel-front": [168, 232],
+    "wheel-rear": [584, 232],
+    rear: [740, 196],
+    roof: [420, 56],
+    charge: [549, 145],
+    interior: [450, 100],
+    underbody: [380, 270],
+  },
+};
+
+export const pickup = raise(base, 5, 58);

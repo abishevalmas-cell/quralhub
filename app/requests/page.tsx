@@ -1,9 +1,11 @@
-import Link from "next/link";
 import { redirect } from "next/navigation";
+import { carLook } from "@/components/garage/garage-car";
+import { CarMedia } from "@/components/requests/car-media";
 import { RequestStatusBadge } from "@/components/requests/request-status-badge";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
+import { ListCard } from "@/components/ui/list-card";
 import { getActor } from "@/lib/auth/current";
 import { getDb } from "@/lib/db";
 import { listMyRequests } from "@/lib/services/requests";
@@ -17,7 +19,7 @@ export default async function RequestsPage() {
   const requests = await listMyRequests(await getDb(), actor);
 
   return (
-    <div className="mx-auto max-w-3xl">
+    <div className="max-w-4xl">
       <PageHeader
         eyebrow="Подбор запчастей"
         title="Заявки"
@@ -48,25 +50,24 @@ export default async function RequestsPage() {
         <ul className="grid gap-3">
           {requests.map((r) => (
             <li key={r.id}>
-              <Link
+              <ListCard
                 href={`/requests/${r.id}`}
-                className="grid gap-2 rounded-2xl border border-line bg-card p-4 transition hover:border-ink/30 sm:p-5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="min-w-0 break-words text-[17px] font-bold leading-snug">{r.title}</span>
-                  <RequestStatusBadge status={r.status} className="mt-0.5 shrink-0" />
-                </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-                  <span>№{r.number}</span>
-                  <span>{r.vehicleLabel ?? "Без машины"}</span>
-                  <span>Обновлена {formatDate(r.updatedAt)}</span>
-                  {r.offerCount > 0 && r.status === "offered" ? (
-                    <span className="font-semibold text-ok">
-                      {r.offerCount} {pluralRu(r.offerCount, "предложение", "предложения", "предложений")}
-                    </span>
-                  ) : null}
-                </div>
-              </Link>
+                media={<CarMedia look={carLook(r.car)} />}
+                title={r.title}
+                status={<RequestStatusBadge status={r.status} />}
+                meta={
+                  <>
+                    <span className="font-semibold text-ink">№{r.number}</span>
+                    <span>{r.vehicleLabel ?? "Без машины"}</span>
+                    <span>Обновлена {formatDate(r.updatedAt)}</span>
+                    {r.offerCount > 0 && r.status === "offered" ? (
+                      <span className="font-semibold text-ok">
+                        {r.offerCount} {pluralRu(r.offerCount, "предложение", "предложения", "предложений")}
+                      </span>
+                    ) : null}
+                  </>
+                }
+              />
             </li>
           ))}
         </ul>

@@ -15,6 +15,11 @@ import {
   redecode,
   renameVehicle,
   selectCandidate,
+  setVehicleColor,
+  setVehicleModel,
+  vehicleBrandStatus,
+  vehicleCatalogModel,
+  vehicleColor,
 } from "../vehicles";
 
 // Route handlers read the actor from the session cookie and the database from getDb(); both are swapped here,
@@ -350,6 +355,168 @@ describe("redecode, rename and archive", () => {
   });
 });
 
+describe("catalog model and color", () => {
+  it("links decoded cars to their catalog model and leaves the color to the owner", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const expected: [string, string][] = [
+      [FIXTURE_VINS.bydSongPlus, "byd-song-plus-dmi"],
+      [FIXTURE_VINS.geelyGalaxyE5, "geely-galaxy-e5"],
+      [FIXTURE_VINS.deepalS7, "deepal-s07"],
+      [FIXTURE_VINS.liAutoL6, "li-auto-l6"],
+      [FIXTURE_VINS.zeekr001, "zeekr-001"],
+    ];
+    for (const [vin, modelId] of expected) {
+      const { vehicle } = await addVehicleByVin(db, owner, { vin }, fixture());
+      expect(vehicle, vin).toMatchObject({ modelId, color: null });
+    }
+    // The BYD VIN has two trims; both are the same catalog model, so the picture is known while the trim is not.
+    const byd = (await listVehicles(db, owner)).find((v) => v.vin === FIXTURE_VINS.bydSongPlus);
+    expect(byd).toMatchObject({ decodeStatus: "ambiguous", trim: null, modelId: "byd-song-plus-dmi" });
+  });
+
+  it("leaves the model empty when the trims disagree or the name matches nothing", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const mixed = scripted(ok([candidate("a"), candidate("b", { brand: "Denza", model: "Z9" })]));
+    const a = await addVehicleByVin(db, owner, { vin: syntheticVin("LGX", "TXMXD", "RATX0011") }, { provider: mixed, now: T0 });
+    expect(a.vehicle.modelId).toBeNull();
+    const unknown = scripted(ok([candidate("a", { model: "Concept Q" })]));
+    const b = await addVehicleByVin(db, owner, { vin: syntheticVin("LGX", "TXUNZ", "RATX0012") }, { provider: unknown, now: T0 });
+    expect(b.vehicle).toMatchObject({ decodeStatus: "decoded", model: "Concept Q", modelId: null });
+    const none = await addVehicleByVin(db, owner, { vin: syntheticVin("LGX", "TXNNN", "PATX0013") }, fixture());
+    expect(none.vehicle).toMatchObject({ decodeStatus: "unsupported", modelId: null });
+  });
+
+  it("follows the trim the owner confirms", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const provider = scripted(ok([candidate("a", { model: "Seal" }), candidate("b", { model: "Han" })]));
+    const { vehicle } = await addVehicleByVin(db, owner, { vin: syntheticVin("LGX", "TXTW2", "RATX0014") }, { provider, now: T0 });
+    expect(vehicle.modelId).toBeNull();
+    expect((await selectCandidate(db, owner, vehicle.id, "b", { now: T0 })).modelId).toBe("byd-han");
+    expect((await selectCandidate(db, owner, vehicle.id, "a", { now: T0 })).modelId).toBe("byd-seal");
+  });
+
+  it("adds a car without VIN from the catalog with brand, model and color", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const car = await addManualVehicle(db, owner, { modelId: "zeekr-x", year: 2024, color: "zeekr-green", label: "Моя" }, { now: T0 });
+    expect(car).toMatchObject({
+      vin: null,
+      decodeStatus: "manual",
+      brand: "Zeekr",
+      model: "X",
+      year: 2024,
+      modelId: "zeekr-x",
+      color: "zeekr-green",
+      label: "Моя",
+    });
+    // Brand and model come from the catalog, not from what else the client sent.
+    const other = await addManualVehicle(db, owner, { modelId: "byd-han", brand: "Fake", model: "Car", year: 2023 }, { now: T0 });
+    expect(other).toMatchObject({ brand: "BYD", model: "Han", color: null });
+    // Free text is matched to the catalog when it can be.
+    const typed = await addManualVehicle(db, owner, { brand: "Chery", model: "Tiggo 7 Pro", year: 2023 }, { now: T0 });
+    expect(typed.modelId).toBe("chery-tiggo-7-pro");
+    const odd = await addManualVehicle(db, owner, { brand: "Avatr", model: "11", year: 2023 }, { now: T0 });
+    expect(odd.modelId).toBeNull();
+  });
+
+  it("checks the catalog model, its years and the color", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    await expect(addManualVehicle(db, owner, { modelId: "byd-nope", year: 2023 })).rejects.toMatchObject({ status: 400, code: "unknown_model" });
+    // Zeekr X is made since 2023: 2022 (a year early) passes, 2020 does not.
+    await expect(addManualVehicle(db, owner, { modelId: "zeekr-x", year: 2020 }, { now: T0 })).rejects.toMatchObject({
+      status: 400,
+      code: "year_out_of_range",
+    });
+    expect((await addManualVehicle(db, owner, { modelId: "zeekr-x", year: 2022 }, { now: T0 })).year).toBe(2022);
+    // Li ONE was made 2019–2022.
+    await expect(addManualVehicle(db, owner, { modelId: "li-auto-one", year: 2025 }, { now: T0 })).rejects.toMatchObject({ code: "year_out_of_range" });
+    for (const color of ["pink", "#ffffff", 7])
+      await expect(
+        addManualVehicle(db, owner, { modelId: "zeekr-x", year: 2024, color: color as string }, { now: T0 }),
+      ).rejects.toMatchObject({ status: 400, code: "unknown_color" });
+    expect(await listVehicles(db, owner)).toHaveLength(1);
+  });
+
+  it("lets the owner change the color and the model", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const { vehicle } = await addVehicleByVin(db, owner, { vin: FIXTURE_VINS.zeekr001 }, fixture());
+    expect((await setVehicleColor(db, owner, vehicle.id, "black", { now: T0 })).color).toBe("black");
+    expect((await setVehicleColor(db, owner, vehicle.id, null, { now: T0 })).color).toBeNull();
+    await expect(setVehicleColor(db, owner, vehicle.id, "rainbow")).rejects.toMatchObject({ status: 400, code: "unknown_color" });
+    // A decoded car keeps what its VIN says; only the catalog model changes.
+    const fixed = await setVehicleModel(db, owner, vehicle.id, "zeekr-007", { now: T0 });
+    expect(fixed).toMatchObject({ modelId: "zeekr-007", brand: "Zeekr", model: "001" });
+    expect((await setVehicleModel(db, owner, vehicle.id, null, { now: T0 })).modelId).toBeNull();
+    await expect(setVehicleModel(db, owner, vehicle.id, "zeekr-999")).rejects.toMatchObject({ status: 400, code: "unknown_model" });
+    // A car without VIN takes brand and model from the catalog.
+    const manual = await addManualVehicle(db, owner, { brand: "Чери", model: "тигго", year: 2023 }, { now: T0 });
+    expect(await setVehicleModel(db, owner, manual.id, "chery-tiggo-4-pro", { now: T0 })).toMatchObject({
+      modelId: "chery-tiggo-4-pro",
+      brand: "Chery",
+      model: "Tiggo 4 Pro",
+    });
+  });
+
+  it("keeps the owner's model when a later decode matches nothing", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const vin = syntheticVin("LGX", "TXFXD", "RATX0015");
+    const first = await addVehicleByVin(db, owner, { vin }, { provider: scripted(failed("timeout")), now: T0 });
+    expect(first.vehicle.decodeStatus).toBe("error");
+    await setVehicleModel(db, owner, first.vehicle.id, "byd-seal", { now: T0 });
+    const again = await redecode(db, owner, first.vehicle.id, { provider: scripted(ok([candidate("a", { model: "Seal X Concept" })])), now: T0 });
+    expect(again.vehicle).toMatchObject({ decodeStatus: "decoded", modelId: "byd-seal" });
+  });
+
+  it("never overwrites a model the owner named on a later decode or trim choice", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const vin = syntheticVin("LGX", "TXFXD", "RATX0016");
+    const first = await addVehicleByVin(db, owner, { vin }, { provider: scripted(failed("timeout")), now: T0 });
+    const fixed = await setVehicleModel(db, owner, first.vehicle.id, "byd-destroyer-05", { now: T0 });
+    expect(fixed).toMatchObject({ modelId: "byd-destroyer-05", modelByOwner: true });
+    // The decode names a model that also matches the catalog: the owner's correction still wins.
+    const twoTrims = [candidate("a", { model: "Seal" }), candidate("b", { model: "Seal" })];
+    const again = await redecode(db, owner, first.vehicle.id, { provider: scripted(ok(twoTrims)), now: T0 });
+    expect(again.vehicle).toMatchObject({ decodeStatus: "ambiguous", modelId: "byd-destroyer-05" });
+    const picked = await selectCandidate(db, owner, first.vehicle.id, "a", { now: T0 });
+    expect(picked.modelId).toBe("byd-destroyer-05");
+    // Clearing the model hands it back to the decode.
+    const cleared = await setVehicleModel(db, owner, first.vehicle.id, null, { now: T0 });
+    expect(cleared).toMatchObject({ modelId: null, modelByOwner: false });
+    expect((await selectCandidate(db, owner, first.vehicle.id, "b", { now: T0 })).modelId).toBe("byd-seal");
+  });
+
+  it("takes the brand status of a VIN car from its decoded brand, not from the model picked for the picture", () => {
+    const chery = { vin: "LVTDB21B0PD000001", modelId: "byd-han", brand: "Chery", model: "Tiggo 7 Pro", year: 2023 };
+    expect(vehicleBrandStatus(chery)).toBe("checking");
+    const zeekr = { vin: "L6TTXZ017RATX0005", modelId: "byd-han", brand: "Zeekr", model: "001", year: 2024 };
+    expect(vehicleBrandStatus(zeekr)).toBe("manual");
+    // "Changan" + "Deepal S07" is a Deepal.
+    expect(vehicleBrandStatus({ vin: "LS6TXDE07RATX0001", modelId: null, brand: "Changan", model: "Deepal S07", year: 2024 })).toBe("vin_catalog");
+    // An unknown decoded brand falls back to the model's brand.
+    expect(vehicleBrandStatus({ vin: "LGXTXSP24PATX0001", modelId: "byd-han", brand: "Some Maker", model: "X", year: 2024 })).toBe("vin_catalog");
+    // Without a VIN the picked model counts.
+    expect(vehicleBrandStatus({ vin: null, modelId: "byd-han", brand: "Chery", model: "Han", year: 2023 })).toBe("vin_catalog");
+  });
+
+  it("reads the catalog model, brand status and color of any row", () => {
+    const row = { modelId: null, brand: "Li Auto", model: "L6", year: 2024, color: "nope" };
+    expect(vehicleCatalogModel(row)?.id).toBe("li-auto-l6");
+    expect(vehicleBrandStatus(row)).toBe("manual");
+    expect(vehicleColor(row)).toBeNull();
+    expect(vehicleColor({ color: "red" })).toBe("red");
+    expect(vehicleCatalogModel({ ...row, modelId: "byd-han" })?.id).toBe("byd-han");
+    expect(vehicleBrandStatus({ modelId: null, brand: "BYD", model: "Unknown", year: null })).toBe("vin_catalog");
+    expect(vehicleBrandStatus({ modelId: null, brand: "Avatr", model: "11", year: null })).toBeNull();
+  });
+});
+
 describe("vehicle permissions", () => {
   it("hides a car from another customer and from staff as not found", async () => {
     const db = await testDb();
@@ -364,9 +531,17 @@ describe("vehicle permissions", () => {
       await expect(renameVehicle(db, actor, vehicle.id, "Чужая")).rejects.toMatchObject({ status: 404 });
       await expect(archiveVehicle(db, actor, vehicle.id)).rejects.toMatchObject({ status: 404 });
       await expect(redecode(db, actor, vehicle.id, fixture())).rejects.toMatchObject({ status: 404 });
+      await expect(setVehicleColor(db, actor, vehicle.id, "red")).rejects.toMatchObject({ status: 404 });
+      await expect(setVehicleModel(db, actor, vehicle.id, "byd-han")).rejects.toMatchObject({ status: 404 });
       expect(await listVehicles(db, actor)).toEqual([]);
     }
-    expect(await rowOf(db, vehicle.id)).toMatchObject({ label: "Моя", selectedCandidateId: null, archivedAt: null });
+    expect(await rowOf(db, vehicle.id)).toMatchObject({
+      label: "Моя",
+      selectedCandidateId: null,
+      archivedAt: null,
+      color: null,
+      modelId: "byd-song-plus-dmi",
+    });
   });
 
   it("treats malformed and unknown ids as not found", async () => {

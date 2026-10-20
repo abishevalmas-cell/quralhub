@@ -5,7 +5,14 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/field";
+import { Icon, type IconName } from "@/components/ui/icon";
 import { api } from "@/lib/client/api";
+import { cn } from "@/lib/utils";
+
+const MODE_HINT: Record<"customer" | "master", { icon: IconName; text: string }> = {
+  customer: { icon: "car", text: "Ищу детали для своей машины" },
+  master: { icon: "wrench", text: "Подбираю детали для машин клиентов" },
+};
 
 const ROLE_LABEL: Record<string, string> = {
   customer: "Владелец машины",
@@ -46,7 +53,7 @@ export function ProfileForm({ initial }: { initial: { name: string; company: str
   }
 
   return (
-    <Card>
+    <Card className="sm:p-6">
       <form onSubmit={save} className="grid gap-4">
         <Field label="Как к вам обращаться" htmlFor="name">
           <Input id="name" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} maxLength={80} />
@@ -56,13 +63,49 @@ export function ProfileForm({ initial }: { initial: { name: string; company: str
         </Field>
         {canSwitch ? (
           <fieldset className="grid gap-2">
-            <legend className="mb-1 text-sm font-semibold">Режим</legend>
-            {(["customer", "master"] as const).map((role) => (
-              <label key={role} className="flex items-center gap-3 rounded-xl border border-line px-3 py-2.5">
-                <input type="radio" name="role" value={role} checked={form.role === role} onChange={() => setForm({ ...form, role })} />
-                <span className="font-semibold">{ROLE_LABEL[role]}</span>
-              </label>
-            ))}
+            <legend className="mb-2 text-sm font-semibold">Режим</legend>
+            <div className="grid gap-2 sm:grid-cols-2">
+              {(["customer", "master"] as const).map((role) => {
+                const checked = form.role === role;
+                return (
+                  <label
+                    key={role}
+                    className={cn(
+                      "flex cursor-pointer items-center gap-3 rounded-[14px] border p-3 transition has-[input:focus-visible]:outline-3 has-[input:focus-visible]:outline-offset-2 has-[input:focus-visible]:outline-lime-ink",
+                      checked ? "border-ink bg-soft" : "border-line bg-card hover:border-line-strong",
+                    )}
+                  >
+                    <input
+                      type="radio"
+                      name="role"
+                      value={role}
+                      checked={checked}
+                      onChange={() => setForm({ ...form, role })}
+                      className="sr-only"
+                    />
+                    <span
+                      aria-hidden="true"
+                      className={cn("grid size-10 shrink-0 place-items-center rounded-xl", checked ? "bg-strong text-strong-lime" : "bg-soft text-ink")}
+                    >
+                      <Icon name={MODE_HINT[role].icon} className="size-5" />
+                    </span>
+                    <span className="grid min-w-0 gap-0.5">
+                      <span className="font-semibold">{ROLE_LABEL[role]}</span>
+                      <span className="text-xs text-muted">{MODE_HINT[role].text}</span>
+                    </span>
+                    <span
+                      aria-hidden="true"
+                      className={cn(
+                        "ml-auto grid size-5 shrink-0 place-items-center rounded-full border",
+                        checked ? "border-strong bg-strong text-on-strong dark:border-line-strong" : "border-line-strong",
+                      )}
+                    >
+                      {checked ? <Icon name="check" strokeWidth={2.6} className="size-3" /> : null}
+                    </span>
+                  </label>
+                );
+              })}
+            </div>
           </fieldset>
         ) : (
           <p className="text-sm text-muted">Роль: {ROLE_LABEL[initial.role]}</p>
@@ -73,9 +116,13 @@ export function ProfileForm({ initial }: { initial: { name: string; company: str
           </Field>
         ) : null}
         {message ? <p className="text-sm text-muted" role="status">{message}</p> : null}
-        <div className="flex flex-wrap gap-2">
-          <Button variant="primary" disabled={busy}>Сохранить</Button>
-          <Button type="button" variant="ghost" onClick={logout}>Выйти</Button>
+        <div className="flex flex-wrap items-center justify-between gap-2 border-t border-line pt-4">
+          <Button variant="primary" disabled={busy}>
+            Сохранить
+          </Button>
+          <Button type="button" variant="light" onClick={logout}>
+            Выйти из аккаунта
+          </Button>
         </div>
       </form>
     </Card>

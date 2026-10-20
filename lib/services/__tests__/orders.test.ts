@@ -140,6 +140,7 @@ describe("customer orders", () => {
       vehicleLabel: "BYD Song Plus 2023",
     });
     expect(list[0]).not.toHaveProperty("vehicleSnapshot");
+    expect(list[0].car).toMatchObject({ brand: "BYD", model: "Song Plus", year: 2023 });
 
     const view = await getOrderForCustomer(db, alice, order.id);
     expect(view.order).toMatchObject({ id: order.id, status: "awaiting_payment", totalKzt: 186000 });

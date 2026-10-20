@@ -46,7 +46,7 @@ export function LoginForm({ next }: { next: string }) {
   }
 
   return (
-    <Card>
+    <Card className="p-5 shadow-[0_10px_40px_rgb(23_35_44/0.08)] sm:p-6">
       {!sentTo ? (
         <form onSubmit={send} className="grid gap-4">
           <Field label="Номер телефона" htmlFor="phone" hint="Казахстан и Россия +7, Узбекистан +998, Кыргызстан +996" error={error}>
@@ -72,14 +72,14 @@ export function LoginForm({ next }: { next: string }) {
             />
           </Field>
           {devCode ? (
-            <p className="rounded-xl bg-warn-bg px-3 py-2 text-sm text-warn">
+            <p className="rounded-[12px] bg-warn-bg px-3 py-2 text-sm text-warn">
               Режим разработки: SMS не подключены, код <span className="font-mono font-semibold">{devCode}</span>
             </p>
           ) : null}
           <Button variant="primary" size="lg" disabled={busy || code.length !== 6}>
             {busy ? "Проверяем…" : "Войти"}
           </Button>
-          <button type="button" className="text-sm font-semibold text-muted underline" onClick={() => { setSentTo(null); setCode(""); setError(null); }}>
+          <button type="button" className="min-h-9 text-sm font-semibold text-muted underline underline-offset-4 hover:text-ink" onClick={() => { setSentTo(null); setCode(""); setError(null); }}>
             Изменить номер
           </button>
         </form>

@@ -8,6 +8,20 @@
       "when": 1792469081875,
       "tag": "0000_init",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792520956294,
+      "tag": "0001_vehicle_model_color",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792527019013,
+      "tag": "0002_vehicle_model_by_owner",
+      "breakpoints": true
     }
   ]
 }

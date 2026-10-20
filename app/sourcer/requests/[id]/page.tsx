@@ -18,7 +18,9 @@ import { VehiclePanel } from "@/components/sourcer/vehicle-panel";
 import { Zh } from "@/components/sourcer/zh";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
-import { Card, KeyValue, PageHeader } from "@/components/ui/card";
+import { Callout } from "@/components/ui/callout";
+import { Card, CardTitle, KeyValue, PageHeader, SectionTitle } from "@/components/ui/card";
+import { chipClass } from "@/components/ui/chip";
 import { Icon } from "@/components/ui/icon";
 import { getActor } from "@/lib/auth/current";
 import { isStaff, type Actor } from "@/lib/auth/session";
@@ -44,14 +46,6 @@ async function load(actor: Actor, id: string): Promise<StaffRequestView> {
     if (error instanceof AppError && error.status === 404) notFound();
     throw error;
   }
-}
-
-function SectionTitle({ id, children }: { id?: string; children: ReactNode }) {
-  return (
-    <h2 id={id} className="text-xl font-extrabold tracking-tight">
-      {children}
-    </h2>
-  );
 }
 
 export default async function SourcerRequestPage({ params, searchParams }: Props) {
@@ -151,14 +145,15 @@ export default async function SourcerRequestPage({ params, searchParams }: Props
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <Link href="/sourcer" className="mb-3 inline-flex items-center gap-1 text-sm font-semibold text-muted hover:text-ink">
-        ← Очередь <Zh>队列</Zh>
+    <div>
+      <Link href="/sourcer" className="mb-3 inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-muted hover:text-ink">
+        <Icon name="chevron-left" className="size-4" />
+        Очередь <Zh>队列</Zh>
       </Link>
       <PageHeader
         eyebrow={`Заявка №${request.number} · ${formatDateTime(request.createdAt)}`}
         title={<span className="break-words">{request.title}</span>}
-        actions={<StaffStatusBadge status={request.status} className="px-3 py-1 text-sm" />}
+        actions={<StaffStatusBadge status={request.status} pill />}
       >
         {view.assignee ? `Ведёт: ${view.assignee.isMe ? "вы" : view.assignee.name}` : "Заявка ни на кого не назначена"}
       </PageHeader>
@@ -175,24 +170,30 @@ export default async function SourcerRequestPage({ params, searchParams }: Props
       </Card>
 
       {view.order ? (
-        <div className="mb-4 flex flex-wrap items-center justify-between gap-3 rounded-2xl bg-ok-bg p-4 text-ok">
-          <div className="grid gap-0.5">
-            <p className="font-bold">
+        <Callout
+          tone="ok"
+          icon="box"
+          className="mb-4"
+          title={
+            <>
               Заказ №{view.order.number} <Zh className="font-normal">订单</Zh>
-            </p>
-            <p className="text-sm">Статус: {ORDER_STATUS[view.order.status]?.label ?? view.order.status}</p>
-          </div>
-          <ButtonLink href={`/sourcer/orders/${view.order.id}`} variant="dark">
-            Открыть заказ
-          </ButtonLink>
-        </div>
+            </>
+          }
+          action={
+            <ButtonLink href={`/sourcer/orders/${view.order.id}`} variant="strong">
+              Открыть заказ
+            </ButtonLink>
+          }
+        >
+          Статус: {ORDER_STATUS[view.order.status]?.label ?? view.order.status}
+        </Callout>
       ) : null}
 
       <nav aria-label="Разделы заявки" className="mb-4 flex flex-wrap gap-2 lg:hidden">
-        <a href="#offers" className="rounded-xl bg-soft px-3 py-2 text-sm font-semibold">
+        <a href="#offers" className={chipClass(false)}>
           Предложения · {live.length + drafts.length}
         </a>
-        <a href="#chat" className="rounded-xl bg-soft px-3 py-2 text-sm font-semibold">
+        <a href="#chat" className={chipClass(false)}>
           Переписка · {view.messages.length}
         </a>
       </nav>
@@ -200,30 +201,30 @@ export default async function SourcerRequestPage({ params, searchParams }: Props
       <div className="grid gap-6 lg:grid-cols-2">
         <div className="grid min-w-0 content-start gap-4">
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">
+            <CardTitle>
               Что ищем <Zh className="font-normal text-muted">需求</Zh>
-            </h2>
+            </CardTitle>
             <KeyValue items={details} />
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">
+            <CardTitle>
               Машина <Zh className="font-normal text-muted">车辆</Zh>
-            </h2>
+            </CardTitle>
             <VehiclePanel vehicle={view.vehicle} />
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">
+            <CardTitle>
               Клиент <Zh className="font-normal text-muted">客户</Zh>
-            </h2>
+            </CardTitle>
             {customer ? <KeyValue items={customerItems} /> : <p className="text-sm text-muted">Аккаунт клиента удалён.</p>}
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">
+            <CardTitle>
               Фото <Zh className="font-normal text-muted">图片</Zh> · {view.attachments.length}
-            </h2>
+            </CardTitle>
             <StaffPhotos photos={view.attachments.map((a) => ({ id: a.id, name: a.name, mime: a.mime }))} />
           </Card>
 
@@ -289,7 +290,7 @@ export default async function SourcerRequestPage({ params, searchParams }: Props
             {editing === "new" ? (
               <OfferForm requestId={request.id} defaults={defaults} vinConfirmable={view.vinConfirmable} doneHref={base} />
             ) : canDraft ? (
-              <ButtonLink href={`${base}?edit=new#offer-form`} variant="soft" scroll={false} className="justify-self-start">
+              <ButtonLink href={`${base}?edit=new#offer-form`} variant="strong" scroll={false} className="justify-self-start">
                 <Icon name="plus" />
                 Новое предложение <Zh className="font-normal">新报价</Zh>
               </ButtonLink>
@@ -310,7 +311,7 @@ export default async function SourcerRequestPage({ params, searchParams }: Props
           ) : null}
 
           {archived.length ? (
-            <details className="rounded-2xl border border-line bg-card">
+            <details className="rounded-[18px] border border-line bg-card">
               <summary className="cursor-pointer px-4 py-3 text-sm font-semibold">
                 Отозванные и не выбранные · {archived.length}
               </summary>

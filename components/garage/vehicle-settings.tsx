@@ -6,8 +6,19 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Field, Input } from "@/components/ui/field";
 import { api } from "@/lib/client/api";
+import { ModelSelect } from "./model-select";
 
-export function VehicleSettings({ vehicleId, label }: { vehicleId: string; label: string | null }) {
+export function VehicleSettings({
+  vehicleId,
+  label,
+  modelId,
+  brand,
+}: {
+  vehicleId: string;
+  label: string | null;
+  modelId: string | null;
+  brand: string | null;
+}) {
   const router = useRouter();
   const [value, setValue] = useState(label ?? "");
   const [message, setMessage] = useState<string | null>(null);
@@ -43,26 +54,29 @@ export function VehicleSettings({ vehicleId, label }: { vehicleId: string; label
   }
 
   return (
-    <Card className="grid gap-4">
+    <Card className="grid gap-5">
       <h2 className="text-lg font-bold">Настройки</h2>
       <form onSubmit={save} className="grid gap-3">
         <Field label="Название в гараже" htmlFor="vehicle-label" hint="Видно только вам">
           <Input id="vehicle-label" value={value} onChange={(e) => setValue(e.target.value)} maxLength={60} autoComplete="off" />
         </Field>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-3">
           <Button variant="soft" disabled={busy}>
             Сохранить название
           </Button>
-          <Button type="button" variant="danger" onClick={archive} disabled={busy}>
-            Убрать из гаража
-          </Button>
+          {message ? (
+            <p className="text-sm text-muted" role="status">
+              {message}
+            </p>
+          ) : null}
         </div>
-        {message ? (
-          <p className="text-sm text-muted" role="status">
-            {message}
-          </p>
-        ) : null}
       </form>
+      <ModelSelect vehicleId={vehicleId} current={modelId} brand={brand} />
+      <div className="border-t border-line pt-4">
+        <Button type="button" variant="danger" onClick={archive} disabled={busy}>
+          Убрать из гаража
+        </Button>
+      </div>
     </Card>
   );
 }

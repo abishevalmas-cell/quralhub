@@ -6,6 +6,7 @@ import { StaffOnly } from "@/components/sourcer/staff-only";
 import { Zh } from "@/components/sourcer/zh";
 import { ButtonLink } from "@/components/ui/button";
 import { EmptyState, PageHeader } from "@/components/ui/card";
+import { Icon } from "@/components/ui/icon";
 import { getActor } from "@/lib/auth/current";
 import { isStaff } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
@@ -39,7 +40,7 @@ export default async function SourcerQueuePage({ searchParams }: Props) {
   const empty = EMPTY[view];
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="max-w-5xl">
       <PageHeader
         eyebrow={
           <>
@@ -52,8 +53,9 @@ export default async function SourcerQueuePage({ searchParams }: Props) {
           </>
         }
         actions={
-          <ButtonLink href="/sourcer/orders" variant="soft">
-            Заказы <Zh className="font-normal">订单</Zh>
+          <ButtonLink href="/sourcer/orders" variant="light">
+            <Icon name="box" className="size-4" />
+            Заказы <Zh className="font-normal text-muted">订单</Zh>
           </ButtonLink>
         }
       >

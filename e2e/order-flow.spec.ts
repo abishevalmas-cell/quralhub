@@ -107,7 +107,7 @@ test("customer adds a car, finds a part in the catalog and sends a request with 
 
   // Decode status: one trim, decoded; the synthetic catalog says so.
   await expect(page.getByRole("heading", { level: 1 })).toHaveText("Deepal S7");
-  await expect(page.getByText("Расшифрован", { exact: true })).toBeVisible();
+  await expect(page.getByText("VIN расшифрован", { exact: true })).toBeVisible();
   await expect(page.getByText("Режим примеров: данные синтетические")).toBeVisible();
   await expect(page.getByText(VIN, { exact: true })).toBeVisible();
 

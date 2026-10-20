@@ -1,11 +1,13 @@
 import { desc, eq } from "drizzle-orm";
 import type { Actor } from "@/lib/auth/session";
+import type { CarColorId, CatalogStatus } from "@/lib/catalog";
 import type { Db } from "@/lib/db";
 import { partRequests, type RequestStatus } from "@/lib/db/schema";
 import { createGateway, getProvider, type PartsProvider, type ProviderStatus } from "@/lib/providers";
+import { brandModel } from "@/lib/utils";
 import { catalogAvailability } from "./catalog";
 import { readSnapshot, vehicleLabel } from "./requests";
-import { listVehicles, type Vehicle } from "./vehicles";
+import { listVehicles, vehicleBrandStatus, vehicleCatalogModel, vehicleColor, type Vehicle } from "./vehicles";
 
 // Data for the signed-in home page: the garage for the search box and the latest requests.
 // Only what the page shows leaves this module: no VINs, no candidates, nothing from offers.
@@ -21,6 +23,23 @@ export const HOME_REQUESTS_LIMIT = 4;
 export type CatalogMode = "catalog" | "catalog_maybe" | "not_decoded" | "manual";
 
 export type HomeVehicle = { id: string; title: string; catalog: CatalogMode };
+
+// What the vehicle stage and the parts assortment of the home page need about a garage car. No VIN: only whether
+// the car has one. modelId is the catalog model (stored, or matched by the decoded name), for the picture only.
+export type HomeCar = HomeVehicle & {
+  /** The owner's own name for the car ("Машина жены"), if any. */
+  label: string | null;
+  /** Brand and model as decoded or typed. */
+  name: string | null;
+  year: number | null;
+  trim: string | null;
+  modelId: string | null;
+  color: CarColorId | null;
+  hasVin: boolean;
+  /** The VIN fits several trims and the owner has not confirmed one yet. */
+  trimPending: boolean;
+  brandStatus: CatalogStatus | null;
+};
 export type HomeRequest = {
   id: string;
   number: number;
@@ -29,7 +48,7 @@ export type HomeRequest = {
   vehicleLabel: string | null;
   updatedAt: Date;
 };
-export type HomeData = { vehicles: HomeVehicle[]; requests: HomeRequest[] };
+export type HomeData = { vehicles: HomeCar[]; requests: HomeRequest[] };
 
 // `level1` is what the first catalog page answered the last time it was opened (from the cache), if known.
 export function catalogMode(vehicle: Pick<Vehicle, "vin" | "decodeStatus" | "epc" | "epcId">, level1: ProviderStatus | null = null): CatalogMode {
@@ -46,6 +65,23 @@ async function lastLevel1(db: Db, vehicle: Vehicle, provider: PartsProvider): Pr
   if (!vehicle.vin || !vehicle.epc || !catalogAvailability(vehicle).available) return null;
   const hit = await createGateway(db, provider).peekCategories({ vin: vehicle.vin, epc: vehicle.epc, level: 1 });
   return hit?.status ?? null;
+}
+
+function homeCar(v: Vehicle, level1: ProviderStatus | null): HomeCar {
+  return {
+    id: v.id,
+    title: vehicleLabel(v),
+    catalog: catalogMode(v, level1),
+    label: v.label?.trim() || null,
+    name: brandModel(v.brand, v.model),
+    year: v.year,
+    trim: v.trim,
+    modelId: vehicleCatalogModel(v)?.id ?? null,
+    color: vehicleColor(v),
+    hasVin: Boolean(v.vin),
+    trimPending: v.decodeStatus === "ambiguous" && !v.candidates.some((c) => c.id === v.selectedCandidateId),
+    brandStatus: vehicleBrandStatus(v),
+  };
 }
 
 export async function homeData(db: Db, actor: Actor, deps: { provider?: PartsProvider } = {}): Promise<HomeData> {
@@ -69,7 +105,7 @@ export async function homeData(db: Db, actor: Actor, deps: { provider?: PartsPro
   ]);
   const level1 = await Promise.all(cars.map((v) => lastLevel1(db, v, provider)));
   return {
-    vehicles: cars.map((v, i) => ({ id: v.id, title: vehicleLabel(v), catalog: catalogMode(v, level1[i]) })),
+    vehicles: cars.map((v, i) => homeCar(v, level1[i])),
     requests: rows.map((r) => ({
       id: r.id,
       number: r.number,

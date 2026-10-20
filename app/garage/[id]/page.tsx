@@ -5,10 +5,14 @@ import { CandidatePicker } from "@/components/garage/candidate-picker";
 import { requestHref } from "@/components/garage/catalog-links";
 import { CategoryGrid } from "@/components/garage/category-grid";
 import { CopyButton } from "@/components/garage/copy-button";
+import { vehicleSubject } from "@/components/garage/garage-car";
 import { catalogFailureText, decodeBadge, formatBuildDate, trimChosen, vehicleName, vehicleTitle } from "@/components/garage/labels";
 import { Notice } from "@/components/garage/notice";
 import { RedecodeButton } from "@/components/garage/redecode-button";
 import { VehicleSettings } from "@/components/garage/vehicle-settings";
+import { VehicleShowcase } from "@/components/garage/vehicle-showcase";
+import { AssortmentGrid } from "@/components/models/assortment-grid";
+import { Icon } from "@/components/ui/icon";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
 import { Card, KeyValue, PageHeader } from "@/components/ui/card";
@@ -16,7 +20,7 @@ import { getActor } from "@/lib/auth/current";
 import { getDb } from "@/lib/db";
 import { FIXTURE_NOTICE } from "@/lib/providers";
 import { catalogAvailability, catalogSource, getCategories } from "@/lib/services/catalog";
-import { getVehicle } from "@/lib/services/vehicles";
+import { getVehicle, vehicleCatalogModel } from "@/lib/services/vehicles";
 import { orNotFound, plainMessage, settle } from "../_lib/load";
 
 export const metadata = { title: "Машина" };
@@ -37,6 +41,8 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
   const ambiguous = vehicle.decodeStatus === "ambiguous";
   const chosen = trimChosen(vehicle);
   const catalogOpened = Boolean(level1?.ok && level1.value.ok);
+  const catalogModel = vehicleCatalogModel(vehicle);
+  const subject = vehicleSubject(vehicle, level1?.ok ? level1.value.status : null);
   const manualCta = (variant: "primary" | "soft" = "soft") => (
     <ButtonLink href={manual} variant={variant} size="sm">
       Найдём деталь вручную
@@ -97,57 +103,53 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
       </Notice>,
     );
 
+  if (!catalogModel)
+    notices.push(
+      <Notice
+        key="model"
+        tone="neutral"
+        title="Модели нет в нашем списке"
+        action={
+          <ButtonLink href="#vehicle-model" variant="light" size="sm">
+            Выбрать модель
+          </ButtonLink>
+        }
+      >
+        Поэтому кузов на схеме условный, а в списке деталей — все группы. Выберите модель в настройках ниже, если она есть в списке.
+      </Notice>,
+    );
+
   return (
-    <div className="mx-auto grid max-w-3xl gap-5">
+    <div className="grid gap-5 [&>*]:min-w-0">
       <div>
-        <Link href="/garage" className="mb-3 inline-block text-sm font-semibold text-muted hover:text-ink">
-          ← Гараж
+        <Link href="/garage" className="mb-3 inline-flex min-h-9 items-center gap-1 text-sm font-semibold text-muted hover:text-ink">
+          <Icon name="chevron-left" className="size-4" />
+          Гараж
         </Link>
-        <PageHeader eyebrow="Гараж" title={vehicleTitle(vehicle)} actions={<Badge tone={badge.tone}>{badge.label}</Badge>}>
+        <PageHeader eyebrow="Моя машина" title={vehicleTitle(vehicle)} actions={<Badge tone={badge.tone}>{badge.label}</Badge>}>
           {vehicle.label && name ? [name, vehicle.year].filter(Boolean).join(", ") : null}
         </PageHeader>
       </div>
 
       {notices}
 
-      <Card>
-        <h2 className="mb-2 text-lg font-bold">Данные машины</h2>
-        <KeyValue
-          items={[
-            [
-              "VIN",
-              vehicle.vin ? (
-                <span className="flex flex-wrap items-center gap-x-1">
-                  <span className="font-mono break-all">{vehicle.vin}</span>
-                  <CopyButton value={vehicle.vin} label="Скопировать VIN" />
-                </span>
-              ) : (
-                "Не указан"
-              ),
-            ],
-            ["Марка", vehicle.brand ?? "—"],
-            ["Модель", vehicle.model ?? "—"],
-            ["Год", vehicle.year ?? "—"],
-            ["Дата выпуска", formatBuildDate(vehicle.buildDate) ?? "—"],
-            ["Комплектация", vehicle.trim ?? (ambiguous ? <span className="text-warn">Не выбрана</span> : "—")],
-          ]}
-        />
-      </Card>
-
+      {/* The trim gates every "Каталог по VIN" badge, so it comes before the picture, not a thousand pixels below. */}
       {ambiguous ? (
-        <Card className="grid gap-3">
+        <Card id="trim" className={chosen ? "grid scroll-mt-28 gap-3" : "grid scroll-mt-28 gap-3 border-warn/40 ring-1 ring-warn/20"}>
           <div>
             <h2 className="text-lg font-bold">{chosen ? "Ваша комплектация" : "Уточните комплектацию"}</h2>
-            <p className="mt-1 text-[15px] text-muted">
+            <p className="mt-1 max-w-3xl text-[15px] text-muted">
               VIN подходит к нескольким комплектациям. Сверьте с табличкой в проёме двери или с техпаспортом.{" "}
               {chosen
                 ? "Детали, которые зависят от опций, подборщик всё равно проверит."
-                : "Пока комплектация не выбрана, детали отмечены «Нужна проверка»."}
+                : "Пока комплектация не выбрана, детали отмечены «Нужна проверка VIN»."}
             </p>
           </div>
           <CandidatePicker vehicleId={vehicle.id} candidates={vehicle.candidates} selectedId={vehicle.selectedCandidateId} />
         </Card>
       ) : null}
+
+      <VehicleShowcase subject={subject} colorChosen={Boolean(vehicle.color)} />
 
       {level1 ? (
         <section className="grid gap-3" aria-labelledby="catalog-heading">
@@ -171,7 +173,34 @@ export default async function VehiclePage({ params }: { params: Promise<{ id: st
         </section>
       ) : null}
 
-      <VehicleSettings vehicleId={vehicle.id} label={vehicle.label} />
+      <AssortmentGrid subject={subject} signedIn title="Детали по группам" />
+
+      <div className="grid items-start gap-5 lg:grid-cols-2 [&>*]:min-w-0">
+        <Card>
+          <h2 className="mb-2 text-lg font-bold">Данные машины</h2>
+          <KeyValue
+            items={[
+              [
+                "VIN",
+                vehicle.vin ? (
+                  <span className="flex flex-wrap items-center gap-x-1">
+                    <span className="font-mono break-all">{vehicle.vin}</span>
+                    <CopyButton value={vehicle.vin} label="Скопировать VIN" />
+                  </span>
+                ) : (
+                  "Не указан"
+                ),
+              ],
+              ["Марка", vehicle.brand ?? "—"],
+              ["Модель", vehicle.model ?? "—"],
+              ["Год", vehicle.year ?? "—"],
+              ["Дата выпуска", formatBuildDate(vehicle.buildDate) ?? "—"],
+              ["Комплектация", vehicle.trim ?? (ambiguous ? <span className="text-warn">Не выбрана</span> : "—")],
+            ]}
+          />
+        </Card>
+        <VehicleSettings vehicleId={vehicle.id} label={vehicle.label} modelId={catalogModel?.id ?? null} brand={vehicle.brand} />
+      </div>
     </div>
   );
 }

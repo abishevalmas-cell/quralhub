@@ -215,7 +215,7 @@ export function PricingForm({ initial, today }: { initial: PricingSettings; toda
                 <div className="rounded-xl bg-soft px-3 py-2.5">
                   <div className="flex items-baseline justify-between gap-3">
                     <span className="font-semibold">Цена для клиента</span>
-                    <span className="text-xl font-extrabold tabular-nums">{kzt(example.quote.priceKzt)}</span>
+                    <span className="text-xl font-bold tracking-[-0.02em] tabular-nums">{kzt(example.quote.priceKzt)}</span>
                   </div>
                   <p className="mt-1 text-sm text-muted tabular-nums">
                     Себестоимость {kzt(example.quote.costKzt)} · маржа {kzt(example.quote.marginKzt)}

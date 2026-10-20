@@ -1,44 +1,55 @@
-import Link from "next/link";
 import { FindForMe } from "@/components/home/find-for-me";
-import { Landing } from "@/components/home/landing";
+import { HomeExplorer } from "@/components/home/home-explorer";
+import { HowItWorks, MasterBanner } from "@/components/home/landing";
 import { RecentRequests } from "@/components/home/recent-requests";
-import { SmartSearch } from "@/components/home/smart-search";
-import { Icon } from "@/components/ui/icon";
+import { TelegramCard } from "@/components/home/telegram-card";
+import { ButtonLink } from "@/components/ui/button";
 import { getActor } from "@/lib/auth/current";
 import { isStaff } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import { homeData } from "@/lib/services/search";
+import { telegramStatus } from "@/lib/services/telegram";
 
+// The original Tetix home: the car on its stage, the search and the parts assortment. Signed-in customers get their
+// garage on the stage and their latest requests below; visitors browse catalog models (?model=).
 export default async function HomePage() {
   const actor = await getActor();
-  if (!actor) return <Landing />;
-  // homeData returns only id, title and catalog mode per car: the search box is a client component.
-  const { vehicles, requests } = await homeData(await getDb(), actor);
+  if (!actor)
+    return (
+      <>
+        <HomeExplorer signedIn={false} cars={[]} />
+        <MasterBanner signedIn={false} />
+        <HowItWorks />
+      </>
+    );
+
+  const db = await getDb();
+  // homeData leaves the VIN out: the stage and the search are client components.
+  const [{ vehicles, requests }, telegram] = await Promise.all([homeData(db, actor), telegramStatus(db, actor)]);
+  const staff = isStaff(actor);
 
   return (
-    <div className="mx-auto grid max-w-3xl gap-8">
-      <section className="grid gap-4">
-        <div>
-          <div className="text-xs font-bold uppercase tracking-[0.14em] text-muted">
-            {actor.name ? `Здравствуйте, ${actor.name}` : "Поиск запчастей"}
-          </div>
-          <h1 className="mt-1 text-[28px] font-extrabold leading-tight tracking-tight sm:text-[32px]">Что нужно найти?</h1>
+    <>
+      <HomeExplorer signedIn cars={vehicles} />
+      {actor.role === "customer" ? <MasterBanner signedIn /> : null}
+      {staff ? (
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-3 rounded-[18px] border border-line bg-card p-[18px] sm:p-[22px]">
+          <p className="font-bold">
+            Заявки клиентов ждут подбора <span className="zh font-normal text-muted">采购</span>
+          </p>
+          <ButtonLink href="/sourcer" variant="strong">
+            Открыть очередь
+          </ButtonLink>
         </div>
-        <SmartSearch signedIn vehicles={vehicles} />
-      </section>
-
-      {isStaff(actor) ? (
-        <Link href="/sourcer" className="flex items-center gap-3 rounded-2xl bg-soft px-4 py-3 font-semibold transition hover:bg-line">
-          <Icon name="queue" />
-          <span className="flex-1">
-            Очередь подбора <span className="zh font-normal text-muted">采购</span>
-          </span>
-          <Icon name="arrow" className="text-muted" />
-        </Link>
       ) : null}
-
       <RecentRequests requests={requests} />
       <FindForMe vehicleIds={vehicles.map((v) => v.id)} />
-    </div>
+      {/* Only a nudge while the bot is set up and not linked yet; the profile always has the card. */}
+      {telegram.url && !telegram.linked ? (
+        <div className="mt-3">
+          <TelegramCard linked={telegram.linked} url={telegram.url} />
+        </div>
+      ) : null}
+    </>
   );
 }

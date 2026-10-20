@@ -48,7 +48,7 @@ export function OfferItem({ offer, canEdit, editHref, now }: { offer: StaffOffer
     <article
       id={`offer-${offer.id}`}
       className={cn(
-        "grid scroll-mt-24 gap-3 rounded-2xl border bg-card p-4",
+        "grid scroll-mt-24 gap-3 rounded-[18px] border bg-card p-4",
         offer.status === "draft" ? "border-dashed border-muted/50" : offer.status === "accepted" ? "border-ok" : "border-line",
         (offer.status === "withdrawn" || offer.status === "rejected") && "opacity-70",
       )}
@@ -68,7 +68,7 @@ export function OfferItem({ offer, canEdit, editHref, now }: { offer: StaffOffer
           </div>
         </div>
         <div className="text-right">
-          <div className="text-xl font-extrabold tracking-tight">{formatKzt(offer.priceKzt)}</div>
+          <div className="text-xl font-bold tracking-[-0.03em]">{formatKzt(offer.priceKzt)}</div>
           {offer.qty > 1 ? <div className="text-xs text-muted">за {offer.qty} шт.</div> : null}
         </div>
       </div>

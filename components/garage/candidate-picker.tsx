@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import type { VehicleCandidate } from "@/lib/db/schema";
 import { api } from "@/lib/client/api";
 import { cn } from "@/lib/utils";
+import { driveText, fuelText } from "./catalog-names";
 
 // The owner confirms their trim; nothing is chosen for them.
 export function CandidatePicker({
@@ -37,11 +38,13 @@ export function CandidatePicker({
 
   return (
     <div className="grid gap-3">
-      <ul className="grid gap-2">
+      <ul className="grid gap-2 md:grid-cols-2">
         {candidates.map((c) => {
           const selected = c.id === selectedId;
           const title = c.version || c.description || "Комплектация без названия";
-          const details = [c.year && `${c.year} г.`, c.engine && `двигатель ${c.engine}`, c.fuel, c.drive].filter(Boolean).join(" · ");
+          const details = [c.year && `${c.year} г.`, c.engine && `двигатель ${c.engine}`, fuelText(c.fuel).ru, driveText(c.drive).ru]
+            .filter(Boolean)
+            .join(" · ");
           return (
             <li key={c.id} className={cn("grid gap-1 rounded-xl border p-3", selected ? "border-ok" : "border-line")}>
               <p className="font-semibold">{title}</p>

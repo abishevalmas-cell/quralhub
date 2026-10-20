@@ -42,7 +42,7 @@ export function FitFeedbackForm({ orderId }: { orderId: string }) {
   return (
     <form onSubmit={submit} className="grid gap-4">
       <fieldset className="grid gap-3">
-        <legend className="text-xl font-extrabold tracking-tight">Деталь подошла?</legend>
+        <legend className="text-lg font-bold tracking-[-0.02em] sm:text-xl">Деталь подошла?</legend>
         <p className="-mt-1 text-sm text-muted">Ответ поможет точнее подбирать детали для таких же машин.</p>
         <div className="grid grid-cols-2 gap-2">
           {OPTIONS.map((o) => (
@@ -59,7 +59,7 @@ export function FitFeedbackForm({ orderId }: { orderId: string }) {
               <label
                 htmlFor={o.id}
                 className={cn(
-                  "flex h-12 cursor-pointer items-center justify-center gap-2 rounded-xl border px-3 text-center text-[15px] font-semibold transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-lime-ink",
+                  "flex h-12 cursor-pointer items-center justify-center gap-2 rounded-[14px] border px-3 text-center text-[15px] font-semibold transition peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-lime-ink",
                   choice === o.value
                     ? o.value === "fits"
                       ? "border-ok bg-ok-bg text-ok"

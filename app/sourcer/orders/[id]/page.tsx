@@ -7,7 +7,9 @@ import { FIT_FEEDBACK, FITMENT_RESULT, FITMENT_SOURCE } from "@/components/sourc
 import { StaffOnly } from "@/components/sourcer-orders/staff-only";
 import { StaffOrderStatusBadge } from "@/components/sourcer-orders/staff-order-status-badge";
 import { Badge } from "@/components/ui/badge";
-import { Card, KeyValue, PageHeader } from "@/components/ui/card";
+import { Callout } from "@/components/ui/callout";
+import { Card, CardTitle, KeyValue, PageHeader, SectionTitle } from "@/components/ui/card";
+import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { getActor } from "@/lib/auth/current";
 import { isStaff, type Actor } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
@@ -46,7 +48,6 @@ function safeUrl(raw: string | null): string | null {
     return null;
   }
 }
-
 
 export default async function SourcerOrderPage({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -130,7 +131,7 @@ export default async function SourcerOrderPage({ params }: { params: Promise<{ i
     e.by === "customer" ? "Клиент" : e.by === "staff" ? e.actorName || "Подборщик" : "Система";
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <PageHeader
         eyebrow={
           <>
@@ -141,34 +142,41 @@ export default async function SourcerOrderPage({ params }: { params: Promise<{ i
           </>
         }
         title={<span className="break-words">{shown.title}</span>}
-        actions={<StaffOrderStatusBadge status={order.status} className="px-3 py-1 text-sm" />}
+        actions={<StaffOrderStatusBadge status={order.status} pill />}
       >
         <span className="font-semibold text-ink">{formatKzt(order.totalKzt)}</span> · {vehicle?.label ?? "Без машины"} ·{" "}
         {customer.name || customer.phone}
       </PageHeader>
 
       {order.status === "awaiting_payment" ? (
-        <p className="mb-6 rounded-2xl bg-warn-bg p-4 text-warn sm:p-5" role="status">
-          Пришлите клиенту реквизиты в{" "}
-          <Link href={`/sourcer/requests/${request.id}`} className="font-semibold underline">
-            чате заявки №{request.number}
-          </Link>{" "}
-          и отметьте оплату, когда деньги придут.
-        </p>
+        <Callout tone="warn" icon="card" role="status" className="mb-6">
+          <p className="text-[15px]">
+            Пришлите клиенту реквизиты в{" "}
+            <Link href={`/sourcer/requests/${request.id}`}>чате заявки №{request.number}</Link> и отметьте оплату, когда деньги
+            придут.
+          </p>
+        </Callout>
       ) : null}
       {order.fitFeedback === "not_fits" && order.status === "delivered" ? (
-        <div className="mb-6 grid gap-1 rounded-2xl bg-bad-bg p-4 text-bad sm:p-5" role="status">
-          <p className="font-bold">
-            Клиент сообщил: деталь не подошла <span className="zh" lang="zh">不适配</span>
-          </p>
-          <p>Свяжитесь с клиентом и оформите возврат или замену. Комментарий клиента — в чате заявки.</p>
-        </div>
+        <Callout
+          tone="bad"
+          icon="info"
+          role="status"
+          className="mb-6"
+          title={
+            <>
+              Клиент сообщил: деталь не подошла <span className="zh" lang="zh">不适配</span>
+            </>
+          }
+        >
+          Свяжитесь с клиентом и оформите возврат или замену. Комментарий клиента — в чате заявки.
+        </Callout>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
         <div className="grid min-w-0 content-start gap-6">
           <Card className="grid gap-4 p-4 sm:p-5">
-            <h2 className="text-xl font-extrabold tracking-tight">Следующий шаг {zh("下一步")}</h2>
+            <SectionTitle>Следующий шаг {zh("下一步")}</SectionTitle>
             {next.length === 0 ? (
               <p className="text-muted">
                 Заказ завершён: статус «{ORDER_STATUS[order.status].label}» больше не меняется.
@@ -183,25 +191,27 @@ export default async function SourcerOrderPage({ params }: { params: Promise<{ i
           </Card>
 
           <section aria-labelledby="events-title" className="grid gap-3">
-            <h2 id="events-title" className="text-xl font-extrabold tracking-tight">
-              История {zh("记录")}
-            </h2>
+            <SectionTitle id="events-title">История {zh("记录")}</SectionTitle>
             <Card className="p-4 sm:p-5">
               {events.length ? (
-                <ol className="grid gap-3">
-                  {[...events].reverse().map((e) => (
-                    <li key={e.id} className="grid gap-0.5 border-b border-dashed border-line pb-3 last:border-0 last:pb-0">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <StaffOrderStatusBadge status={e.status} />
-                        <span className="text-sm font-semibold">{byLabel(e)}</span>
-                        <time className="text-sm text-muted" dateTime={new Date(e.createdAt).toISOString()}>
-                          {formatDateTime(e.createdAt)}
-                        </time>
-                      </div>
-                      {e.note ? <p className="whitespace-pre-line break-words text-sm text-muted">{e.note}</p> : null}
-                    </li>
+                <Timeline label="История заказа">
+                  {[...events].reverse().map((e, i) => (
+                    <TimelineItem
+                      key={e.id}
+                      state={i === 0 ? "current" : "done"}
+                      srState={false}
+                      title={<StaffOrderStatusBadge status={e.status} />}
+                      meta={
+                        <>
+                          <span className="font-semibold text-ink">{byLabel(e)}</span> ·{" "}
+                          <time dateTime={new Date(e.createdAt).toISOString()}>{formatDateTime(e.createdAt)}</time>
+                        </>
+                      }
+                    >
+                      {e.note ? <p className="whitespace-pre-line break-words">{e.note}</p> : null}
+                    </TimelineItem>
                   ))}
-                </ol>
+                </Timeline>
               ) : (
                 <p className="text-sm text-muted">Событий пока нет.</p>
               )}
@@ -209,9 +219,7 @@ export default async function SourcerOrderPage({ params }: { params: Promise<{ i
           </section>
 
           <section aria-labelledby="fitments-title" className="grid gap-3">
-            <h2 id="fitments-title" className="text-xl font-extrabold tracking-tight">
-              База совместимости {zh("适配记录")}
-            </h2>
+            <SectionTitle id="fitments-title">База совместимости {zh("适配记录")}</SectionTitle>
             <Card className="grid gap-4 p-4 sm:p-5">
               {order.fitFeedback ? (
                 <p className="flex flex-wrap items-center gap-2 text-sm">
@@ -281,20 +289,17 @@ export default async function SourcerOrderPage({ params }: { params: Promise<{ i
 
         <aside className="grid content-start gap-4">
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">Клиент видит {zh("客户可见")}</h2>
+            <CardTitle>Клиент видит {zh("客户可见")}</CardTitle>
             <div>
               <div className="text-sm text-muted">Сумма заказа</div>
-              <div className="text-3xl font-extrabold tracking-tight">{formatKzt(order.totalKzt)}</div>
+              <div className="text-[30px] font-bold leading-tight tracking-[-0.035em]">{formatKzt(order.totalKzt)}</div>
             </div>
             <KeyValue items={customerItems} />
-            {shown.note ? <p className="whitespace-pre-line break-words rounded-xl bg-soft px-3 py-2 text-sm">{shown.note}</p> : null}
+            {shown.note ? <p className="whitespace-pre-line break-words rounded-[12px] bg-soft px-3.5 py-2.5 text-sm">{shown.note}</p> : null}
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <h2 className="font-bold">Закупка {zh("采购")}</h2>
-              <Badge tone="warn">Только для команды</Badge>
-            </div>
+            <CardTitle aside={<Badge tone="warn">Только для команды</Badge>}>Закупка {zh("采购")}</CardTitle>
             <KeyValue items={purchaseItems} />
             {offer.internalNote ? (
               <p className="whitespace-pre-line break-words rounded-xl bg-warn-bg px-3 py-2 text-sm text-warn">{offer.internalNote}</p>
@@ -302,12 +307,12 @@ export default async function SourcerOrderPage({ params }: { params: Promise<{ i
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">Заявка {zh("询价")}</h2>
+            <CardTitle>Заявка {zh("询价")}</CardTitle>
             <KeyValue items={requestItems} />
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">Машина {zh("车辆")}</h2>
+            <CardTitle>Машина {zh("车辆")}</CardTitle>
             {vehicle ? <KeyValue items={vehicleItems} /> : <p className="text-sm text-muted">Клиент не указал машину.</p>}
             {vehicle?.decodeStatus === "ambiguous" && !vehicle.trim ? (
               <p className="rounded-xl bg-warn-bg px-3 py-2 text-sm text-warn">Комплектация не уточнена: сверьте деталь по VIN.</p>
@@ -315,7 +320,7 @@ export default async function SourcerOrderPage({ params }: { params: Promise<{ i
           </Card>
 
           <Card className="grid gap-3 p-4 sm:p-5">
-            <h2 className="font-bold">Клиент {zh("客户")}</h2>
+            <CardTitle>Клиент {zh("客户")}</CardTitle>
             <KeyValue items={customerRows} />
           </Card>
         </aside>

@@ -16,7 +16,7 @@ export function QueueCard({ item, now }: { item: QueueItem; now: Date }) {
   const canTake = open && !item.assignee;
   const waiting = item.status === "new";
   return (
-    <article className="grid gap-3 rounded-2xl border border-line bg-card p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+    <article className="grid gap-3 rounded-[18px] border border-line bg-card p-4 transition hover:border-line-strong sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:p-5">
       <div className="grid min-w-0 gap-1.5">
         <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted">
           <span className="font-bold text-ink">№{item.number}</span>
@@ -57,8 +57,9 @@ export function QueueCard({ item, now }: { item: QueueItem; now: Date }) {
       </div>
       <div className="flex flex-wrap gap-2">
         {canTake ? <TakeButton requestId={item.id} version={item.version} open /> : null}
-        <ButtonLink href={href} variant="soft" size="sm">
+        <ButtonLink href={href} variant="light" size="sm">
           Открыть
+          <Icon name="chevron" className="size-4" />
         </ButtonLink>
       </div>
     </article>

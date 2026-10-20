@@ -21,7 +21,7 @@ export function PublishButton({
   const { busy, error, run, refresh } = useStaffAction();
   const publish = () => run("publish", () => api(`/api/sourcer/requests/${requestId}`, { method: "PATCH", body: { action: "publish", version } }));
   return (
-    <div className="grid gap-2 rounded-2xl border border-line bg-card p-4">
+    <div className="grid gap-2 rounded-[18px] border border-line bg-card p-4">
       <Button variant="primary" size="lg" onClick={publish} disabled={busy !== null || Boolean(blockedReason)}>
         {busy ? (
           "Публикуем…"

@@ -31,7 +31,7 @@ function Stat({ label, value, note }: { label: string; value: React.ReactNode; n
   return (
     <div className="grid content-start gap-1 rounded-xl bg-soft px-3 py-2.5">
       <dt className="text-sm text-muted">{label}</dt>
-      <dd className="text-xl font-extrabold tabular-nums">{value}</dd>
+      <dd className="text-xl font-bold tracking-[-0.02em] tabular-nums">{value}</dd>
       {note ? <dd className="text-sm text-muted">{note}</dd> : null}
     </div>
   );

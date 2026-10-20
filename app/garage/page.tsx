@@ -1,7 +1,9 @@
 import { redirect } from "next/navigation";
-import { VehicleCard } from "@/components/garage/vehicle-card";
+import { EmptyGarage } from "@/components/garage/empty-garage";
+import { garageCard } from "@/components/garage/garage-car";
+import { GarageGrid } from "@/components/garage/garage-grid";
 import { ButtonLink } from "@/components/ui/button";
-import { EmptyState, PageHeader } from "@/components/ui/card";
+import { PageHeader } from "@/components/ui/card";
 import { Icon } from "@/components/ui/icon";
 import { getActor } from "@/lib/auth/current";
 import { getDb } from "@/lib/db";
@@ -21,21 +23,14 @@ export default async function GaragePage() {
   );
   return (
     <div>
-      <PageHeader eyebrow="Гараж" title="Мои машины" actions={list.length ? add : undefined}>
-        По VIN откроем каталог именно вашей машины и отметим детали, которые ей подходят.
+      <PageHeader eyebrow={actor.role === "master" ? "Кабинет мастера" : "Мой автомобиль"} title="Мой гараж" actions={list.length ? add : undefined}>
+        По VIN откроем каталог производителя, если он есть для вашей марки, а подборщик проверит каждую деталь. Активная машина — та,
+        для которой ищем на главной.
       </PageHeader>
       {list.length ? (
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-          {list.map((vehicle) => (
-            <li key={vehicle.id}>
-              <VehicleCard vehicle={vehicle} />
-            </li>
-          ))}
-        </ul>
+        <GarageGrid cars={list.map(garageCard)} />
       ) : (
-        <EmptyState title="В гараже пока пусто" action={add}>
-          Добавьте машину по VIN из техпаспорта — подберём детали по каталогу. VIN нет под рукой? Можно указать марку, модель и год.
-        </EmptyState>
+        <EmptyGarage />
       )}
     </div>
   );

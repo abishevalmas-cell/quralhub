@@ -22,7 +22,7 @@ export function PartList({ vehicleId, parts }: { vehicleId: string; parts: Fitte
       {diagrams.length ? (
         <figure className="grid gap-2">
           {diagrams.map((src) => (
-            <div key={src} className="overflow-hidden rounded-2xl border border-line bg-white">
+            <div key={src} className="overflow-hidden rounded-[18px] border border-line bg-white">
               {/* eslint-disable-next-line @next/next/no-img-element -- catalog diagrams come from images.17vin.com as is */}
               <img src={src} alt="Схема группы из каталога" referrerPolicy="no-referrer" loading="lazy" className="mx-auto max-h-[70vh] w-auto" />
             </div>

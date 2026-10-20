@@ -99,6 +99,12 @@ export const vehicles = pgTable(
     decodeStatus: text("decode_status").$type<DecodeStatus>().notNull().default("pending"),
     candidates: jsonb("candidates").$type<VehicleCandidate[]>().notNull().default(sql`'[]'::jsonb`),
     selectedCandidateId: text("selected_candidate_id"),
+    // Model of lib/catalog behind the car (illustration and assortment only, never a fitment) and the paint
+    // the owner picked from components/car CAR_COLORS. Both null until known.
+    modelId: text("model_id"),
+    // True when the owner named the model themselves: a later decode or trim choice never overwrites it.
+    modelByOwner: boolean("model_by_owner").notNull().default(false),
+    color: text("color"),
     archivedAt: timestamp("archived_at", { withTimezone: true }),
     createdAt: createdAt(),
     updatedAt: updatedAt(),

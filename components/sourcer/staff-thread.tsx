@@ -16,16 +16,18 @@ export function StaffThread({ messages, customerName }: { messages: StaffMessage
         );
         if (m.from === "system")
           return (
-            <li key={m.id} className="px-2 text-center text-sm text-muted">
-              {m.internal ? <span className="font-semibold text-hand">{internalTag} · </span> : null}
-              <span className="whitespace-pre-line">{m.body}</span> · {time}
+            <li key={m.id} className="flex justify-center">
+              <span className="max-w-[92%] rounded-[12px] bg-soft px-3 py-1.5 text-center text-[13px] text-muted">
+                {m.internal ? <span className="font-semibold text-hand">{internalTag} · </span> : null}
+                <span className="whitespace-pre-line">{m.body}</span> · {time}
+              </span>
             </li>
           );
         const author = m.from === "customer" ? `Клиент · ${customerName}` : m.mine ? "Вы" : m.authorName || "Подборщик";
         if (m.internal)
           return (
             <li key={m.id} className="flex justify-end">
-              <div className="grid max-w-[90%] gap-1 rounded-2xl rounded-br-md border border-dashed border-hand/60 bg-hand-bg px-4 py-2.5">
+              <div className="grid max-w-[90%] gap-1 rounded-[18px] rounded-br-md border border-dashed border-hand/60 bg-hand-bg px-4 py-2.5">
                 <div className="text-xs font-bold text-hand">
                   {internalTag} · {author} · {time}
                 </div>
@@ -38,11 +40,11 @@ export function StaffThread({ messages, customerName }: { messages: StaffMessage
           <li key={m.id} className={cn("flex", fromCustomer ? "justify-start" : "justify-end")}>
             <div
               className={cn(
-                "grid max-w-[85%] gap-1 rounded-2xl px-4 py-2.5",
-                fromCustomer ? "rounded-bl-md border border-line bg-card" : "rounded-br-md bg-ink text-paper",
+                "grid max-w-[85%] gap-1 rounded-[18px] px-4 py-2.5",
+                fromCustomer ? "rounded-bl-md border border-line bg-card" : "rounded-br-md bg-strong text-on-strong",
               )}
             >
-              <div className={cn("text-xs font-semibold", fromCustomer ? "text-muted" : "text-paper/70")}>
+              <div className={cn("text-xs font-semibold", fromCustomer ? "text-muted" : "text-on-strong/70")}>
                 {author} · {time}
               </div>
               <p className="whitespace-pre-line break-words text-[15px]">{m.body}</p>

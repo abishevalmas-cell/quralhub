@@ -1,5 +1,6 @@
 import { and, desc, eq, isNull, sql } from "drizzle-orm";
 import type { Actor } from "@/lib/auth/session";
+import { CAR_COLOR_IDS, findBrand, findModel, getBrand, getModel, modelTitle, modelYears, type CarColorId, type CarModel } from "@/lib/catalog";
 import type { Db } from "@/lib/db";
 import { vehicles, type DecodeStatus, type VehicleCandidate } from "@/lib/db/schema";
 import { getProvider, type DecodeResult, type PartsProvider, type ProviderSource } from "@/lib/providers";
@@ -31,6 +32,44 @@ function cleanText(value: unknown, max: number, tooLong: string): string | null 
 }
 
 const cleanLabel = (label: unknown) => cleanText(label, LABEL_MAX, `Название — не длиннее ${LABEL_MAX} символов`);
+
+const COLOR_IDS: readonly string[] = CAR_COLOR_IDS;
+
+// A paint of components/car CAR_COLORS, or null for "not chosen": the picture then uses the model's usual color.
+function cleanColor(value: unknown): CarColorId | null {
+  if (value === null || value === undefined || value === "") return null;
+  if (typeof value !== "string" || !COLOR_IDS.includes(value)) throw badRequest("Выберите цвет из списка", "unknown_color");
+  return value as CarColorId;
+}
+
+/** The stored paint, if it is still one of CAR_COLORS. */
+export const vehicleColor = (vehicle: Pick<Vehicle, "color">): CarColorId | null =>
+  vehicle.color && COLOR_IDS.includes(vehicle.color) ? (vehicle.color as CarColorId) : null;
+
+function catalogModel(modelId: unknown): CarModel {
+  const model = typeof modelId === "string" ? getModel(modelId) : null;
+  if (!model) throw badRequest("Такой модели нет в списке", "unknown_model");
+  return model;
+}
+
+// The catalog model behind a car: the stored one, else a match by the decoded or typed name (rows added before
+// model_id existed). Picks the illustration and the assortment only; it never says that a part fits.
+export function vehicleCatalogModel(vehicle: Pick<Vehicle, "modelId" | "brand" | "model" | "year">): CarModel | null {
+  return getModel(vehicle.modelId) ?? findModel(vehicle.brand, vehicle.model, vehicle.year);
+}
+
+/**
+ * Catalog status of the car's brand, or null for an unknown brand. For a car with a VIN the decoded brand decides
+ * (with the decoded model text, so "Changan" + "Deepal S07" is a Deepal): the model the owner picked changes the
+ * picture, never which catalog the VIN opens. Without a VIN, or when the decoded brand is unknown, the model's
+ * brand counts, then the typed brand.
+ */
+export function vehicleBrandStatus(vehicle: Pick<Vehicle, "modelId" | "brand" | "model" | "year"> & { vin?: string | null }) {
+  const decoded = vehicle.vin ? findBrand(`${vehicle.brand ?? ""} ${vehicle.model ?? ""}`) ?? findBrand(vehicle.brand) : null;
+  if (decoded) return decoded.catalogStatus;
+  const model = vehicleCatalogModel(vehicle);
+  return (model ? getBrand(model.brandId) : findBrand(vehicle.brand))?.catalogStatus ?? null;
+}
 
 export async function listVehicles(db: Db, actor: Actor): Promise<Vehicle[]> {
   return db
@@ -83,6 +122,23 @@ function describeCar(candidates: VehicleCandidate[], selectedId: string | null, 
   };
 }
 
+// The catalog model of a decoded car: of the chosen trim, or the one every candidate maps to. A model the owner named
+// is never overwritten; names that disagree or match nothing leave the model as it was.
+function decodedModelId(
+  candidates: VehicleCandidate[],
+  selectedId: string | null,
+  hints: { brand: string | null; year: number | null },
+  row: Pick<Vehicle, "modelId" | "modelByOwner">,
+): string | null {
+  const current = row.modelId;
+  if (row.modelByOwner && current) return current;
+  const chosen = candidates.length === 1 ? candidates[0] : (candidates.find((c) => c.id === selectedId) ?? null);
+  const pool = chosen ? [chosen] : candidates;
+  const ids = new Set(pool.map((c) => findModel(c.brand || hints.brand, c.model, c.year)?.id ?? null));
+  const [only] = [...ids];
+  return ids.size === 1 && only ? only : current;
+}
+
 // Maps a decode answer onto the row. Returns null when the row must stay as it is.
 function decodePatch(row: Vehicle, result: DecodeResult, now: Date): Partial<typeof vehicles.$inferInsert> | null {
   const hints = vinHints(row.vin, now);
@@ -99,6 +155,7 @@ function decodePatch(row: Vehicle, result: DecodeResult, now: Date): Partial<typ
     return {
       decodeStatus: ambiguous ? "ambiguous" : "decoded",
       ...describeCar(found, selected, hints),
+      modelId: decodedModelId(found, selected, hints, row),
       ...provided,
       candidates: found,
       selectedCandidateId: selected,
@@ -179,22 +236,38 @@ export async function addVehicleByVin(
   return applyDecode(db, row, result, now);
 }
 
-export async function addManualVehicle(
-  db: Db,
-  actor: Actor,
-  input: { brand: string; model: string; year: number; trim?: string | null; label?: string | null },
-  deps: { now?: Date } = {},
-): Promise<Vehicle> {
+export type ManualVehicleInput = {
+  /** A model of lib/catalog: brand and model are taken from it. Without it, brand and model are free text. */
+  modelId?: string | null;
+  brand?: string | null;
+  model?: string | null;
+  year: number;
+  trim?: string | null;
+  color?: string | null;
+  label?: string | null;
+};
+
+// The catalog years are the first ones we are sure of, and a car sold early can carry the next model year:
+// one year either side is accepted.
+function checkModelYear(model: CarModel, year: number) {
+  if (year < model.yearFrom - 1 || (model.yearTo !== null && year > model.yearTo + 1))
+    throw badRequest(`${modelTitle(model)} выпускается ${modelYears(model)}. Проверьте год выпуска`, "year_out_of_range");
+}
+
+export async function addManualVehicle(db: Db, actor: Actor, input: ManualVehicleInput, deps: { now?: Date } = {}): Promise<Vehicle> {
   const now = deps.now ?? new Date();
-  const brand = cleanText(input.brand, BRAND_MAX, `Марка — не длиннее ${BRAND_MAX} символов`);
-  const model = cleanText(input.model, MODEL_MAX, `Модель — не длиннее ${MODEL_MAX} символов`);
+  const picked = input.modelId !== undefined && input.modelId !== null ? catalogModel(input.modelId) : null;
+  const brand = picked ? picked.brand : cleanText(input.brand, BRAND_MAX, `Марка — не длиннее ${BRAND_MAX} символов`);
+  const model = picked ? picked.model : cleanText(input.model, MODEL_MAX, `Модель — не длиннее ${MODEL_MAX} символов`);
   const trim = cleanText(input.trim, TRIM_MAX, `Комплектация — не длиннее ${TRIM_MAX} символов`);
   const label = cleanLabel(input.label);
+  const color = cleanColor(input.color);
   if (!brand) throw badRequest("Укажите марку");
   if (!model) throw badRequest("Укажите модель");
   const top = maxYear(now);
   if (!Number.isInteger(input.year) || input.year < MIN_YEAR || input.year > top)
     throw badRequest(`Укажите год выпуска от ${MIN_YEAR} до ${top}`);
+  if (picked) checkModelYear(picked, input.year);
   const [vehicle] = await db
     .insert(vehicles)
     .values({
@@ -205,6 +278,9 @@ export async function addManualVehicle(
       model,
       year: input.year,
       trim,
+      modelId: picked?.id ?? findModel(brand, model, input.year)?.id ?? null,
+      modelByOwner: Boolean(picked),
+      color,
       decodeStatus: "manual",
       candidates: [],
       createdAt: now,
@@ -239,9 +315,15 @@ export async function selectCandidate(
   if (candidateId !== null && !row.candidates.some((c) => c.id === candidateId))
     throw badRequest("Такой комплектации нет в списке", "unknown_candidate");
   const now = deps.now ?? new Date();
+  const hints = vinHints(row.vin, now);
   const [vehicle] = await db
     .update(vehicles)
-    .set({ selectedCandidateId: candidateId, ...describeCar(row.candidates, candidateId, vinHints(row.vin, now)), updatedAt: now })
+    .set({
+      selectedCandidateId: candidateId,
+      ...describeCar(row.candidates, candidateId, hints),
+      modelId: decodedModelId(row.candidates, candidateId, hints, row),
+      updatedAt: now,
+    })
     .where(eq(vehicles.id, row.id))
     .returning();
   return vehicle;
@@ -252,6 +334,45 @@ export async function renameVehicle(db: Db, actor: Actor, vehicleId: string, lab
   const [vehicle] = await db
     .update(vehicles)
     .set({ label: cleanLabel(label), updatedAt: new Date() })
+    .where(eq(vehicles.id, row.id))
+    .returning();
+  return vehicle;
+}
+
+// The paint of the car's picture. Purely cosmetic, so it is the owner's choice at any time; null goes back to the
+// model's usual color.
+export async function setVehicleColor(
+  db: Db,
+  actor: Actor,
+  vehicleId: string,
+  color: string | null,
+  deps: { now?: Date } = {},
+): Promise<Vehicle> {
+  const row = await loadVehicleForOwner(db, actor, vehicleId);
+  const [vehicle] = await db
+    .update(vehicles)
+    .set({ color: cleanColor(color), updatedAt: deps.now ?? new Date() })
+    .where(eq(vehicles.id, row.id))
+    .returning();
+  return vehicle;
+}
+
+// The owner names the catalog model when the decoded or typed name matched none (or the wrong one). It changes the
+// picture and the assortment shown, never a fitment. A car without VIN takes brand and model from the catalog too;
+// a decoded car keeps what its VIN says.
+export async function setVehicleModel(
+  db: Db,
+  actor: Actor,
+  vehicleId: string,
+  modelId: string | null,
+  deps: { now?: Date } = {},
+): Promise<Vehicle> {
+  const row = await loadVehicleForOwner(db, actor, vehicleId);
+  const model = modelId === null ? null : catalogModel(modelId);
+  const names = model && row.decodeStatus === "manual" ? { brand: model.brand, model: model.model } : {};
+  const [vehicle] = await db
+    .update(vehicles)
+    .set({ modelId: model?.id ?? null, modelByOwner: model !== null, ...names, updatedAt: deps.now ?? new Date() })
     .where(eq(vehicles.id, row.id))
     .returning();
   return vehicle;

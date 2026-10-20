@@ -45,7 +45,7 @@ export default async function AdminPage({ searchParams }: Props) {
   ]);
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <PageHeader eyebrow="Администратор" title="Управление">
         Заявки и заказы, роли сотрудников, формула цены и доступ к каталогу 17VIN.
       </PageHeader>

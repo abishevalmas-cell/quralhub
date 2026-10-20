@@ -24,7 +24,7 @@ export function Notice({
   className?: string;
 }) {
   return (
-    <section className={cn("grid gap-2 rounded-2xl border px-4 py-3.5", tones[tone].box, className)}>
+    <section className={cn("grid gap-2 rounded-[18px] border px-4 py-3.5 sm:px-5", tones[tone].box, className)}>
       <h2 className={cn("font-bold", tones[tone].title)}>{title}</h2>
       {children ? <div className="text-[15px] text-ink">{children}</div> : null}
       {action ? <div className="mt-1 flex flex-wrap gap-2">{action}</div> : null}

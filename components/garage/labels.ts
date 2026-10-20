@@ -27,9 +27,9 @@ export function trimChosen(vehicle: Pick<VehicleLike, "decodeStatus" | "candidat
 export function decodeBadge(vehicle: Pick<VehicleLike, "decodeStatus" | "candidates" | "selectedCandidateId">): { label: string; tone: Tone } {
   switch (vehicle.decodeStatus) {
     case "decoded":
-      return { label: "Расшифрован", tone: "ok" };
+      return { label: "VIN расшифрован", tone: "ok" };
     case "ambiguous":
-      return trimChosen(vehicle) ? { label: "Расшифрован", tone: "ok" } : { label: "Уточните комплектацию", tone: "warn" };
+      return trimChosen(vehicle) ? { label: "VIN расшифрован", tone: "ok" } : { label: "Уточните комплектацию", tone: "warn" };
     case "unsupported":
       return { label: "Нет каталога", tone: "hand" };
     case "manual":

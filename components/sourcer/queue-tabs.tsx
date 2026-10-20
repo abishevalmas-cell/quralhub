@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { chipClass } from "@/components/ui/chip";
 import type { QueueView } from "@/lib/services/sourcing";
 import { cn } from "@/lib/utils";
 import { QUEUE_TABS } from "./labels";
@@ -14,8 +15,8 @@ export const queueHref = (view: QueueView, q = "") => {
 
 export function QueueTabs({ view, q, counts }: { view: QueueView; q: string; counts: Partial<Record<QueueView, number>> }) {
   return (
-    <nav aria-label="Разделы очереди" className="mb-4">
-      <ul className="flex flex-wrap gap-2">
+    <nav aria-label="Разделы очереди" className="scroll-row -mx-4 mb-4 px-4 pb-1 sm:mx-0 sm:overflow-visible sm:px-0">
+      <ul className="flex gap-2 sm:flex-wrap">
         {QUEUE_TABS.map((tab) => {
           const active = tab.view === view;
           const n = counts[tab.view];
@@ -24,15 +25,14 @@ export function QueueTabs({ view, q, counts }: { view: QueueView; q: string; cou
               <Link
                 href={queueHref(tab.view, q)}
                 aria-current={active ? "page" : undefined}
-                className={cn(
-                  "inline-flex h-10 items-center gap-1.5 rounded-xl border px-3 text-sm font-semibold transition",
-                  active ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink hover:border-muted",
-                )}
+                className={chipClass(active, "min-h-10 text-sm")}
               >
                 {tab.label}
-                <Zh className={cn("font-normal", active ? "text-paper/75" : "text-muted")}>{tab.zh}</Zh>
+                <Zh className={cn("font-normal", active ? "text-on-strong/75" : "text-muted")}>{tab.zh}</Zh>
                 {n ? (
-                  <span className={cn("rounded-full px-1.5 text-xs font-bold", active ? "bg-paper/20" : "bg-soft")}>{n}</span>
+                  <span className={cn("grid h-5 min-w-5 place-items-center rounded-full px-1.5 text-[11px] font-bold", active ? "bg-lime text-on-lime" : "bg-soft")}>
+                    {n}
+                  </span>
                 ) : null}
               </Link>
             </li>

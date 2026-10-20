@@ -6,7 +6,9 @@ import { OrderStatusBadge } from "@/components/orders/order-status-badge";
 import { FITMENT, OFFER_KIND } from "@/components/requests/labels";
 import { Badge } from "@/components/ui/badge";
 import { ButtonLink } from "@/components/ui/button";
-import { Card, KeyValue, PageHeader } from "@/components/ui/card";
+import { Callout } from "@/components/ui/callout";
+import { Card, CardTitle, KeyValue, PageHeader, SectionTitle } from "@/components/ui/card";
+import { Timeline, TimelineItem } from "@/components/ui/timeline";
 import { getActor } from "@/lib/auth/current";
 import type { Actor } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
@@ -55,11 +57,11 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
     items.push(["Совместимость", <Badge key="fit" tone={fit.tone}>{fit.label}</Badge>]);
 
   return (
-    <div className="mx-auto max-w-5xl">
+    <div>
       <PageHeader
         eyebrow={`Заказ №${order.number} · ${formatDate(order.createdAt)}`}
         title={<span className="break-words">{offer.title}</span>}
-        actions={<OrderStatusBadge status={order.status} className="px-3 py-1 text-sm" />}
+        actions={<OrderStatusBadge status={order.status} pill />}
       >
         <span className="font-semibold text-ink">{formatKzt(order.totalKzt)}</span> · {vehicleLabel ?? "Без машины"} · по заявке{" "}
         <Link href={`/requests/${request.id}`} className="font-semibold text-ink underline">
@@ -68,12 +70,19 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
       </PageHeader>
 
       {order.status === "awaiting_payment" ? (
-        <div className="mb-6 grid gap-3 rounded-2xl bg-warn-bg p-4 text-warn sm:p-5" role="status">
-          <p>Оплата пока принимается вручную: подборщик пришлёт реквизиты в чате заявки.</p>
-          <ButtonLink href={`/requests/${request.id}#chat`} variant="dark" className="justify-self-start">
-            Открыть чат заявки
-          </ButtonLink>
-        </div>
+        <Callout
+          tone="warn"
+          icon="card"
+          role="status"
+          className="mb-6"
+          action={
+            <ButtonLink href={`/requests/${request.id}#chat`} variant="strong">
+              Открыть чат заявки
+            </ButtonLink>
+          }
+        >
+          <p className="text-[15px]">Оплата пока принимается вручную: подборщик пришлёт реквизиты в чате заявки.</p>
+        </Callout>
       ) : null}
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
@@ -83,50 +92,52 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
               <FitFeedbackForm orderId={order.id} />
             </Card>
           ) : order.fitFeedback === "fits" ? (
-            <div id="fit" className="grid gap-1 rounded-2xl bg-ok-bg p-4 text-ok sm:p-5" role="status">
-              <p className="font-bold">Вы ответили: деталь подошла</p>
-              <p className="text-sm">Спасибо! Отметили это в базе совместимости, так другим владельцам таких же машин будет проще.</p>
-            </div>
+            <Callout id="fit" tone="ok" icon="check" role="status" title="Вы ответили: деталь подошла">
+              Спасибо! Отметили это в базе совместимости, так другим владельцам таких же машин будет проще.
+            </Callout>
           ) : order.fitFeedback === "not_fits" ? (
-            <div id="fit" className="grid gap-3 rounded-2xl bg-bad-bg p-4 text-bad sm:p-5" role="status">
-              <div className="grid gap-1">
-                <p className="font-bold">Вы ответили: деталь не подошла</p>
-                <p className="text-sm">
-                  {order.status === "returned"
-                    ? "Возврат оформлен. Подробности — в истории заказа."
-                    : "Подборщик свяжется с вами и поможет с возвратом или заменой."}
-                </p>
-              </div>
-              <ButtonLink href={`/requests/${request.id}#chat`} variant="dark" className="justify-self-start">
-                Открыть заявку
-              </ButtonLink>
-            </div>
+            <Callout
+              id="fit"
+              tone="bad"
+              icon="info"
+              role="status"
+              title="Вы ответили: деталь не подошла"
+              action={
+                <ButtonLink href={`/requests/${request.id}#chat`} variant="strong">
+                  Открыть заявку
+                </ButtonLink>
+              }
+            >
+              {order.status === "returned"
+                ? "Возврат оформлен. Подробности — в истории заказа."
+                : "Подборщик свяжется с вами и поможет с возвратом или заменой."}
+            </Callout>
           ) : null}
 
           <Card className="grid gap-4 p-4 sm:p-5">
-            <h2 className="text-xl font-extrabold tracking-tight">Где заказ</h2>
+            <SectionTitle>Где заказ</SectionTitle>
             <OrderProgress status={order.status} />
           </Card>
 
           <section aria-labelledby="events-title" className="grid gap-3">
-            <h2 id="events-title" className="text-xl font-extrabold tracking-tight">
-              История
-            </h2>
+            <SectionTitle id="events-title">История</SectionTitle>
             <Card className="p-4 sm:p-5">
               {events.length ? (
-                <ol className="grid gap-3">
-                  {[...events].reverse().map((e) => (
-                    <li key={e.id} className="grid gap-0.5 border-b border-dashed border-line pb-3 last:border-0 last:pb-0">
-                      <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                        <span className="font-semibold">{ORDER_STATUS[e.status]?.label ?? e.status}</span>
-                        <time className="text-sm text-muted" dateTime={new Date(e.createdAt).toISOString()}>
-                          {formatDateTime(e.createdAt)}
-                        </time>
-                      </div>
-                      {e.note ? <p className="whitespace-pre-line break-words text-sm text-muted">{e.note}</p> : null}
-                    </li>
+                <Timeline label="История заказа">
+                  {[...events].reverse().map((e, i) => (
+                    <TimelineItem
+                      key={e.id}
+                      state={i === 0 ? "current" : "done"}
+                      srState={false}
+                      title={ORDER_STATUS[e.status]?.label ?? e.status}
+                      meta={
+                        <time dateTime={new Date(e.createdAt).toISOString()}>{formatDateTime(e.createdAt)}</time>
+                      }
+                    >
+                      {e.note ? <p className="whitespace-pre-line break-words">{e.note}</p> : null}
+                    </TimelineItem>
                   ))}
-                </ol>
+                </Timeline>
               ) : (
                 <p className="text-sm text-muted">Событий пока нет.</p>
               )}
@@ -136,12 +147,10 @@ export default async function OrderPage({ params }: { params: Promise<{ id: stri
 
         <aside className="grid content-start gap-4">
           <Card className="grid gap-3 p-4 sm:p-5">
-            <div>
-              <div className="text-sm text-muted">Сумма заказа</div>
-              <div className="text-3xl font-extrabold tracking-tight">{formatKzt(order.totalKzt)}</div>
-            </div>
+            <CardTitle>Сумма заказа</CardTitle>
+            <div className="-mt-1 text-[30px] font-bold leading-tight tracking-[-0.035em]">{formatKzt(order.totalKzt)}</div>
             <KeyValue items={items} />
-            {offer.note ? <p className="whitespace-pre-line break-words rounded-xl bg-soft px-3 py-2 text-sm">{offer.note}</p> : null}
+            {offer.note ? <p className="whitespace-pre-line break-words rounded-[12px] bg-soft px-3.5 py-2.5 text-sm">{offer.note}</p> : null}
           </Card>
         </aside>
       </div>

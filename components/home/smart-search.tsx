@@ -6,7 +6,6 @@ import { AXIS_LABEL, SIDE_LABEL } from "@/components/requests/labels";
 import { Badge, type Tone } from "@/components/ui/badge";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/field";
 import { Icon } from "@/components/ui/icon";
 import { ApiError, api } from "@/lib/client/api";
 import type { HomeVehicle } from "@/lib/services/search";
@@ -52,10 +51,22 @@ function statusText(view: SearchView): string {
   }
 }
 
-export function SmartSearch({ signedIn, vehicles }: { signedIn: boolean; vehicles: HomeVehicle[] }) {
+// `vehicleId` pins the car the search works for (the home page passes the car on its stage, or null while a catalog
+// model is browsed); without it the search follows the active garage car and shows the car picker.
+export function SmartSearch({
+  signedIn,
+  vehicles,
+  vehicleId,
+}: {
+  signedIn: boolean;
+  vehicles: HomeVehicle[];
+  vehicleId?: string | null;
+}) {
   const router = useRouter();
   const ids = useMemo(() => vehicles.map((v) => v.id), [vehicles]);
-  const activeId = useActiveVehicle(ids);
+  const storedId = useActiveVehicle(ids);
+  const pinned = vehicleId !== undefined;
+  const activeId = pinned ? (vehicleId && ids.includes(vehicleId) ? vehicleId : null) : storedId;
   const active = vehicles.find((v) => v.id === activeId) ?? null;
   // A query typed before login comes back from sessionStorage; once the customer edits it, local state wins.
   const stashed = useSyncExternalStore(noSubscribe, readStashedQuery, () => "");
@@ -142,45 +153,44 @@ export function SmartSearch({ signedIn, vehicles }: { signedIn: boolean; vehicle
 
   return (
     <div className="grid gap-3">
-      <form onSubmit={submit} role="search" className="grid gap-3 rounded-2xl border border-line bg-card p-3 sm:p-4">
-        <div className="grid gap-1.5">
-          <label htmlFor="home-search" className="px-1 text-sm font-semibold">
-            VIN, номер детали или что нужно
+      <form onSubmit={submit} role="search" aria-label="Поиск детали" className="grid gap-2">
+        <label htmlFor="home-search" className="sr-only">
+          VIN, номер детали или что нужно
+        </label>
+        <div className="flex items-center gap-2 rounded-xl border border-line-strong bg-card py-1.5 pl-3.5 pr-1.5 shadow-field transition has-[input:focus-visible]:border-ink/40 has-[#home-search:focus-visible]:outline-3 has-[#home-search:focus-visible]:outline-offset-2 has-[#home-search:focus-visible]:outline-lime-ink sm:gap-3 sm:pl-4">
+          <Icon name="search" className="size-5 shrink-0 text-muted sm:size-6" />
+          <input
+            id="home-search"
+            type="search"
+            value={query}
+            onChange={(e) => change(e.target.value)}
+            placeholder="Деталь, OE или VIN"
+            maxLength={SEARCH_MAX_LENGTH}
+            autoComplete="off"
+            autoCorrect="off"
+            autoCapitalize="none"
+            spellCheck={false}
+            enterKeyHint="search"
+            aria-describedby="home-search-hint"
+            className="h-11 w-full min-w-0 flex-1 bg-transparent text-[15px] text-ink outline-none placeholder:text-muted/80 focus-visible:outline-none"
+          />
+          <input id="home-photo" type="file" accept="image/*" multiple className="peer sr-only" onChange={pickPhotos} />
+          <label
+            htmlFor="home-photo"
+            title="Фото детали"
+            className="grid size-10 shrink-0 cursor-pointer place-items-center rounded-lg text-ink transition hover:bg-soft peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-lime-ink sm:size-11"
+          >
+            <Icon name="camera" className="size-5 sm:size-6" />
+            <span className="sr-only">Фото детали</span>
           </label>
-          <div className="flex items-center gap-2">
-            <div className="relative min-w-0 flex-1">
-              <Icon name="search" className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-muted" />
-              <Input
-                id="home-search"
-                type="search"
-                value={query}
-                onChange={(e) => change(e.target.value)}
-                placeholder="Например: колодки передние"
-                maxLength={SEARCH_MAX_LENGTH}
-                autoComplete="off"
-                autoCorrect="off"
-                autoCapitalize="none"
-                spellCheck={false}
-                enterKeyHint="search"
-                aria-describedby="home-search-hint"
-                className="h-12 pl-11 text-base!"
-              />
-            </div>
-            <input id="home-photo" type="file" accept="image/*" multiple className="peer sr-only" onChange={pickPhotos} />
-            <label
-              htmlFor="home-photo"
-              title="Фото детали"
-              className="grid size-12 shrink-0 cursor-pointer place-items-center rounded-xl bg-soft text-ink transition hover:bg-line peer-focus-visible:outline-3 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-lime-ink"
-            >
-              <Icon name="camera" />
-              <span className="sr-only">Фото детали</span>
-            </label>
-          </div>
-          <p id="home-search-hint" className="px-1 text-xs text-muted">
-            Фото приложим к заявке; распознавание по фото скоро.
-          </p>
+          <Button variant="primary" disabled={busy} className="h-11 shrink-0 rounded-lg px-3.5 text-[13px] sm:px-5 sm:text-sm">
+            Найти
+          </Button>
         </div>
-        {signedIn ? <VehiclePicker vehicles={vehicles} activeId={activeId} onSelect={setActiveVehicle} /> : null}
+        <p id="home-search-hint" className="px-1 text-xs text-muted">
+          Напишите деталь своими словами, вставьте номер OE или VIN. Фото приложим к заявке.
+        </p>
+        {signedIn && !pinned ? <VehiclePicker vehicles={vehicles} activeId={activeId} onSelect={setActiveVehicle} /> : null}
       </form>
 
       <p className="sr-only" aria-live="polite">
@@ -352,7 +362,7 @@ function OePanel({ view, active, signedIn, onFind }: { view: OeView; active: Hom
         </p>
       ) : null}
       <Actions
-        note={`Подборщик найдёт деталь по номеру, проверит, подходит ли она ${active ? `к «${active.title}»` : "к вашей машине"}, и назовёт цену в ₸.`}
+        note={`Подборщик найдёт деталь по номеру, проверит, подходит ли она ${active ? `к «${active.title}»` : "к вашей машине"}, и назовёт цену в ₸.`}
       >
         <Button type="button" variant="primary" onClick={onFind}>
           <Icon name="search" />
@@ -371,7 +381,7 @@ function Chip({ pressed, onClick, children }: { pressed: boolean; onClick: () =>
       onClick={onClick}
       className={cn(
         "inline-flex min-h-9 items-center rounded-full border px-3.5 text-sm font-semibold transition",
-        pressed ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink hover:bg-soft",
+        pressed ? "border-strong bg-strong text-on-strong dark:border-line-strong" : "border-line bg-card text-ink hover:bg-soft",
       )}
     >
       {children}
@@ -430,7 +440,7 @@ function TextPanel({
                       </span>
                     </span>
                     <span className="hidden text-xs text-muted sm:inline">{groupLabels[p.group]}</span>
-                    <span className={cn("grid size-6 shrink-0 place-items-center rounded-full", pressed ? "bg-ink text-paper" : "border border-line")}>
+                    <span className={cn("grid size-6 shrink-0 place-items-center rounded-full", pressed ? "bg-strong text-on-strong" : "border border-line")}>
                       {pressed ? <Icon name="check" className="size-4" /> : null}
                     </span>
                   </button>

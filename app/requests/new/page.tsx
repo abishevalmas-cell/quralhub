@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { carLook } from "@/components/garage/garage-car";
 import { RequestForm } from "@/components/requests/request-form";
 import { PageHeader } from "@/components/ui/card";
 import { getActor } from "@/lib/auth/current";
@@ -21,14 +22,15 @@ export default async function NewRequestPage({ searchParams }: { searchParams: P
     const next = "/requests/new" + (params.size ? `?${params}` : "");
     redirect(`/login?next=${encodeURIComponent(next)}`);
   }
-  const vehicles = await listVehicleOptions(await getDb(), actor);
+  // Only the label and the picture reach the client form; the VIN stays on the server.
+  const vehicles = (await listVehicleOptions(await getDb(), actor)).map((v) => ({ id: v.id, label: v.label, look: carLook(v.car) }));
   const draft = requestDraftFromQuery(
     query,
     vehicles.map((v) => v.id),
   );
 
   return (
-    <div className="mx-auto max-w-2xl">
+    <div className="max-w-3xl">
       <PageHeader eyebrow="Заявки" title="Новая заявка">
         Подборщик проверит, что подходит к вашей машине, и пришлёт варианты с ценой и сроком.
       </PageHeader>

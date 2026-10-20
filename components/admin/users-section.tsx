@@ -41,7 +41,7 @@ function UserSearch({ q, role }: { q: string; role: RoleFilter | "" }) {
 
 function RoleHelp() {
   return (
-    <details className="rounded-2xl border border-line bg-card px-4 py-3 text-[15px]">
+    <details className="rounded-[18px] border border-line bg-card px-4 py-3 text-[15px]">
       <summary className="cursor-pointer font-semibold">Что может каждая роль</summary>
       <dl className="mt-2 grid gap-2">
         {ROLE_ORDER.map((r) => (
@@ -91,7 +91,7 @@ export function UsersSection({ actorId, users, truncated, q, role }: Props) {
               </>
             ) : null}
           </p>
-          <div className="overflow-x-auto rounded-2xl border border-line bg-card">
+          <div className="overflow-x-auto rounded-[18px] border border-line bg-card">
             <table className="w-full text-left text-[15px]">
               <caption className="sr-only">Пользователи и их роли, сначала новые</caption>
               <thead className="border-b border-line text-sm text-muted">

@@ -6,6 +6,8 @@ import { StaffOnly } from "@/components/sourcer-orders/staff-only";
 import { StaffOrderStatusBadge } from "@/components/sourcer-orders/staff-order-status-badge";
 import { Badge } from "@/components/ui/badge";
 import { EmptyState, PageHeader } from "@/components/ui/card";
+import { chipClass } from "@/components/ui/chip";
+import { ListCard } from "@/components/ui/list-card";
 import { getActor } from "@/lib/auth/current";
 import { isStaff } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
@@ -47,7 +49,7 @@ export default async function SourcerOrdersPage({ searchParams }: Props) {
   ];
 
   return (
-    <div className="mx-auto max-w-4xl">
+    <div className="max-w-5xl">
       <PageHeader
         eyebrow={
           <>
@@ -66,8 +68,8 @@ export default async function SourcerOrdersPage({ searchParams }: Props) {
         Отмечайте этапы заказа: клиент получает уведомление о каждом шаге и видит ваш комментарий.
       </PageHeader>
 
-      <nav aria-label="Фильтр по статусу" className="mb-5">
-        <ul className="flex flex-wrap gap-2">
+      <nav aria-label="Фильтр по статусу" className="scroll-row -mx-4 mb-5 px-4 pb-1 sm:mx-0 sm:overflow-visible sm:px-0">
+        <ul className="flex gap-2 sm:flex-wrap">
           {chips.map((chip) => {
             const current = chip.filter === filter;
             return (
@@ -75,16 +77,13 @@ export default async function SourcerOrdersPage({ searchParams }: Props) {
                 <Link
                   href={hrefFor(chip.filter)}
                   aria-current={current ? "page" : undefined}
-                  className={cn(
-                    "inline-flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-sm font-semibold",
-                    current ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink hover:border-ink/30",
-                  )}
+                  className={chipClass(current, "text-sm")}
                 >
                   {chip.label}
                   <span className="zh font-medium opacity-70" lang="zh">
                     {chip.zh}
                   </span>
-                  <span className={cn("tabular-nums", current ? "text-paper/70" : "text-muted")}>{chip.n}</span>
+                  <span className={cn("tabular-nums", current ? "text-on-strong/70" : "text-muted")}>{chip.n}</span>
                 </Link>
               </li>
             );
@@ -102,36 +101,36 @@ export default async function SourcerOrdersPage({ searchParams }: Props) {
         <ul className="grid gap-3">
           {orders.map((o) => (
             <li key={o.id}>
-              <Link
+              <ListCard
                 href={`/sourcer/orders/${o.id}`}
-                className="grid gap-2 rounded-2xl border border-line bg-card p-4 transition hover:border-ink/30 sm:p-5"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <span className="min-w-0 break-words text-[17px] font-bold leading-snug">{o.offerTitle}</span>
-                  <StaffOrderStatusBadge status={o.status} className="mt-0.5 shrink-0" />
-                </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-                  <span className="font-semibold text-ink">Заказ №{o.number}</span>
-                  <span>Заявка №{o.requestNumber}</span>
-                  <span>{o.vehicleLabel ?? "Без машины"}</span>
-                  {o.oe ? <span className="font-mono text-ink">{o.oe}</span> : null}
-                </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-muted">
-                  <span>{o.customerName || o.customerPhone}</span>
-                  <span className="font-semibold text-ink">{formatKzt(o.totalKzt)}</span>
-                  <span>Обновлён {formatDate(o.updatedAt)}</span>
-                  {o.fitFeedback ? (
-                    <Badge tone={FIT_FEEDBACK[o.fitFeedback].tone}>
-                      {FIT_FEEDBACK[o.fitFeedback].label}{" "}
-                      <span className="zh ml-1" lang="zh">
-                        {FIT_FEEDBACK[o.fitFeedback].zh}
-                      </span>
-                    </Badge>
-                  ) : null}
-                  {o.assignedTo && !o.assignedToMe ? <Badge>Ведёт другой подборщик</Badge> : null}
-                  {!o.assignedTo ? <Badge tone="warn">Без подборщика</Badge> : null}
-                </div>
-              </Link>
+                title={o.offerTitle}
+                status={<StaffOrderStatusBadge status={o.status} />}
+                meta={
+                  <>
+                    <span className="font-semibold text-ink">Заказ №{o.number}</span>
+                    <span>Заявка №{o.requestNumber}</span>
+                    <span>{o.vehicleLabel ?? "Без машины"}</span>
+                    {o.oe ? <span className="font-mono text-ink">{o.oe}</span> : null}
+                  </>
+                }
+                footer={
+                  <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[13px] text-muted sm:text-sm">
+                    <span>{o.customerName || o.customerPhone}</span>
+                    <span className="font-semibold text-ink">{formatKzt(o.totalKzt)}</span>
+                    <span>Обновлён {formatDate(o.updatedAt)}</span>
+                    {o.fitFeedback ? (
+                      <Badge tone={FIT_FEEDBACK[o.fitFeedback].tone}>
+                        {FIT_FEEDBACK[o.fitFeedback].label}{" "}
+                        <span className="zh ml-1" lang="zh">
+                          {FIT_FEEDBACK[o.fitFeedback].zh}
+                        </span>
+                      </Badge>
+                    ) : null}
+                    {o.assignedTo && !o.assignedToMe ? <Badge>Ведёт другой подборщик</Badge> : null}
+                    {!o.assignedTo ? <Badge tone="warn">Без подборщика</Badge> : null}
+                  </div>
+                }
+              />
             </li>
           ))}
         </ul>

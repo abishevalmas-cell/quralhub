@@ -142,6 +142,26 @@ export function readSnapshot(raw: unknown): VehicleSnapshot | null {
   };
 }
 
+/**
+ * What a picture of the customer's car needs: the catalog model and paint the owner chose, else the name from the
+ * snapshot to find the model by. Only for the illustration; it never says which parts fit.
+ */
+export type CarRef = { modelId: string | null; color: string | null; brand: string | null; model: string | null; year: number | null };
+
+export function carRef(
+  snapshot: Pick<VehicleSnapshot, "brand" | "model" | "year"> | null,
+  vehicle: { modelId: string | null; color: string | null } | null,
+): CarRef | null {
+  if (!snapshot && !vehicle) return null;
+  return {
+    modelId: vehicle?.modelId ?? null,
+    color: vehicle?.color ?? null,
+    brand: snapshot?.brand ?? null,
+    model: snapshot?.model ?? null,
+    year: snapshot?.year ?? null,
+  };
+}
+
 // For the vehicle select on the new request form.
 export async function listVehicleOptions(db: Db, actor: Actor) {
   const rows = await db
@@ -149,7 +169,11 @@ export async function listVehicleOptions(db: Db, actor: Actor) {
     .from(vehicles)
     .where(and(eq(vehicles.ownerId, actor.id), isNull(vehicles.archivedAt)))
     .orderBy(desc(vehicles.updatedAt));
-  return rows.map((v) => ({ id: v.id, label: vehicleLabel(v) }));
+  return rows.map((v) => ({
+    id: v.id,
+    label: vehicleLabel(v),
+    car: { modelId: v.modelId, color: v.color, brand: v.brand, model: v.model, year: v.year } satisfies CarRef,
+  }));
 }
 
 // ---------------------------------------------------------------------------------------------------------------------
@@ -305,8 +329,12 @@ export async function listMyRequests(db: Db, actor: Actor, deps: { now?: Date } 
       status: partRequests.status,
       vehicleSnapshot: partRequests.vehicleSnapshot,
       updatedAt: partRequests.updatedAt,
+      // The car's picture only: its catalog model and paint. The request's vehicle was the customer's own.
+      carModelId: vehicles.modelId,
+      carColor: vehicles.color,
     })
     .from(partRequests)
+    .leftJoin(vehicles, eq(vehicles.id, partRequests.vehicleId))
     .where(eq(partRequests.customerId, actor.id))
     .orderBy(desc(partRequests.updatedAt), desc(partRequests.number))
     .limit(200);
@@ -326,15 +354,19 @@ export async function listMyRequests(db: Db, actor: Actor, deps: { now?: Date } 
         .groupBy(offers.requestId)
     : [];
   const byRequest = new Map(counts.map((c) => [c.requestId, Number(c.n)]));
-  return rows.map((r) => ({
-    id: r.id,
-    number: r.number,
-    title: r.title,
-    status: r.status,
-    vehicleLabel: readSnapshot(r.vehicleSnapshot)?.label ?? null,
-    offerCount: byRequest.get(r.id) ?? 0,
-    updatedAt: r.updatedAt,
-  }));
+  return rows.map((r) => {
+    const snapshot = readSnapshot(r.vehicleSnapshot);
+    return {
+      id: r.id,
+      number: r.number,
+      title: r.title,
+      status: r.status,
+      vehicleLabel: snapshot?.label ?? null,
+      car: snapshot ? carRef(snapshot, { modelId: r.carModelId, color: r.carColor }) : null,
+      offerCount: byRequest.get(r.id) ?? 0,
+      updatedAt: r.updatedAt,
+    };
+  });
 }
 export type MyRequestItem = Awaited<ReturnType<typeof listMyRequests>>[number];
 
@@ -359,7 +391,7 @@ async function loadOwnRequest(db: Db, actor: Actor, ref: string) {
 
 export async function getRequestForCustomer(db: Db, actor: Actor, id: string) {
   const request = await loadOwnRequest(db, actor, id);
-  const [messageRows, attachmentRows, offerRows, orderRows] = await Promise.all([
+  const [messageRows, attachmentRows, offerRows, orderRows, carRows] = await Promise.all([
     db
       .select()
       .from(requestMessages)
@@ -383,8 +415,12 @@ export async function getRequestForCustomer(db: Db, actor: Actor, id: string) {
       .where(and(eq(orders.requestId, request.id), eq(orders.customerId, actor.id)))
       .orderBy(desc(orders.createdAt))
       .limit(1),
+    request.vehicleId
+      ? db.select({ modelId: vehicles.modelId, color: vehicles.color }).from(vehicles).where(eq(vehicles.id, request.vehicleId)).limit(1)
+      : Promise.resolve([]),
   ]);
   const partType = getPartType(request.partTypeId);
+  const snapshot = readSnapshot(request.vehicleSnapshot);
   return {
     request: {
       id: request.id,
@@ -402,7 +438,8 @@ export async function getRequestForCustomer(db: Db, actor: Actor, id: string) {
       createdAt: request.createdAt,
       updatedAt: request.updatedAt,
     },
-    vehicle: readSnapshot(request.vehicleSnapshot),
+    vehicle: snapshot,
+    car: snapshot ? carRef(snapshot, carRows[0] ?? null) : null,
     // Who wrote what is all the customer needs; staff user ids stay on the server.
     messages: customerMessages(messageRows).map((m) => ({
       id: m.id,

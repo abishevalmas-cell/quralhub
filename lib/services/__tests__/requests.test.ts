@@ -209,7 +209,33 @@ describe("listMyRequests", () => {
     await addVehicle(db, alice, { vin: FIXTURE_VINS.deepalS7, archivedAt: new Date() });
     await addVehicle(db, bob);
     const options = await listVehicleOptions(db, alice);
-    expect(options).toEqual([{ id: expect.any(String), label: "BYD Song Plus 2023" }]);
+    expect(options).toEqual([
+      {
+        id: expect.any(String),
+        label: "BYD Song Plus 2023",
+        car: { modelId: null, color: null, brand: "BYD", model: "Song Plus", year: 2023 },
+      },
+    ]);
+  });
+
+  it("gives each listed request the picture of its own car, and none without a car", async () => {
+    const car = await addVehicle(db, alice, { modelId: "byd-song-plus-dmi", color: "blue" });
+    const withCar = await createRequest(db, alice, { title: "Фара левая", vehicleId: car.id });
+    const without = await createRequest(db, alice, { title: "Зеркало" });
+    await createRequest(db, bob, { title: "Чужая заявка" });
+    const list = await listMyRequests(db, alice);
+    expect(list.map((r) => r.id).sort()).toEqual([withCar.id, without.id].sort());
+    expect(list.find((r) => r.id === withCar.id)?.car).toEqual({
+      modelId: "byd-song-plus-dmi",
+      color: "blue",
+      brand: "BYD",
+      model: "Song Plus",
+      year: 2023,
+    });
+    expect(list.find((r) => r.id === without.id)?.car).toBeNull();
+    expect((await getRequestForCustomer(db, alice, withCar.id)).car).toMatchObject({ modelId: "byd-song-plus-dmi", color: "blue" });
+    expect((await getRequestForCustomer(db, alice, without.id)).car).toBeNull();
+    await expect(getRequestForCustomer(db, bob, withCar.id)).rejects.toMatchObject({ status: 404 });
   });
 });
 

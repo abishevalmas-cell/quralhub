@@ -3,17 +3,21 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import { CarThumb } from "@/components/car";
+import type { CarLook } from "@/components/garage/garage-car";
+import { useActiveVehicle } from "@/components/home/active-vehicle";
 import { peekPendingPhotos, takePendingPhotos } from "@/components/home/handoff";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { chipClass } from "@/components/ui/chip";
 import { Field, Input, Select, Textarea } from "@/components/ui/field";
+import { Icon } from "@/components/ui/icon";
 import { api } from "@/lib/client/api";
 import type { RequestDraft } from "@/lib/services/requests";
 import { getPartType, parseQuery, zhLabel, type Axis, type ParsedQuery, type PartType, type Side } from "@/lib/taxonomy";
-import { cn } from "@/lib/utils";
 import { AXIS_LABEL, SIDE_LABEL } from "./labels";
 
-type VehicleOption = { id: string; label: string };
+type VehicleOption = { id: string; label: string; look: CarLook | null };
 
 const NO_VEHICLE = "none";
 const MAX_QTY = 50;
@@ -32,25 +36,47 @@ function suggest(parsed: ParsedQuery): { best: PartType | null; options: PartTyp
 
 function Chip({ pressed, onClick, children }: { pressed: boolean; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      onClick={onClick}
-      className={cn(
-        "inline-flex min-h-9 items-center rounded-full border px-3.5 text-sm font-semibold transition",
-        pressed ? "border-ink bg-ink text-paper" : "border-line bg-card text-ink hover:bg-soft",
-      )}
-    >
+    <button type="button" aria-pressed={pressed} onClick={onClick} className={chipClass(pressed, "text-sm")}>
       {children}
     </button>
   );
 }
 
+// The car the request is for, at the top of the form: its picture and name, or a prompt to choose one.
+function ChosenCar({ vehicle, none }: { vehicle: VehicleOption | undefined; none: boolean }) {
+  return (
+    <div className="flex items-center gap-3 rounded-[16px] bg-soft p-2 pr-4 sm:gap-4">
+      <div className="w-[104px] shrink-0 sm:w-[136px]">
+        {vehicle?.look ? (
+          <CarThumb body={vehicle.look.body} color={vehicle.look.color} />
+        ) : (
+          <div aria-hidden="true" className="grid aspect-[740/282] place-items-center rounded-xl bg-card text-muted">
+            <Icon name="car" className="size-6" />
+          </div>
+        )}
+      </div>
+      <div className="grid min-w-0 gap-0.5" aria-live="polite">
+        <span className="eyebrow text-[11px]">Заявка для</span>
+        <span className="truncate text-[16px] font-bold leading-snug sm:text-[17px]">
+          {vehicle ? vehicle.label : none ? "Без машины" : "Выберите машину"}
+        </span>
+        <span className="text-xs text-muted">
+          {vehicle ? "Подборщик сверит детали с этой машиной" : none ? "Подборщик спросит модель и VIN в чате" : "Так подбор точнее"}
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export function RequestForm({ vehicles, draft }: { vehicles: VehicleOption[]; draft: RequestDraft }) {
   const router = useRouter();
-  const [vehicleId, setVehicleId] = useState(
-    draft.vehicleId ?? (vehicles.length === 1 ? vehicles[0].id : vehicles.length ? "" : NO_VEHICLE),
-  );
+  // Without ?vehicle= the car the home page works for is preselected (the customer can switch). A request about a
+  // catalog model being browsed ("Для BYD Han") is not about the garage car, so nothing is preselected then.
+  const ids = useMemo(() => vehicles.map((v) => v.id), [vehicles]);
+  const active = useActiveVehicle(ids);
+  const aboutModel = /^для\s/i.test(draft.description) || /^для\s/i.test(draft.title);
+  const [picked, setVehicleId] = useState<string | null>(draft.vehicleId ?? (vehicles.length ? null : NO_VEHICLE));
+  const vehicleId = picked ?? (aboutModel && vehicles.length > 1 ? "" : (active ?? ""));
   const [title, setTitle] = useState(draft.title);
   // undefined: follow what the text says; null: the customer turned it off; a value: the customer chose it.
   const [partChoice, setPartChoice] = useState<string | null | undefined>(draft.partTypeId ?? undefined);
@@ -150,8 +176,9 @@ export function RequestForm({ vehicles, draft }: { vehicles: VehicleOption[]; dr
   }
 
   return (
-    <Card>
+    <Card className="sm:p-6">
       <form onSubmit={submit} className="grid gap-5" noValidate>
+        <ChosenCar vehicle={vehicles.find((v) => v.id === vehicleId)} none={vehicleId === NO_VEHICLE} />
         <Field
           label="Машина"
           htmlFor="vehicle"

@@ -18,7 +18,7 @@ import { makeUser, testDb } from "@/tests/helpers/db";
 import { getCategories } from "../catalog";
 import { requestDraftFromQuery } from "../requests";
 import { catalogMode, HOME_REQUESTS_LIMIT, homeData } from "../search";
-import { addManualVehicle, addVehicleByVin, archiveVehicle } from "../vehicles";
+import { addManualVehicle, addVehicleByVin, archiveVehicle, setVehicleColor } from "../vehicles";
 
 const NOW = new Date("2026-10-20T08:00:00Z");
 const at = (minutes: number) => new Date(NOW.getTime() + minutes * 60_000);
@@ -57,7 +57,7 @@ describe("homeData", () => {
     for (let i = 0; i < HOME_REQUESTS_LIMIT + 2; i++) await addRequest(db, owner.id, `Заявка ${i}`, 10 + i, i === 5 ? "BYD Song Plus DM-i 2023" : undefined);
 
     const home = await homeData(db, owner);
-    expect(home.vehicles).toEqual([
+    expect(home.vehicles.map(({ id, title, catalog }) => ({ id, title, catalog }))).toEqual([
       { id: manual.id, title: "Chery Tiggo 7 Pro 2023", catalog: "manual" },
       { id: zeekr.id, title: "Машина жены", catalog: "catalog_maybe" },
       { id: byd.id, title: "BYD Song Plus DM-i 2023", catalog: "catalog" },
@@ -65,6 +65,33 @@ describe("homeData", () => {
     expect(home.requests.map((r) => r.title)).toEqual(["Заявка 5", "Заявка 4", "Заявка 3", "Заявка 2"]);
     expect(home.requests[0]).toMatchObject({ status: "new", vehicleLabel: "BYD Song Plus DM-i 2023" });
     expect(home.requests[1].vehicleLabel).toBeNull();
+  });
+
+  it("describes each car for the vehicle stage: catalog model, paint and brand status, no VIN", async () => {
+    const db = await testDb();
+    const owner = await makeUser(db);
+    const byd = (await addVehicleByVin(db, owner, { vin: FIXTURE_VINS.bydSongPlus }, fixture(1))).vehicle;
+    const zeekr = (await addManualVehicle(db, owner, { modelId: "zeekr-x", year: 2024, color: "zeekr-green" }, { now: at(2) })).id;
+    const odd = (await addManualVehicle(db, owner, { brand: "Avatr", model: "11", year: 2023 }, { now: at(3) })).id;
+    await setVehicleColor(db, owner, byd.id, "black");
+    const cars = Object.fromEntries((await homeData(db, owner)).vehicles.map((v) => [v.id, v]));
+    expect(cars[byd.id]).toEqual({
+      id: byd.id,
+      title: "BYD Song Plus DM-i 2023",
+      catalog: "catalog",
+      label: null,
+      name: "BYD Song Plus DM-i",
+      year: 2023,
+      // Two trims and no choice yet: the trim stays unknown.
+      trim: null,
+      modelId: "byd-song-plus-dmi",
+      color: "black",
+      hasVin: true,
+      trimPending: true,
+      brandStatus: "vin_catalog",
+    });
+    expect(cars[zeekr]).toMatchObject({ name: "Zeekr X", modelId: "zeekr-x", color: "zeekr-green", hasVin: false, brandStatus: "manual" });
+    expect(cars[odd]).toMatchObject({ name: "Avatr 11", modelId: null, color: null, hasVin: false, brandStatus: null });
   });
 
   it("labels a car by what its catalog answered the last time, without calling the provider", async () => {

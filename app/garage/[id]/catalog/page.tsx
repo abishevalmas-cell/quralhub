@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { catalogGroupName } from "@/components/garage/catalog-names";
 import { redirect } from "next/navigation";
 import { MAX_LEVEL, catalogHref, crumbHref, parseTrail, requestHref, type Crumb } from "@/components/garage/catalog-links";
 import { CategoryGrid } from "@/components/garage/category-grid";
@@ -64,7 +65,7 @@ export default async function CatalogPage({ params, searchParams }: { params: Pr
       : null;
 
   return (
-    <div className="mx-auto grid max-w-4xl gap-5">
+    <div className="grid max-w-5xl gap-5">
       <nav aria-label="Путь по каталогу" className="text-sm">
         <ol className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-muted">
           <li>
@@ -88,12 +89,12 @@ export default async function CatalogPage({ params, searchParams }: { params: Pr
             <li key={`${crumb.level}:${crumb.code}`} className="flex min-w-0 items-center gap-1.5">
               <span aria-hidden="true">/</span>
               {index === trail.length - 1 ? (
-                <span aria-current="page" className="font-semibold break-words text-ink">
-                  {crumb.name}
+                <span aria-current="page" className="font-semibold break-words text-ink" lang={catalogGroupName(crumb.name).lang}>
+                  {catalogGroupName(crumb.name).ru}
                 </span>
               ) : (
-                <Link href={crumbHref(vehicle.id, trail, index)} className="font-semibold break-words hover:text-ink">
-                  {crumb.name}
+                <Link href={crumbHref(vehicle.id, trail, index)} className="font-semibold break-words hover:text-ink" lang={catalogGroupName(crumb.name).lang}>
+                  {catalogGroupName(crumb.name).ru}
                 </Link>
               )}
             </li>
@@ -103,7 +104,7 @@ export default async function CatalogPage({ params, searchParams }: { params: Pr
 
       <PageHeader
         eyebrow={code ? "Детали группы" : Number.isInteger(level) && level >= 1 && level <= MAX_LEVEL ? `Каталог · уровень ${level}` : "Каталог"}
-        title={trail.at(-1)?.name ?? "Каталог деталей"}
+        title={trail.length ? catalogGroupName(trail.at(-1)?.name).ru : "Каталог деталей"}
       />
 
       {source === "fixture" ? (
