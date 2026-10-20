@@ -51,3 +51,11 @@ describe("otp + sessions", () => {
     delete process.env.ADMIN_PHONES;
   });
 });
+
+describe("maskPhone", () => {
+  it("keeps only the country code and the last 4 digits", async () => {
+    const { maskPhone } = await import("../phone");
+    expect(maskPhone("77011234567")).toBe("+7••••••4567");
+    expect(maskPhone("998901234567")).toBe("+998•••••4567");
+  });
+});

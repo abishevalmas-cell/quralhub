@@ -22,6 +22,9 @@ export function formatPhone(phone: string): string {
   return "+" + phone;
 }
 
+// Keeps only the country code and the last 4 digits: +7•••••4567.
 export function maskPhone(phone: string): string {
-  return phone.length > 4 ? "+" + phone.slice(0, phone.length - 4).replace(/\d(?=\d{3})/g, "•") + phone.slice(-4) : "•••";
+  if (phone.length < 8) return "•••";
+  const country = phone.startsWith("7") ? "7" : phone.slice(0, 3);
+  return "+" + country + "•".repeat(phone.length - country.length - 4) + phone.slice(-4);
 }
