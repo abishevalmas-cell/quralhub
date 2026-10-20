@@ -3,7 +3,7 @@ import { and, desc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { otpCodes, users, type UserRole } from "@/lib/db/schema";
 import { badRequest, tooMany } from "@/lib/server/errors";
-import { authSecret, DEMO_ADMIN_PHONE, isDemoPreview } from "@/lib/server/demo";
+import { authSecret, DEMO_ADMIN_PHONE, isDemoDeployment } from "@/lib/server/demo";
 import { normalizePhone } from "./phone";
 
 const CODE_TTL_MS = 10 * 60 * 1000;
@@ -26,7 +26,7 @@ const hashCode = (phone: string, code: string) =>
   createHash("sha256").update(`${authSecret()}:${phone}:${code}`).digest("hex");
 
 export function adminPhones(): string[] {
-  return (process.env.ADMIN_PHONES || (isDemoPreview() ? DEMO_ADMIN_PHONE : ""))
+  return (process.env.ADMIN_PHONES || (isDemoDeployment() ? DEMO_ADMIN_PHONE : ""))
     .split(",")
     .map((p) => normalizePhone(p))
     .filter((p): p is string => Boolean(p));
