@@ -6,8 +6,15 @@ export type NotificationEvent =
   | { type: "request_received"; requestNumber: number }
   | { type: "request_clarification"; requestNumber: number; question: string }
   | { type: "request_offered"; requestNumber: number; offerCount: number }
+  | { type: "request_message"; requestNumber: number; body: string }
+  | { type: "request_cancelled"; requestNumber: number; reason: string | null }
+  | { type: "request_closed"; requestNumber: number; reason: string | null }
   | { type: "order_status"; orderNumber: number; statusLabel: string }
-  | { type: "staff_new_request"; requestNumber: number; vehicleLabel: string | null; title: string };
+  | { type: "staff_new_request"; requestNumber: number; vehicleLabel: string | null; title: string }
+  | { type: "staff_customer_reply"; requestNumber: number; title: string; body: string; answered: boolean }
+  | { type: "staff_request_cancelled"; requestNumber: number; title: string }
+  | { type: "staff_offer_accepted"; requestNumber: number; orderNumber: number; offerTitle: string; totalLabel: string }
+  | { type: "staff_order_issue"; orderNumber: number; offerTitle: string; comment: string | null };
 
 export type NotificationType = NotificationEvent["type"];
 
@@ -97,6 +104,37 @@ export function renderEvent(event: NotificationEvent, appUrl = appBaseUrl()): st
         link("Выбрать", page(base, "requests", event.requestNumber)),
       ].join("\n");
     }
+    case "request_message": {
+      const n = num(event.requestNumber);
+      return [
+        `<b>Сообщение по заявке №${n}</b>`,
+        userText(event.body, 1500, true) || "Подборщик написал вам. Откройте заявку.",
+        "",
+        link("Ответить", page(base, "requests", event.requestNumber)),
+      ].join("\n");
+    }
+    case "request_cancelled": {
+      const n = num(event.requestNumber);
+      const reason = userText(event.reason, 500);
+      return [
+        `<b>Заявка №${n} отменена</b>`,
+        reason ? `Причина: ${reason}` : "Подборщик отменил заявку.",
+        "Если деталь всё ещё нужна, создайте новую заявку.",
+        "",
+        link("Открыть заявку", page(base, "requests", event.requestNumber)),
+      ].join("\n");
+    }
+    case "request_closed": {
+      const n = num(event.requestNumber);
+      const reason = userText(event.reason, 500);
+      return [
+        `<b>Заявка №${n} закрыта</b>`,
+        reason ? `Причина: ${reason}` : "Подборщик закрыл заявку.",
+        "Если деталь всё ещё нужна, создайте новую заявку.",
+        "",
+        link("Открыть заявку", page(base, "requests", event.requestNumber)),
+      ].join("\n");
+    }
     case "order_status": {
       const n = num(event.orderNumber);
       const status = userText(event.statusLabel, 150);
@@ -115,6 +153,49 @@ export function renderEvent(event: NotificationEvent, appUrl = appBaseUrl()): st
         userText(event.title, 300) || "Без названия",
         "",
         link("Взять в работу", page(base, "sourcer/requests", event.requestNumber)),
+      ].join("\n");
+    }
+    case "staff_customer_reply": {
+      const n = num(event.requestNumber);
+      const body = userText(event.body, 1500, true);
+      return [
+        `<b>${event.answered ? "Клиент ответил на вопрос" : "Клиент написал"} по заявке №${n}</b> · 客户回复`,
+        userText(event.title, 300) || "Без названия",
+        ...(body ? [body] : []),
+        "",
+        link("Открыть заявку", page(base, "sourcer/requests", event.requestNumber)),
+      ].join("\n");
+    }
+    case "staff_request_cancelled": {
+      const n = num(event.requestNumber);
+      return [
+        `<b>Клиент отменил заявку №${n}</b> · 客户取消`,
+        userText(event.title, 300) || "Без названия",
+        "",
+        link("Открыть заявку", page(base, "sourcer/requests", event.requestNumber)),
+      ].join("\n");
+    }
+    case "staff_offer_accepted": {
+      const total = userText(event.totalLabel, 50);
+      return [
+        `<b>Новый заказ №${num(event.orderNumber)}</b> · 新订单`,
+        `Клиент выбрал вариант по заявке №${num(event.requestNumber)}: ${userText(event.offerTitle, 300) || "без названия"}`,
+        ...(total ? [`Сумма: ${total}`] : []),
+        "Пришлите реквизиты для оплаты в чате заявки.",
+        "",
+        link("Открыть заказ", page(base, "sourcer/orders", event.orderNumber)),
+      ].join("\n");
+    }
+    case "staff_order_issue": {
+      const n = num(event.orderNumber);
+      const comment = userText(event.comment, 1500, true);
+      return [
+        `<b>Не подошла деталь, заказ №${n}</b> · 配件不匹配`,
+        userText(event.offerTitle, 300) || "Без названия",
+        comment ? `Комментарий клиента: ${comment}` : "Клиент не оставил комментарий.",
+        "Свяжитесь с клиентом и оформите возврат или замену.",
+        "",
+        link("Открыть заказ", page(base, "sourcer/orders", event.orderNumber)),
       ].join("\n");
     }
   }

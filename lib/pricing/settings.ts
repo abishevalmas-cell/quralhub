@@ -85,6 +85,17 @@ export async function getPricingSettings(db: Db): Promise<PricingSettings> {
   return mergePricingSettings(row?.value);
 }
 
+// When an admin last saved the settings (rate, markup, shipping); null while the defaults are in use. A cost computed
+// before this moment may be out of date.
+export async function pricingSettingsChangedAt(db: Db): Promise<Date | null> {
+  const [row] = await db
+    .select({ updatedAt: settings.updatedAt })
+    .from(settings)
+    .where(eq(settings.key, SETTINGS_KEY))
+    .limit(1);
+  return row?.updatedAt ?? null;
+}
+
 // Permissions are the caller's job: only an admin service should call this.
 export async function savePricingSettings(db: Db, value: unknown, now = new Date()): Promise<PricingSettings> {
   const parsed = PricingSettingsSchema.safeParse(value);

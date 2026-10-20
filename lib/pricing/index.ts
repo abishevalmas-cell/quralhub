@@ -14,6 +14,7 @@ export {
   PricingSettingsSchema,
   getPricingSettings,
   mergePricingSettings,
+  pricingSettingsChangedAt,
   savePricingSettings,
   type PricingSettings,
 } from "./settings";

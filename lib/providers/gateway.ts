@@ -53,6 +53,9 @@ export type GatewayOptions = {
   now?: Date | (() => Date);
   dailyLimit?: number;
   env?: Record<string, string | undefined>;
+  // Runs right before a paid live call, after the cache missed. Throwing refuses the call (e.g. a per-person budget);
+  // cache hits and fixture answers are free and never reach it.
+  beforeLiveCall?: (operation: ProviderOperation) => Promise<void>;
 };
 
 export type ProviderUsage = { mode: ProviderMode; used: number; limit: number | null };
@@ -60,6 +63,8 @@ export type ProviderUsage = { mode: ProviderMode; used: number; limit: number | 
 export type ProviderGateway = PartsProvider & {
   readonly dailyLimit: number;
   usage(): Promise<ProviderUsage>;
+  // The cached answer for a catalog page, if there is a fresh one; never calls the provider or journals anything.
+  peekCategories(input: CategoriesInput): Promise<CategoriesResult | null>;
 };
 
 const validLimit = (value: number) => Number.isFinite(value) && value >= 0;
@@ -176,6 +181,7 @@ export function createGateway(db: Db, provider: PartsProvider, opts: GatewayOpti
     const now = clock();
     const hit = await readCache<R>(key, operation, now);
     if (hit) return { ...hit, cached: true };
+    if (live && opts.beforeLiveCall) await opts.beforeLiveCall(operation);
 
     const reserved = await reserve(operation, inputMask, now);
     if (!reserved) {
@@ -216,6 +222,14 @@ export function createGateway(db: Db, provider: PartsProvider, opts: GatewayOpti
 
   const invalid = local("invalid", "Некорректный VIN, каталог или группа");
 
+  function categoriesPage(input: CategoriesInput) {
+    const vin = normalizeVinInput(input.vin);
+    const parent = input.level > 1 ? normalizeCode(input.parentCode) : null;
+    if (!vin || !isValidEpc(input.epc) || !isValidLevel(input.level) || (input.level > 1 && !parent)) return null;
+    const { epc, level } = input;
+    return { vin, epc, level, parent, key: `${prefix}:cata:${epc}:${level}:${parent ?? ""}:${vin}` };
+  }
+
   return {
     name: provider.name,
     mode: provider.mode,
@@ -228,18 +242,23 @@ export function createGateway(db: Db, provider: PartsProvider, opts: GatewayOpti
     },
 
     async categories(input: CategoriesInput): Promise<CategoriesResult> {
-      const vin = normalizeVinInput(input.vin);
-      const parent = input.level > 1 ? normalizeCode(input.parentCode) : null;
-      if (!vin || !isValidEpc(input.epc) || !isValidLevel(input.level) || (input.level > 1 && !parent))
-        return categoriesFailure(invalid);
-      const { epc, level } = input;
+      const page = categoriesPage(input);
+      if (!page) return categoriesFailure(invalid);
+      const { vin, epc, level, parent } = page;
       return run(
         "categories",
-        `${prefix}:cata:${epc}:${level}:${parent ?? ""}:${vin}`,
+        page.key,
         `${maskVin(vin)} ${epc} L${level}${parent ? " " + maskVinsIn(parent) : ""}`,
         () => provider.categories(parent ? { vin, epc, level, parentCode: parent } : { vin, epc, level }),
         categoriesFailure,
       );
+    },
+
+    async peekCategories(input: CategoriesInput): Promise<CategoriesResult | null> {
+      const page = categoriesPage(input);
+      if (!page) return null;
+      const hit = await readCache<CategoriesResult>(page.key, "categories", clock());
+      return hit ? { ...hit, cached: true } : null;
     },
 
     async parts(input: PartsInput): Promise<PartsResult> {

@@ -538,3 +538,101 @@ describe("17VIN transport", () => {
     expect(result.parts[0]).toMatchObject({ oe: "10273368-00", diagram: "https://images.17vin.com/img/byd/g.png" });
   });
 });
+
+describe("17VIN level 4 catalogs", () => {
+  it("reads the fourth level with cata4 and cata3_code and parts with last_cata_code_level=4", async () => {
+    const { calls, fetch } = recorder(() => json({ code: 0 }));
+    const p = provider(fetch);
+    await p.categories({ vin: VIN, epc: "byd", level: 4, parentCode: "SA3HJ-10035" });
+    await p.parts({ vin: VIN, epc: "byd", categoryCode: "SA3HJ-10035-1", level: 4 });
+    const paths = calls.map((c) => c.url.slice(ENDPOINT_17VIN.length, c.url.indexOf("&user=")));
+    expect(paths).toEqual([
+      `/byd?action=cata4&vin=${VIN}&cata3_code=SA3HJ-10035`,
+      `/byd?action=part&vin=${VIN}&last_cata_code=SA3HJ-10035-1&last_cata_code_level=4`,
+    ]);
+  });
+
+  it("refuses level 4 without a parent and any level above 4, before calling out", async () => {
+    const { calls, fetch } = recorder(() => json({ code: 1, data: {} }));
+    const p = provider(fetch);
+    expect((await p.categories({ vin: VIN, epc: "byd", level: 4 })).status).toBe("invalid");
+    const five = { vin: VIN, epc: "byd", level: 5, parentCode: "X" } as unknown as Parameters<typeof p.categories>[0];
+    expect((await p.categories(five)).status).toBe("invalid");
+    const parts5 = { vin: VIN, epc: "byd", level: 5, categoryCode: "X" } as unknown as Parameters<typeof p.parts>[0];
+    expect((await p.parts(parts5)).status).toBe("invalid");
+    expect(calls).toHaveLength(0);
+  });
+
+  it("accepts level 4 groups in category answers and rejects level 5", () => {
+    const four = normalizeCategories({ code: 1, data: { catalist: [{ cata_code: "SA3HJ-10035-1", cata_level: "4", is_last: 1 }] } }, "byd");
+    expect(four).toMatchObject({ status: "success", categories: [{ code: "SA3HJ-10035-1", level: 4, last: true }] });
+    expect(normalizeCategories({ code: 1, data: { catalist: [{ cata_code: "X", cata_level: 5 }] } }, "byd").status).toBe("malformed");
+  });
+});
+
+describe("17VIN code 1006", () => {
+  it("reads 1006 with msg 'query no result' as an empty answer", () => {
+    const raw = { code: 1006, msg: "query no result", data: null };
+    expect(normalizeParts(raw, "byd")).toMatchObject({ status: "empty", providerCode: 1006, parts: [], providerMessage: "query no result" });
+    expect(normalizeOeSearch({ code: "1006", msg: " Query No Result " })).toMatchObject({ status: "empty", providerCode: 1006 });
+    expect(normalizeCategories(raw, "byd").status).toBe("empty");
+    expect(normalizeDecode(raw).status).toBe("empty");
+    expect(providerCodeMeta(1006, "query no result").status).toBe("empty");
+  });
+
+  it("keeps any other 1006 as a provider error", () => {
+    expect(normalizeParts({ code: 1006, msg: "Internal server error" }, "byd")).toMatchObject({
+      status: "provider_error",
+      providerCode: 1006,
+      providerMessage: "Internal server error",
+    });
+    expect(normalizeParts({ code: 1006 }, "byd").status).toBe("provider_error");
+    expect(providerCodeMeta(1006).status).toBe("provider_error");
+  });
+});
+
+describe("17VIN providerMessage", () => {
+  it("keeps the raw msg on success and on errors", () => {
+    const ok = normalizeDecode({ code: 1, msg: "success", data: { epc: "byd", model_list: [{ Js_id: "1", Brand_en: "BYD" }] } });
+    expect(ok).toMatchObject({ status: "success", providerMessage: "success" });
+    expect(normalizeCategories({ code: 1003, msg: "Unsupported brand" }, "zeekr")).toMatchObject({
+      status: "unsupported",
+      providerMessage: "Unsupported brand",
+    });
+    expect(normalizeCategories({ code: 1, msg: "ok", data: { catalist: [] } }, "byd")).toMatchObject({ status: "empty", providerMessage: "ok" });
+    expect(normalizeParts({ code: 1, msg: "ok", data: {} }, "byd")).toMatchObject({ status: "malformed", providerMessage: "ok" });
+    expect(normalizeOeSearch({ code: 1, msg: "ok", data: [{ Partnumber: "10301727-00" }] }).providerMessage).toBe("ok");
+  });
+
+  it("omits providerMessage when there is no text msg", () => {
+    expect("providerMessage" in normalizeDecode({ code: 0 })).toBe(false);
+    expect("providerMessage" in normalizeParts({ code: 0, msg: "   " }, "byd")).toBe(false);
+    expect("providerMessage" in normalizeParts({ code: 0, msg: { text: "x" } }, "byd")).toBe(false);
+  });
+
+  it("masks VINs and long tokens, strips control characters and caps the length", () => {
+    const glued = `vin:${VIN} VIN码${VIN.toLowerCase()}不存在 ref=${VIN}EXTRA token=0123456789abcdef0123456789abcdef`;
+    const message = normalizeDecode({ code: 0, msg: glued }).providerMessage!;
+    expect(message).not.toMatch(/TXSP2/i);
+    expect(message).not.toContain("0123456789abcdef");
+    expect(message).toContain("LGX…0001");
+    expect(message).toContain("不存在");
+    const noisy = normalizeDecode({ code: 0, msg: "line1\n\u0000line2\uD800" }).providerMessage!;
+    expect(noisy).not.toMatch(/[\u0000-\u001f]/);
+    expect(noisy.isWellFormed()).toBe(true);
+    const long = normalizeDecode({ code: 0, msg: "数据".repeat(400) + VIN }).providerMessage!;
+    expect(long.length).toBeLessThanOrEqual(300);
+    // A VIN far beyond the cap can neither leak nor be cut into a readable fragment.
+    const tail = normalizeDecode({ code: 0, msg: "x ".repeat(2100) + VIN }).providerMessage!;
+    expect(tail).not.toContain("TXSP2");
+  });
+
+  it("passes the masked msg through a full request", async () => {
+    const result = await provider(async () => json({ code: 1003, msg: `Unsupported brand for ${VIN}` })).categories({
+      vin: VIN,
+      epc: "zeekr",
+      level: 1,
+    });
+    expect(result).toMatchObject({ status: "unsupported", providerMessage: "Unsupported brand for LGX…0001" });
+  });
+});

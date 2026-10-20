@@ -1,4 +1,5 @@
 import { eq, inArray } from "drizzle-orm";
+import { after } from "next/server";
 import type { Db } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { appBaseUrl, htmlToPlain, renderEvent, type NotificationEvent } from "./events";
@@ -86,4 +87,24 @@ export async function notifyStaff(db: Db, event: NotificationEvent, deps: Notify
     console.error(`[tetix] staff notification ${event?.type} failed: ${errorText(error)}`);
   }
   return summary;
+}
+
+// Telegram can take seconds per batch of staff (8 s timeout each), and the person who caused the notification must
+// not wait for it. Inside a Next request the delivery runs after the response is sent (after(), which also keeps a
+// serverless function alive for it); outside one (tests, scripts) it is awaited in place. Never throws.
+export async function notifyAfterResponse(task: () => Promise<unknown>): Promise<void> {
+  const run = async () => {
+    try {
+      await task();
+    } catch (error) {
+      console.error(`[tetix] notification failed: ${errorText(error)}`);
+    }
+  };
+  try {
+    after(run);
+    return;
+  } catch {
+    // Not in a request scope: deliver now.
+  }
+  await run();
 }

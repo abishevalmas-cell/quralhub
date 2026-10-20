@@ -1,12 +1,13 @@
 import { redirect } from "next/navigation";
 import { getActor } from "@/lib/auth/current";
+import { safeNextPath } from "@/lib/utils";
 import { LoginForm } from "./login-form";
 
 export const metadata = { title: "Вход" };
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ next?: string }> }) {
   const { next } = await searchParams;
-  const safeNext = next && next.startsWith("/") && !next.startsWith("//") ? next : "/";
+  const safeNext = safeNextPath(next);
   if (await getActor()) redirect(safeNext);
   return (
     <div className="mx-auto grid max-w-md gap-6 pt-6">

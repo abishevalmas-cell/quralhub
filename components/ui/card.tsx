@@ -18,10 +18,22 @@ export function PageHeader({ eyebrow, title, actions, children }: { eyebrow?: Re
   );
 }
 
-export function EmptyState({ title, children, action }: { title: ReactNode; children?: ReactNode; action?: ReactNode }) {
+// The title is an h2: an empty state usually sits right under the page's h1. Pass `level={3}` inside a section.
+export function EmptyState({
+  title,
+  children,
+  action,
+  level = 2,
+}: {
+  title: ReactNode;
+  children?: ReactNode;
+  action?: ReactNode;
+  level?: 2 | 3;
+}) {
+  const Heading = level === 3 ? "h3" : "h2";
   return (
     <div className="grid justify-items-center gap-2 rounded-2xl border border-dashed border-line bg-card px-6 py-10 text-center">
-      <h3 className="text-lg font-bold">{title}</h3>
+      <Heading className="text-lg font-bold">{title}</Heading>
       {children ? <p className="max-w-md text-muted">{children}</p> : null}
       {action ? <div className="mt-2">{action}</div> : null}
     </div>

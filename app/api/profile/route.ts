@@ -5,10 +5,19 @@ import { getDb } from "@/lib/db";
 import { users } from "@/lib/db/schema";
 import { json, readJson, route } from "@/lib/server/http";
 
+// Control characters (a NUL from a pasted value) are dropped: Postgres refuses them in text columns.
+const line = (max: number, message: string) =>
+  z
+    .string()
+    .max(max * 2, message)
+    .transform((s) => s.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim())
+    .pipe(z.string().max(max, message))
+    .optional();
+
 const Body = z.object({
-  name: z.string().trim().max(80).optional(),
-  company: z.string().trim().max(120).optional(),
-  city: z.string().trim().max(80).optional(),
+  name: line(80, "Имя — не длиннее 80 символов"),
+  company: line(120, "Название СТО — не длиннее 120 символов"),
+  city: line(80, "Город — не длиннее 80 символов"),
   // A customer can switch to the workshop mode and back; staff roles are granted only by an admin.
   mode: z.enum(["customer", "master"]).optional(),
 });

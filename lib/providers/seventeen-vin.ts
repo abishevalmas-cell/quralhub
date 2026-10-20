@@ -1,6 +1,7 @@
 import "server-only";
 import { createHash } from "node:crypto";
 import {
+  PROVIDER_MESSAGE_MAX,
   categoriesFailure,
   decodeFailure,
   partsFailure,
@@ -22,6 +23,8 @@ import {
   VIN_HINT,
   isValidEpc,
   isValidLevel,
+  maskVin,
+  maskVinsIn,
   normalizeCode,
   normalizeOe,
   normalizeOeInput,
@@ -112,6 +115,24 @@ const meta = (status: ProviderStatus, message: string, providerCode?: number): P
 });
 const malformed = (message: string) => meta("malformed", message);
 
+// Enough to mask every VIN in the part that can survive the final cap: a masked VIN is shorter than the original.
+const MESSAGE_SCAN = 4000;
+
+// The provider's own msg is kept for diagnostics. It can echo the request, so every VIN-shaped token and any
+// other run of 17 or more letters and digits (a VIN glued to other text, a token) is masked before it is kept.
+export function providerMessageOf(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  const scanned = text(value.slice(0, MESSAGE_SCAN), MESSAGE_SCAN);
+  const masked = maskVinsIn(scanned).replace(/[A-Za-z0-9]{17,}/g, (run) => maskVin(run.toUpperCase()));
+  return text(masked, PROVIDER_MESSAGE_MAX) || undefined;
+}
+
+const withMessage = <T extends ProviderMeta>(result: T, providerMessage: string | undefined): T =>
+  providerMessage ? { ...result, providerMessage } : result;
+
+// 1006 is documented as an internal error, but 17VIN answers it with msg "query no result" when nothing is found.
+const NO_RESULT_RE = /query\s*no\s*result/i;
+
 const CODES: Record<number, [ProviderStatus, string]> = {
   0: ["empty", "17VIN: нет данных либо неизвестная ошибка поставщика (код 0)"],
   1001: ["invalid", "17VIN отклонил параметры запроса (код 1001)"],
@@ -123,21 +144,24 @@ const CODES: Record<number, [ProviderStatus, string]> = {
   1007: ["unsupported", "Метод 17VIN пока недоступен (код 1007)"],
 };
 
-export function providerCodeMeta(code: number): ProviderMeta {
+export function providerCodeMeta(code: number, providerMessage?: string): ProviderMeta {
+  if (code === 1006 && providerMessage && NO_RESULT_RE.test(providerMessage))
+    return meta("empty", "17VIN: по запросу ничего не найдено (код 1006)", code);
   const known = CODES[code];
   return known ? meta(known[0], known[1], code) : meta("provider_error", `Неизвестный код 17VIN: ${code}`, code);
 }
 
-type Envelope = { ok: true; data: unknown } | { ok: false; meta: ProviderMeta };
+type Envelope = { ok: true; data: unknown; providerMessage?: string } | { ok: false; meta: ProviderMeta };
 
 function envelope(raw: unknown): Envelope {
   if (!isRecord(raw)) return { ok: false, meta: malformed("Некорректная структура ответа 17VIN") };
+  const providerMessage = providerMessageOf(raw.msg);
   const code = typeof raw.code === "string" && /^\d{1,9}$/.test(raw.code) ? Number(raw.code) : raw.code;
   // provider_calls.provider_code is a 32-bit integer; anything outside that range is not a real 17VIN code.
   if (typeof code !== "number" || !Number.isInteger(code) || Math.abs(code) > 2_147_483_647)
-    return { ok: false, meta: malformed("Некорректная структура ответа 17VIN") };
-  if (code !== 1) return { ok: false, meta: providerCodeMeta(code) };
-  return { ok: true, data: raw.data };
+    return { ok: false, meta: withMessage(malformed("Некорректная структура ответа 17VIN"), providerMessage) };
+  if (code !== 1) return { ok: false, meta: withMessage(providerCodeMeta(code, providerMessage), providerMessage) };
+  return { ok: true, data: raw.data, ...(providerMessage ? { providerMessage } : {}) };
 }
 
 function candidateOf(m: Raw, index: number): VehicleCandidate {
@@ -161,8 +185,9 @@ export function normalizeDecode(raw: unknown): DecodeResult {
   const env = envelope(raw);
   if (!env.ok) return decodeFailure(env.meta);
   const d = env.data;
-  if (!isRecord(d) || !Array.isArray(d.model_list)) return decodeFailure(malformed("В ответе VIN нет списка моделей"));
-  if (d.model_list.length > 500) return decodeFailure(malformed("Слишком много вариантов модели"));
+  const fail = (message: string) => decodeFailure(withMessage(malformed(message), env.providerMessage));
+  if (!isRecord(d) || !Array.isArray(d.model_list)) return fail("В ответе VIN нет списка моделей");
+  if (d.model_list.length > 500) return fail("Слишком много вариантов модели");
   // Ids must be unique, or choosing one trim would silently select another one with the same id.
   const seen = new Set<string>();
   const candidates = d.model_list.filter(isRecord).map((m, i) => {
@@ -178,6 +203,7 @@ export function normalizeDecode(raw: unknown): DecodeResult {
   return {
     ...meta(candidates.length ? "success" : "empty", candidates.length ? OK_MESSAGE : "17VIN не нашёл модель по этому VIN", 1),
     ...(ambiguous ? { message: "Ответ 17VIN: несколько комплектаций. Выберите свою или оставьте проверку специалисту" } : {}),
+    ...(env.providerMessage ? { providerMessage: env.providerMessage } : {}),
     ...(isValidEpc(epc) ? { epc } : {}),
     ...(text(d.epc_id, 80) ? { epcId: text(d.epc_id, 80) } : {}),
     ...(text(d.matching_mode, 80) ? { matchingMode: text(d.matching_mode, 80) } : {}),
@@ -192,13 +218,14 @@ export function normalizeCategories(raw: unknown, epc: string): CategoriesResult
   const env = envelope(raw);
   if (!env.ok) return categoriesFailure(env.meta);
   const d = env.data;
-  if (!isRecord(d) || !Array.isArray(d.catalist)) return categoriesFailure(malformed("В ответе нет списка групп"));
-  if (d.catalist.length > 3000) return categoriesFailure(malformed("Слишком много групп в ответе"));
+  const fail = (message: string) => categoriesFailure(withMessage(malformed(message), env.providerMessage));
+  if (!isRecord(d) || !Array.isArray(d.catalist)) return fail("В ответе нет списка групп");
+  if (d.catalist.length > 3000) return fail("Слишком много групп в ответе");
   const categories: Category[] = [];
   for (const x of d.catalist) {
     const code = isRecord(x) ? codeOf(x.cata_code) : null;
     const level = isRecord(x) ? Number(x.cata_level) : NaN;
-    if (!isRecord(x) || !code || !isValidLevel(level)) return categoriesFailure(malformed("Некорректные коды или уровни групп"));
+    if (!isRecord(x) || !code || !isValidLevel(level)) return fail("Некорректные коды или уровни групп");
     categories.push({
       code,
       level,
@@ -209,7 +236,10 @@ export function normalizeCategories(raw: unknown, epc: string): CategoriesResult
       providerFit: fitOf(x.is_fit_for_this_vin ?? x.Is_fit_for_this_vin),
     });
   }
-  return { ...meta(categories.length ? "success" : "empty", categories.length ? OK_MESSAGE : "17VIN не вернул групп", 1), categories };
+  return withMessage(
+    { ...meta(categories.length ? "success" : "empty", categories.length ? OK_MESSAGE : "17VIN не вернул групп", 1), categories },
+    env.providerMessage,
+  );
 }
 
 function partOf(x: Raw, epc: string | undefined, groupDiagram: unknown): CatalogPart {
@@ -235,27 +265,33 @@ function partOf(x: Raw, epc: string | undefined, groupDiagram: unknown): Catalog
   };
 }
 
-function partsResult(items: unknown, epc: string | undefined, groupDiagram: unknown): PartsResult {
-  if (!Array.isArray(items)) return partsFailure(malformed("В ответе нет списка деталей"));
-  if (items.length > 3000) return partsFailure(malformed("Слишком много деталей в ответе"));
+function partsResult(items: unknown, epc: string | undefined, groupDiagram: unknown, providerMessage?: string): PartsResult {
+  const fail = (message: string) => partsFailure(withMessage(malformed(message), providerMessage));
+  if (!Array.isArray(items)) return fail("В ответе нет списка деталей");
+  if (items.length > 3000) return fail("Слишком много деталей в ответе");
   // A row without an OE number cannot confirm a fit, and its empty normalizedOe would "match" a request without OE.
   const parts = items
     .filter(isRecord)
     .map((x) => partOf(x, epc, groupDiagram))
     .filter((part) => part.normalizedOe !== "");
-  return { ...meta(parts.length ? "success" : "empty", parts.length ? OK_MESSAGE : "17VIN не вернул деталей", 1), parts };
+  return withMessage(
+    { ...meta(parts.length ? "success" : "empty", parts.length ? OK_MESSAGE : "17VIN не вернул деталей", 1), parts },
+    providerMessage,
+  );
 }
 
 export function normalizeParts(raw: unknown, epc: string): PartsResult {
   const env = envelope(raw);
   if (!env.ok) return partsFailure(env.meta);
   const d = env.data;
-  return isRecord(d) ? partsResult(d.partlist, epc, d.imgaddress) : partsFailure(malformed("В ответе нет списка деталей"));
+  return isRecord(d)
+    ? partsResult(d.partlist, epc, d.imgaddress, env.providerMessage)
+    : partsFailure(withMessage(malformed("В ответе нет списка деталей"), env.providerMessage));
 }
 
 export function normalizeOeSearch(raw: unknown): PartsResult {
   const env = envelope(raw);
-  return env.ok ? partsResult(env.data, undefined, undefined) : partsFailure(env.meta);
+  return env.ok ? partsResult(env.data, undefined, undefined, env.providerMessage) : partsFailure(env.meta);
 }
 
 type Transport = { ok: true; raw: unknown } | { ok: false; meta: ProviderMeta };
@@ -392,6 +428,8 @@ export class SeventeenVinProvider implements PartsProvider {
     ];
     if (input.level === 2 && parent) params.push(["cata1_code", parent]);
     if (input.level === 3 && parent) params.push(["cata2_code", parent]);
+    // Method 5104 (cata4 + cata3_code) is seen in a third-party client, not yet in the official docs.
+    if (input.level === 4 && parent) params.push(["cata3_code", parent]);
     const sent = await this.#send(path17(input.epc, params));
     return sent.ok ? normalizeCategories(sent.raw, input.epc) : categoriesFailure(sent.meta);
   }

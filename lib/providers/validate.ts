@@ -22,7 +22,7 @@ export function isValidEpc(epc: unknown): epc is string {
 }
 
 export function isValidLevel(level: unknown): level is CategoryLevel {
-  return level === 1 || level === 2 || level === 3;
+  return level === 1 || level === 2 || level === 3 || level === 4;
 }
 
 export function normalizeCode(code: unknown): string | null {

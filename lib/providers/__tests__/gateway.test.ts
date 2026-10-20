@@ -264,6 +264,37 @@ describe("gateway cache", () => {
   });
 });
 
+describe("gateway beforeLiveCall", () => {
+  it("runs only before a paid live call: never for a cache hit or in fixture mode", async () => {
+    const db = await createMemoryDb();
+    const provider = new FakeProvider();
+    const hook = vi.fn(async () => {});
+    const gw = createGateway(db, provider, { now: T0, beforeLiveCall: hook });
+    await gw.decodeVin(VIN);
+    await gw.decodeVin(VIN);
+    expect(hook).toHaveBeenCalledTimes(1);
+    expect(hook).toHaveBeenCalledWith("decode");
+
+    const fixtureHook = vi.fn(async () => {});
+    await createGateway(db, new FixtureProvider(), { now: T0, beforeLiveCall: fixtureHook }).decodeVin(FIXTURE_VINS.geelyGalaxyE5);
+    expect(fixtureHook).not.toHaveBeenCalled();
+  });
+
+  it("refuses the call when the hook throws: no provider call and no journal row", async () => {
+    const db = await createMemoryDb();
+    const provider = new FakeProvider();
+    const gw = createGateway(db, provider, {
+      now: T0,
+      beforeLiveCall: async () => {
+        throw new Error("over budget");
+      },
+    });
+    await expect(gw.decodeVin(VIN)).rejects.toThrow("over budget");
+    expect(provider.decodeVin).not.toHaveBeenCalled();
+    expect(await journal(db)).toHaveLength(0);
+  });
+});
+
 describe("gateway daily limit", () => {
   it("serves exactly the remaining budget when calls arrive at the same time", async () => {
     const db = await createMemoryDb();
@@ -512,5 +543,36 @@ describe("gateway with the fixture catalog", () => {
       providerCode: 0,
       categories: [],
     });
+  });
+});
+
+describe("gateway level 4 and provider messages", () => {
+  it("journals level 4 requests and caches the provider message with the answer", async () => {
+    const db = await createMemoryDb();
+    const provider = new FakeProvider();
+    provider.categories.mockResolvedValue({
+      status: "success",
+      message: "ok",
+      providerMessage: "success",
+      providerCode: 1,
+      source: "provider",
+      categories: [{ code: "SA3HJ-10035-1", level: 4, last: true, name: "Tail lamps", remark: "", diagram: null, providerFit: true }],
+    });
+    const gw = createGateway(db, provider, { now: T0, dailyLimit: 100 });
+    const input = { vin: VIN, epc: "byd", level: 4 as const, parentCode: "SA3HJ-10035" };
+    expect(await gw.categories(input)).toMatchObject({ status: "success", providerMessage: "success", cached: false });
+    expect(await gw.categories(input)).toMatchObject({ status: "success", providerMessage: "success", cached: true });
+    expect(provider.categories).toHaveBeenCalledTimes(1);
+    expect((await journal(db)).map((r) => r.inputMask)).toEqual(["LGX…0001 byd L4 SA3HJ-10035"]);
+    await gw.parts({ vin: VIN, epc: "byd", categoryCode: "SA3HJ-10035-1", level: 4 });
+    expect(provider.parts).toHaveBeenCalledWith({ vin: VIN, epc: "byd", categoryCode: "SA3HJ-10035-1", level: 4 });
+  });
+
+  it("refuses level 4 without a parent before calling the provider", async () => {
+    const db = await createMemoryDb();
+    const provider = new FakeProvider();
+    const gw = createGateway(db, provider, { now: T0, dailyLimit: 100 });
+    expect((await gw.categories({ vin: VIN, epc: "byd", level: 4 })).status).toBe("invalid");
+    expect(provider.categories).not.toHaveBeenCalled();
   });
 });

@@ -56,11 +56,16 @@ async function writeAtomic(file: string, data: Uint8Array | string) {
 }
 
 export function createLocalStorage(root: string): Storage {
-  const base = path.resolve(root);
+  // The root comes from UPLOAD_DIR at runtime; without the ignore hint Turbopack traces the whole project into the build.
+  const base = path.resolve(/*turbopackIgnore: true*/ root);
   // Two-character shards keep directories small once there are many thousands of photos.
   const locate = (key: string) => {
-    const dir = path.join(base, key.slice(0, 2));
-    return { dir, data: path.join(dir, key), meta: path.join(dir, `${key}.json`) };
+    const dir = path.join(/*turbopackIgnore: true*/ base, key.slice(0, 2));
+    return {
+      dir,
+      data: path.join(/*turbopackIgnore: true*/ dir, key),
+      meta: path.join(/*turbopackIgnore: true*/ dir, `${key}.json`),
+    };
   };
 
   return {
@@ -103,7 +108,8 @@ export function createLocalStorage(root: string): Storage {
   };
 }
 
-export const uploadDir = () => path.resolve(process.env.UPLOAD_DIR || path.join(process.cwd(), ".data", "uploads"));
+export const uploadDir = () =>
+  path.resolve(/*turbopackIgnore: true*/ process.env.UPLOAD_DIR || path.join(process.cwd(), ".data", "uploads"));
 
 let cached: { root: string; storage: Storage } | undefined;
 

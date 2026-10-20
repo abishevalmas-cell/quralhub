@@ -34,6 +34,9 @@ export type ProviderMeta = {
   status: ProviderStatus;
   message: string;
   providerCode?: number;
+  // The provider's own "msg" for diagnostics and staff screens: control characters removed, VINs and other
+  // long tokens masked, at most PROVIDER_MESSAGE_MAX characters. Customers are shown `message` instead.
+  providerMessage?: string;
   source: ProviderSource;
   // Set by the gateway: true when the answer came from provider_cache.
   cached?: boolean;
@@ -54,7 +57,11 @@ export type DecodeData = {
 };
 export type DecodeResult = ProviderResult<DecodeData>;
 
-export type CategoryLevel = 1 | 2 | 3;
+// 17VIN catalogs are up to four levels deep (cata1…cata4); parts are read from the last level of a branch.
+export const CATEGORY_LEVELS = [1, 2, 3, 4] as const;
+export type CategoryLevel = (typeof CATEGORY_LEVELS)[number];
+export const MAX_CATEGORY_LEVEL: CategoryLevel = 4;
+export const PROVIDER_MESSAGE_MAX = 300;
 
 export type Category = {
   code: string;

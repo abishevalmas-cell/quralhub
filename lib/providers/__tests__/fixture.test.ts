@@ -206,7 +206,7 @@ describe("fixture catalog data", () => {
     ];
     for (const car of cars) {
       const oes: string[] = [];
-      const walk = async (level: 1 | 2 | 3, parentCode?: string): Promise<void> => {
+      const walk = async (level: 1 | 2 | 3 | 4, parentCode?: string): Promise<void> => {
         const list = await p.categories(parentCode ? { ...car, level, parentCode } : { ...car, level });
         for (const c of list.categories) {
           if (c.last) {
@@ -217,12 +217,29 @@ describe("fixture catalog data", () => {
               expect((await p.searchOe(part.oe)).parts.map((x) => x.oe)).toContain(part.oe);
               oes.push(part.oe);
             }
-          } else if (level < 3) await walk((level + 1) as 2 | 3, c.code);
+          } else if (level < 4) await walk((level + 1) as 2 | 3 | 4, c.code);
         }
       };
       await walk(1);
       expect(oes.length).toBeGreaterThan(1);
       expect(new Set(oes).size).toBe(oes.length);
     }
+  });
+});
+
+describe("fixture level 4", () => {
+  it("has a BYD branch four levels deep", async () => {
+    const l3 = await p.categories({ vin: BYD, epc: "byd", level: 3, parentCode: "10-03" });
+    expect(l3.categories.map((c) => [c.code, c.last])).toEqual([
+      ["SA3HJ-10031", true],
+      ["SA3HJ-10035", false],
+    ]);
+    const l4 = await p.categories({ vin: BYD, epc: "byd", level: 4, parentCode: "SA3HJ-10035" });
+    expect(l4.categories).toEqual([
+      { code: "SA3HJ-10035-1", level: 4, last: true, name: "Tail lamps", remark: "", diagram: null, providerFit: true },
+    ]);
+    const parts = await p.parts({ vin: BYD, epc: "byd", categoryCode: "SA3HJ-10035-1", level: 4 });
+    expect(parts.parts.map((x) => x.oe)).toEqual(["10248801-00", "10248802-00"]);
+    expect((await p.searchOe("10248801-00")).parts[0].name).toBe("Left tail lamp assembly");
   });
 });

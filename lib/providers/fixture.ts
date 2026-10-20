@@ -1,4 +1,5 @@
 import {
+  CATEGORY_LEVELS,
   categoriesFailure,
   decodeFailure,
   partsFailure,
@@ -26,8 +27,9 @@ import {
   normalizeVinInput,
 } from "./validate";
 
-// Synthetic catalog for development and tests. It mirrors real 17VIN answer shapes (two BYD trims, an empty
-// Li Auto catalog with code 0, Zeekr with code 1003) but every VIN, id and OE number here is made up.
+// Synthetic catalog for development and tests. It mirrors real 17VIN answer shapes (two BYD trims, a BYD branch
+// four levels deep, an empty Li Auto catalog with code 0, Zeekr with code 1003 and epc_id "0") but every VIN,
+// id and OE number here is made up.
 
 export const FIXTURE_NOTICE = "Пример: данные синтетические";
 
@@ -210,6 +212,21 @@ const BYD_CATALOG: FixtureNode[] = [
             parts: [
               part("10248766-00", "Left headlamp assembly", "左前大灯总成", { callout: "1" }),
               part("10248767-00", "Right headlamp assembly", "右前大灯总成", { callout: "2" }),
+            ],
+          },
+          {
+            // A branch four levels deep, as some 17VIN catalogs have (cata4).
+            code: "SA3HJ-10035",
+            name: "Rear lamps",
+            children: [
+              {
+                code: "SA3HJ-10035-1",
+                name: "Tail lamps",
+                parts: [
+                  part("10248801-00", "Left tail lamp assembly", "左后尾灯总成", { callout: "1" }),
+                  part("10248802-00", "Right tail lamp assembly", "右后尾灯总成", { callout: "2" }),
+                ],
+              },
             ],
           },
         ],
@@ -520,7 +537,7 @@ export class FixtureProvider implements PartsProvider {
     const found = new Map<string, CatalogPart>();
     for (const car of CARS) {
       if (!Array.isArray(car.catalog)) continue;
-      for (const level of [1, 2, 3] as const)
+      for (const level of CATEGORY_LEVELS)
         for (const node of nodesAt(car.catalog, level))
           for (const p of node.parts ?? []) if (p.normalizedOe === wanted && !found.has(p.oe)) found.set(p.oe, p);
     }

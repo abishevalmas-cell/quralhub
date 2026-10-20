@@ -61,6 +61,13 @@ describe("renderEvent", () => {
       { type: "request_offered", requestNumber: 1, offerCount: Number.MAX_SAFE_INTEGER },
       { type: "order_status", orderNumber: 1, statusLabel: huge },
       { type: "staff_new_request", requestNumber: 1, vehicleLabel: huge, title: huge },
+      { type: "request_message", requestNumber: 1, body: huge },
+      { type: "staff_customer_reply", requestNumber: 1, title: huge, body: huge, answered: true },
+      { type: "staff_offer_accepted", requestNumber: 1, orderNumber: 2, offerTitle: huge, totalLabel: huge },
+      { type: "staff_order_issue", orderNumber: 1, offerTitle: huge, comment: huge },
+      { type: "request_cancelled", requestNumber: 1, reason: huge },
+      { type: "request_closed", requestNumber: 1, reason: huge },
+      { type: "staff_request_cancelled", requestNumber: 1, title: huge },
     ];
     for (const event of events) {
       const text = renderEvent(event, APP + "/" + "a".repeat(500));
@@ -111,6 +118,59 @@ describe("renderEvent", () => {
     const empty = renderEvent({ type: "staff_new_request", requestNumber: 12, vehicleLabel: null, title: "" }, APP);
     expect(empty).toContain("Клиент не указал машину");
     expect(empty).toContain("Без названия");
+  });
+
+  it("renders a staff message to the customer with a reply link", () => {
+    const text = renderEvent({ type: "request_message", requestNumber: 8, body: "Реквизиты: <b>Kaspi</b>" }, APP);
+    expect(text).toContain("<b>Сообщение по заявке №8</b>");
+    expect(text).toContain("Реквизиты: &lt;b&gt;Kaspi&lt;/b&gt;");
+    expect(text).toContain("Ответить: https://tetix.example/requests/8");
+    expect(renderEvent({ type: "request_message", requestNumber: 8, body: " " }, APP)).toContain("Подборщик написал вам");
+  });
+
+  it("renders staff follow-ups with their own headings and links", () => {
+    const reply = renderEvent(
+      { type: "staff_customer_reply", requestNumber: 4, title: "Фара левая", body: `Да, левая. VIN ${VIN}`, answered: true },
+      APP,
+    );
+    expect(reply).toContain("<b>Клиент ответил на вопрос по заявке №4</b> · 客户回复");
+    expect(reply).toContain("\nФара левая\nДа, левая. VIN LTX…2345\n");
+    expect(reply).toContain("Открыть заявку: https://tetix.example/sourcer/requests/4");
+    expect(
+      renderEvent({ type: "staff_customer_reply", requestNumber: 4, title: "Фара", body: "Ещё фото", answered: false }, APP),
+    ).toContain("<b>Клиент написал по заявке №4</b>");
+
+    const accepted = renderEvent(
+      { type: "staff_offer_accepted", requestNumber: 4, orderNumber: 9, offerTitle: "Фара OEM", totalLabel: "186 000 ₸" },
+      APP,
+    );
+    expect(accepted).toContain("<b>Новый заказ №9</b> · 新订单");
+    expect(accepted).toContain("Клиент выбрал вариант по заявке №4: Фара OEM");
+    expect(accepted).toContain("Сумма: 186 000 ₸");
+    expect(accepted).toContain("Открыть заказ: https://tetix.example/sourcer/orders/9");
+
+    const issue = renderEvent({ type: "staff_order_issue", orderNumber: 9, offerTitle: "Фара OEM", comment: "Другой разъём" }, APP);
+    expect(issue).toContain("<b>Не подошла деталь, заказ №9</b> · 配件不匹配");
+    expect(issue).toContain("Комментарий клиента: Другой разъём");
+    expect(issue).toContain("Открыть заказ: https://tetix.example/sourcer/orders/9");
+    expect(renderEvent({ type: "staff_order_issue", orderNumber: 9, offerTitle: "x", comment: null }, APP)).toContain(
+      "Клиент не оставил комментарий.",
+    );
+  });
+
+  it("tells the customer why staff cancelled or closed a request, and the sourcer that the customer cancelled", () => {
+    const cancelled = renderEvent({ type: "request_cancelled", requestNumber: 7, reason: "Детали нет <в наличии>" }, APP);
+    expect(cancelled).toContain("<b>Заявка №7 отменена</b>");
+    expect(cancelled).toContain("Причина: Детали нет &lt;в наличии&gt;");
+    expect(cancelled).toContain("Открыть заявку: https://tetix.example/requests/7");
+    expect(renderEvent({ type: "request_cancelled", requestNumber: 7, reason: null }, APP)).toContain("Подборщик отменил заявку.");
+    const closed = renderEvent({ type: "request_closed", requestNumber: 8, reason: null }, APP);
+    expect(closed).toContain("<b>Заявка №8 закрыта</b>");
+    expect(closed).toContain("Подборщик закрыл заявку.");
+    const staff = renderEvent({ type: "staff_request_cancelled", requestNumber: 9, title: "Фара левая" }, APP);
+    expect(staff).toContain("<b>Клиент отменил заявку №9</b>");
+    expect(staff).toContain("Фара левая");
+    expect(staff).toContain("Открыть заявку: https://tetix.example/sourcer/requests/9");
   });
 
   it("does not trust malformed numbers and links to the list instead", () => {

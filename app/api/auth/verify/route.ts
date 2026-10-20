@@ -4,10 +4,12 @@ import { verifyOtp } from "@/lib/auth/otp";
 import { createSession } from "@/lib/auth/session";
 import { getDb } from "@/lib/db";
 import { json, readJson, route } from "@/lib/server/http";
+import { assertRate, RATE_RULES } from "@/lib/server/rate-limit";
 
 const Body = z.object({ phone: z.string().max(40), code: z.string().max(10) });
 
 export const POST = route(async (request) => {
+  assertRate(request, [RATE_RULES.verifyShort]);
   const { phone, code } = await readJson(request, Body);
   const db = await getDb();
   const user = await verifyOtp(db, phone, code);
