@@ -1,0 +1,88 @@
+@import "tailwindcss";
+
+/* Tetix tokens: light paper, graphite ink, lime used only for the main action. */
+:root {
+  --paper: #f5f7f4;
+  --card: #ffffff;
+  --ink: #17232c;
+  --muted: #5d6a71;
+  --line: #dde3e0;
+  --soft: #ecf0ec;
+  --lime: #d5fa64;
+  --lime-ink: #3f5a00;
+  --ok: #1f7a4d;
+  --ok-bg: #e3f3ea;
+  --warn: #8a5a00;
+  --warn-bg: #fbf0d9;
+  --hand: #3b5b7a;
+  --hand-bg: #e6eef6;
+  --bad: #a3352b;
+  --bad-bg: #f8e5e2;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --paper: #0f1519;
+    --card: #161f25;
+    --ink: #e6ecee;
+    --muted: #9aa8ae;
+    --line: #27333a;
+    --soft: #1c262d;
+    --lime: #cdf25a;
+    --lime-ink: #cdf25a;
+    --ok: #6fd39c;
+    --ok-bg: #16301f;
+    --warn: #f0c46a;
+    --warn-bg: #33280f;
+    --hand: #9cc2e6;
+    --hand-bg: #172636;
+    --bad: #f09a90;
+    --bad-bg: #3a1a17;
+    color-scheme: dark;
+  }
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-card: var(--card);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-soft: var(--soft);
+  --color-lime: var(--lime);
+  --color-lime-ink: var(--lime-ink);
+  --color-ok: var(--ok);
+  --color-ok-bg: var(--ok-bg);
+  --color-warn: var(--warn);
+  --color-warn-bg: var(--warn-bg);
+  --color-hand: var(--hand);
+  --color-hand-bg: var(--hand-bg);
+  --color-bad: var(--bad);
+  --color-bad-bg: var(--bad-bg);
+  --font-sans: var(--font-manrope), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: var(--font-plex-mono), ui-monospace, Menlo, monospace;
+  --font-zh: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+  font-family: var(--font-sans);
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 3px solid var(--lime-ink);
+  outline-offset: 2px;
+}
+
+.zh {
+  font-family: var(--font-zh);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
