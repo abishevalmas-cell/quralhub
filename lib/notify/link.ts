@@ -1,4 +1,5 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
+import { authSecret } from "@/lib/server/demo";
 
 // A signed token that links a Telegram chat to a user: the site shows t.me/<bot>?start=<token>,
 // the bot receives "/start <token>" and stores the chat id for the user it names.
@@ -13,16 +14,10 @@ const SIGNATURE_BYTES = 16;
 const TOKEN_RE = /^[A-Za-z0-9_-]{49}$/;
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
-// Same secret and development fallback as lib/auth/otp.ts.
-function secret(): string {
-  const value = process.env.AUTH_SECRET;
-  if (!value && process.env.NODE_ENV === "production") throw new Error("AUTH_SECRET is required in production");
-  return value || "tetix-dev-secret";
-}
 
 // The domain prefix keeps these signatures distinct from anything else signed with AUTH_SECRET.
 const sign = (payload: string) =>
-  createHmac("sha256", secret())
+  createHmac("sha256", authSecret())
     .update(`tetix:telegram-link:${payload}`)
     .digest()
     .subarray(0, SIGNATURE_BYTES)

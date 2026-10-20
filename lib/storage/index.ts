@@ -109,7 +109,10 @@ export function createLocalStorage(root: string): Storage {
 }
 
 export const uploadDir = () =>
-  path.resolve(/*turbopackIgnore: true*/ process.env.UPLOAD_DIR || path.join(process.cwd(), ".data", "uploads"));
+  path.resolve(
+    /*turbopackIgnore: true*/ process.env.UPLOAD_DIR ||
+      (process.env.VERCEL ? "/tmp/tetix-uploads" : path.join(process.cwd(), ".data", "uploads")),
+  );
 
 let cached: { root: string; storage: Storage } | undefined;
 

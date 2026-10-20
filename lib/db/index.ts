@@ -8,7 +8,7 @@ export type Db = PgDatabase<PgQueryResultHKT, typeof schema>;
 const MIGRATIONS = path.join(process.cwd(), "drizzle");
 
 // Production: DATABASE_URL points at Postgres (Supabase, Neon or a server in Kazakhstan).
-// Development: an embedded PGlite database in .data/pglite, migrated automatically.
+// Development and demo previews: an embedded PGlite database, migrated automatically.
 async function connect(): Promise<Db> {
   const url = process.env.DATABASE_URL;
   if (url) {
@@ -25,7 +25,8 @@ async function connect(): Promise<Db> {
   const { PGlite } = await import("@electric-sql/pglite");
   const { drizzle } = await import("drizzle-orm/pglite");
   const { migrate } = await import("drizzle-orm/pglite/migrator");
-  const dir = process.env.PGLITE_DIR || path.join(process.cwd(), ".data", "pglite");
+  // Serverless hosts (Vercel) only allow writes to /tmp; data there lasts as long as the instance (demo only).
+  const dir = process.env.PGLITE_DIR || (process.env.VERCEL ? "/tmp/tetix-pglite" : path.join(process.cwd(), ".data", "pglite"));
   const client = new PGlite(dir);
   const db = drizzle(client, { schema });
   await migrate(db, { migrationsFolder: MIGRATIONS });

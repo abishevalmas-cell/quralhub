@@ -3,6 +3,7 @@ import { and, desc, eq, gt, isNull, lt, sql } from "drizzle-orm";
 import type { Db } from "@/lib/db";
 import { otpCodes, users, type UserRole } from "@/lib/db/schema";
 import { badRequest, tooMany } from "@/lib/server/errors";
+import { authSecret, DEMO_ADMIN_PHONE, isDemoPreview } from "@/lib/server/demo";
 import { normalizePhone } from "./phone";
 
 const CODE_TTL_MS = 10 * 60 * 1000;
@@ -20,17 +21,12 @@ export function dailyCodeLimit(env: Record<string, string | undefined> = process
   return Number.isFinite(value) && value >= 0 ? Math.floor(value) : DEFAULT_CODES_PER_DAY_TOTAL;
 }
 
-function secret(): string {
-  const value = process.env.AUTH_SECRET;
-  if (!value && process.env.NODE_ENV === "production") throw new Error("AUTH_SECRET is required in production");
-  return value || "tetix-dev-secret";
-}
 
 const hashCode = (phone: string, code: string) =>
-  createHash("sha256").update(`${secret()}:${phone}:${code}`).digest("hex");
+  createHash("sha256").update(`${authSecret()}:${phone}:${code}`).digest("hex");
 
 export function adminPhones(): string[] {
-  return (process.env.ADMIN_PHONES || "")
+  return (process.env.ADMIN_PHONES || (isDemoPreview() ? DEMO_ADMIN_PHONE : ""))
     .split(",")
     .map((p) => normalizePhone(p))
     .filter((p): p is string => Boolean(p));

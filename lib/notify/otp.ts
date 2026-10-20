@@ -1,4 +1,5 @@
 import { maskPhone } from "@/lib/auth/phone";
+import { isDemoPreview } from "@/lib/server/demo";
 
 // Delivery of login codes. Production needs an SMS or WhatsApp gateway (e.g. Mobizon for KZ, Eskiz for UZ);
 // until one is configured, codes are only logged on the server and shown on screen in development.
@@ -19,5 +20,5 @@ export async function deliverOtp(phone: string, code: string): Promise<{ channel
 }
 
 export function showDevCodes() {
-  return process.env.NODE_ENV !== "production" || process.env.AUTH_DEV_CODES === "1";
+  return process.env.NODE_ENV !== "production" || process.env.AUTH_DEV_CODES === "1" || isDemoPreview();
 }
