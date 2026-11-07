@@ -1,8 +1,7 @@
-name: Update Exchange Rates (every 2 hours)
+name: Update Exchange Rates (manual)
 
+# The every-2-hours schedule is switched off at the owner's request; run it by hand from the Actions tab.
 on:
-  schedule:
-    - cron: '0 */2 * * *'  # Every 2 hours
   workflow_dispatch:
 
 permissions:
